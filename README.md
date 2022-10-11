@@ -29,10 +29,6 @@
 
 See [adapter-programs](https://github.com/DappioWonderland/adapter-programs#supported-protocols) for more details
 
-## Documentation
-
-- [Typedoc](http://68.183.184.205:3001/modules.html)
-
 ## References
 
 - https://guide.dappio.xyz/the-universal-rabbit-hole
