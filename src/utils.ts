@@ -17,7 +17,7 @@ export async function createATAWithoutCheckIx(
   if (payer == undefined) {
     payer = wallet;
   }
-  let ATA = await getAssociatedTokenAddress(mint, wallet);
+  let ATA = await getAssociatedTokenAddress(mint, wallet, true);
   const programId = new anchor.web3.PublicKey(
     "9tiP8yZcekzfGzSBmp7n9LaDHRjxP2w7wJj8tpPJtfG"
   );
