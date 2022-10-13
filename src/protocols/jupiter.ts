@@ -1,6 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 import { Jupiter, RouteInfo } from "@jup-ag/core";
-import { IProtocolSwap } from "../builder";
+import { IProtocolSwap } from "../types";
 import { WSOL } from "../ids";
 import { getAssociatedTokenAddress } from "@solana/spl-token-v2";
 

@@ -12,7 +12,7 @@ import {
   getGatewayAuthority,
 } from "../utils";
 import { IReserveInfo, solend } from "@dappio-wonderland/navigator";
-import { ActionType, GatewayParams, IProtocolMoneyMarket } from "../builder";
+import { ActionType, GatewayParams, IProtocolMoneyMarket } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { NATIVE_SOL, SOLEND_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
 

@@ -6,7 +6,7 @@ import {
   createSyncNativeInstruction,
   getAssociatedTokenAddress,
 } from "@solana/spl-token-v2";
-import { ActionType, GatewayParams, IProtocolVault } from "../builder";
+import { ActionType, GatewayParams, IProtocolVault } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { IVaultInfo, friktion, utils } from "@dappio-wonderland/navigator";
 import { getActivityIndex, getGatewayAuthority } from "../utils";

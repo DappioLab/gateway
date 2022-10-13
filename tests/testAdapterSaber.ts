@@ -15,14 +15,14 @@ import {
 import { saber } from "@dappio-wonderland/navigator";
 
 describe("Gateway", () => {
-  // const connection = new Connection("https://rpc-mainnet-fork.epochs.studio", {
-  //   commitment: "confirmed",
-  //   wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
-  // });
-  const connection = new Connection("https://solana-api.tt-prod.net", {
+  const connection = new Connection("https://rpc-mainnet-fork.epochs.studio", {
     commitment: "confirmed",
-    confirmTransactionInitialTimeout: 180 * 1000,
+    wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
   });
+  // const connection = new Connection("https://solana-api.tt-prod.net", {
+  //   commitment: "confirmed",
+  //   confirmTransactionInitialTimeout: 180 * 1000,
+  // });
   // const connection = new Connection("https://ssc-dao.genesysgo.net", {
   //   commitment: "confirmed",
   //   confirmTransactionInitialTimeout: 180 * 1000,

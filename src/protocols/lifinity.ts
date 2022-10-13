@@ -11,7 +11,7 @@ import {
   getGatewayAuthority,
 } from "../utils";
 import { IPoolInfo, lifinity } from "@dappio-wonderland/navigator";
-import { ActionType, GatewayParams, IProtocolPool } from "../builder";
+import { ActionType, GatewayParams, IProtocolPool } from "../types";
 import { LIFINITY_ADAPTER_PROGRAM_ID, NATIVE_SOL, WSOL } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey";

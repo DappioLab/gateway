@@ -19,7 +19,7 @@ import {
   IProtocolFarm,
   IProtocolPool,
   PoolDirection,
-} from "../builder";
+} from "../types";
 import {
   NATIVE_SOL,
   RAYDIUM_ADAPTER_PROGRAM_ID,
