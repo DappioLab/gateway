@@ -18,7 +18,7 @@ import {
   GatewayParams,
   IProtocolMoneyMarket,
   IProtocolVault,
-} from "../builder";
+} from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { NATIVE_SOL, TULIP_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
 

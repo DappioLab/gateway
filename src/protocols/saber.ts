@@ -20,7 +20,7 @@ import {
   IProtocolFarm,
   IProtocolPool,
   PoolDirection,
-} from "../builder";
+} from "../types";
 import { SABER_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 

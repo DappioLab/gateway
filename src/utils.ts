@@ -6,7 +6,7 @@ import {
 } from "@solana/spl-token-v2";
 import { GATEWAY_PROGRAM_ID } from "./ids";
 import { hash } from "@project-serum/anchor/dist/cjs/utils/sha256";
-import { ActionType } from "./builder";
+import { ActionType } from "./types";
 import * as sha256 from "js-sha256";
 
 export async function createATAWithoutCheckIx(

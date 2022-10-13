@@ -11,7 +11,7 @@ import {
   getGatewayAuthority,
 } from "../utils";
 import { INFTFarmInfo, INFTPoolInfo } from "@dappio-wonderland/navigator";
-import { GatewayParams, IProtocolNFTFarm, IProtocolNFTPool } from "../builder";
+import { GatewayParams, IProtocolNFTFarm, IProtocolNFTPool } from "../types";
 import { NFT_FINANCE_ADAPTER_PROGRAM_ID } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { nftFinance } from "@dappio-wonderland/navigator";

@@ -23,7 +23,7 @@ import {
   GatewayParams,
   IProtocolFarm,
   IProtocolMoneyMarket,
-} from "../builder";
+} from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { LARIX_ADAPTER_PROGRAM_ID } from "../ids";
 import { struct, u8 } from "@project-serum/borsh";

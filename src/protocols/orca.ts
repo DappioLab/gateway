@@ -20,7 +20,7 @@ import {
   IProtocolFarm,
   IProtocolPool,
   PoolDirection,
-} from "../builder";
+} from "../types";
 import { ORCA_ADAPTER_PROGRAM_ID } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 
