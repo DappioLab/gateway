@@ -12,7 +12,12 @@ import {
   getActivityIndex,
   getGatewayAuthority,
 } from "../utils";
-import { IFarmInfo, IPoolInfo, raydium } from "@dappio-wonderland/navigator";
+import {
+  IFarmInfo,
+  IPoolInfo,
+  raydium,
+  utils,
+} from "@dappio-wonderland/navigator";
 import {
   ActionType,
   GatewayParams,
@@ -27,7 +32,6 @@ import {
   WSOL,
 } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
-import { PoolInfoWrapper } from "@dappio-wonderland/navigator/dist/raydium";
 
 const WSOL_BUFFER_FACTOR = 1.01; // 1%, actual amount might be different since pool balance might change.
 
@@ -44,7 +48,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     userKey: anchor.web3.PublicKey
   ): Promise<anchor.web3.Transaction[]> {
     const pool = poolInfo as raydium.PoolInfo;
-    const poolWrapper = new PoolInfoWrapper(pool);
+    const poolWrapper = new raydium.PoolInfoWrapper(pool);
     const userTokenAAccountKey = await getAssociatedTokenAddress(
       pool.tokenAMint,
       userKey
@@ -173,6 +177,10 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       pool.lpMint,
       userKey
     );
+    const userTokenAccountInfos = await utils.getMultipleAccounts(
+      this._connection,
+      [userTokenAAccountKey, userTokenBAccountKey]
+    );
 
     const poolWithMarketInfo = raydium.poolsWithMarketInfo.find(
       (p) => pool.poolId.toString() == p.id
@@ -188,9 +196,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       );
     preInstructions.push(setComputeUnitLimitIx);
 
-    const userTokenAAccountInfo = await this._connection.getAccountInfo(
-      userTokenAAccountKey
-    );
+    const userTokenAAccountInfo = userTokenAccountInfos[0].account;
     if (!userTokenAAccountInfo) {
       const createUserTokenAAccountIx = createAssociatedTokenAccountInstruction(
         userKey,
@@ -201,9 +207,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       preInstructions.push(createUserTokenAAccountIx);
     }
 
-    const userTokenBAccountInfo = await this._connection.getAccountInfo(
-      userTokenBAccountKey
-    );
+    const userTokenBAccountInfo = userTokenAccountInfos[1].account;
     if (!userTokenBAccountInfo) {
       const createUserTokenBAccountIx = createAssociatedTokenAccountInstruction(
         userKey,
@@ -663,40 +667,5 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       keys,
       data,
     });
-  }
-
-  private async _getWSOLCreateIx(
-    mint: anchor.web3.PublicKey,
-    userKey: anchor.web3.PublicKey,
-    amount: number
-  ): Promise<anchor.web3.TransactionInstruction[]> {
-    let preInstructions: anchor.web3.TransactionInstruction[] = [];
-    if (mint.equals(NATIVE_SOL) || mint.equals(WSOL)) {
-      const userTokenAccountKey = await getAssociatedTokenAddress(
-        mint,
-        userKey
-      );
-      const userTokenAAccountInfo = await this._connection.getAccountInfo(
-        userTokenAccountKey
-      );
-      if (!userTokenAAccountInfo) {
-        preInstructions.push(
-          createAssociatedTokenAccountInstruction(
-            userKey,
-            userTokenAccountKey,
-            userKey,
-            mint
-          ),
-          anchor.web3.SystemProgram.transfer({
-            fromPubkey: userKey,
-            toPubkey: userTokenAccountKey,
-            lamports: amount,
-          }),
-          createSyncNativeInstruction(userTokenAccountKey)
-        );
-      }
-    }
-
-    return preInstructions;
   }
 }

@@ -11,7 +11,7 @@ import {
   createATAWithoutCheckIx,
   getGatewayAuthority,
 } from "../utils";
-import { IReserveInfo, solend } from "@dappio-wonderland/navigator";
+import { IReserveInfo, solend, utils } from "@dappio-wonderland/navigator";
 import { ActionType, GatewayParams, IProtocolMoneyMarket } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { NATIVE_SOL, SOLEND_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
@@ -189,54 +189,67 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
     const reserveTokenMint = reserve.collateral.reserveTokenMint;
     const withdrawTokenMint = reserve.liquidity.mintPubkey;
 
+    let accountKeys: anchor.web3.PublicKey[] = [obligationId];
+
     const depositReserves = obligationInfo.obligationCollaterals.map(
       (reserve) => reserve.reserveId
     );
-    const depositReserveRawData =
-      await this._connection.getMultipleAccountsInfo(depositReserves);
+    accountKeys = [...accountKeys, ...depositReserves];
 
     const borrowedReserves = obligationInfo.obligationLoans.map(
       (reserve) => reserve.reserveId
     );
-    const borrowedReserveRawData =
-      await this._connection.getMultipleAccountsInfo(borrowedReserves);
+    accountKeys = [...accountKeys, ...borrowedReserves];
+    const accountInfos = await utils.getMultipleAccounts(
+      this._connection,
+      accountKeys
+    );
+
+    const depositReserveData = accountInfos.slice(
+      1,
+      depositReserves.length + 1
+    );
+    const borrowedReserveData = accountInfos.slice(
+      depositReserves.length + 1,
+      depositReserves.length + borrowedReserves.length + 1
+    );
 
     let txPrerequisite = new anchor.web3.Transaction();
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
     // refresh all user's obligations
-    depositReserves.forEach((reserveId, index) => {
+    depositReserveData.forEach((reserveData) => {
       let reserveInfo = solend.infos.parseReserve(
-        depositReserveRawData[index]?.data,
-        reserveId
+        reserveData.account?.data,
+        reserveData.pubkey
       ) as solend.ReserveInfo;
 
       preInstructions.push(
         this._refreshReserveIx(
-          reserveId,
+          reserveData.pubkey,
           reserveInfo.liquidity.pythOraclePubkey,
           reserveInfo.liquidity.switchboardOraclePubkey
         )
       );
     });
 
-    borrowedReserves.forEach((reserveId, index) => {
+    borrowedReserveData.forEach((reserveData) => {
       let reserveInfo = solend.infos.parseReserve(
-        borrowedReserveRawData[index]?.data,
-        reserveId
+        reserveData.account?.data,
+        reserveData.pubkey
       ) as solend.ReserveInfo;
 
       preInstructions.push(
         this._refreshReserveIx(
-          reserveId,
+          reserveData.pubkey,
           reserveInfo.liquidity.pythOraclePubkey,
           reserveInfo.liquidity.switchboardOraclePubkey
         )
       );
     });
 
-    const oblidationInfo = await this._connection.getAccountInfo(obligationId);
+    const oblidationInfo = accountInfos[0].account;
     if (!oblidationInfo || oblidationInfo.data.length == 0) {
       preInstructions = preInstructions.concat(
         await this._createObligationAccountIx(userKey, reserve.lendingMarket)
@@ -348,47 +361,60 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
 
     const borrowTokenMint = reserve.liquidity.mintPubkey;
 
+    let accountKeys: anchor.web3.PublicKey[] = [obligationId];
+
     const depositReserves = obligationInfo.obligationCollaterals.map(
       (reserve) => reserve.reserveId
     );
-    const depositReserveRawData =
-      await this._connection.getMultipleAccountsInfo(depositReserves);
+    accountKeys = [...accountKeys, ...depositReserves];
 
     const borrowedReserves = obligationInfo.obligationLoans.map(
       (reserve) => reserve.reserveId
     );
-    const borrowedReserveRawData =
-      await this._connection.getMultipleAccountsInfo(borrowedReserves);
+    accountKeys = [...accountKeys, ...borrowedReserves];
+    const accountInfos = await utils.getMultipleAccounts(
+      this._connection,
+      accountKeys
+    );
+
+    const depositReserveData = accountInfos.slice(
+      1,
+      depositReserves.length + 1
+    );
+    const borrowedReserveData = accountInfos.slice(
+      depositReserves.length + 1,
+      depositReserves.length + borrowedReserves.length + 1
+    );
 
     let txPrerequisite = new anchor.web3.Transaction();
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
     // refresh all user's obligations
-    depositReserves.forEach((reserveId, index) => {
+    depositReserveData.forEach((reserveData) => {
       let reserveInfo = solend.infos.parseReserve(
-        depositReserveRawData[index]?.data,
-        reserveId
+        reserveData.account?.data,
+        reserveData.pubkey
       ) as solend.ReserveInfo;
 
       preInstructions.push(
         this._refreshReserveIx(
-          reserveId,
+          reserveData.pubkey,
           reserveInfo.liquidity.pythOraclePubkey,
           reserveInfo.liquidity.switchboardOraclePubkey
         )
       );
     });
 
-    borrowedReserves.forEach((reserveId, index) => {
+    borrowedReserveData.forEach((reserveData) => {
       let reserveInfo = solend.infos.parseReserve(
-        borrowedReserveRawData[index]?.data,
-        reserveId
+        reserveData.account?.data,
+        reserveData.pubkey
       ) as solend.ReserveInfo;
 
       preInstructions.push(
         this._refreshReserveIx(
-          reserveId,
+          reserveData.pubkey,
           reserveInfo.liquidity.pythOraclePubkey,
           reserveInfo.liquidity.switchboardOraclePubkey
         )
@@ -402,7 +428,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
     );
     preInstructions.push(borrowAssetRefreshReserveIx);
 
-    const oblidationInfo = await this._connection.getAccountInfo(obligationId);
+    const oblidationInfo = accountInfos[0].account;
     if (!oblidationInfo || oblidationInfo.data.length == 0) {
       preInstructions = preInstructions.concat(
         await this._createObligationAccountIx(userKey, reserve.lendingMarket)
@@ -491,54 +517,67 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
 
     const repayTokenMint = reserve.liquidity.mintPubkey;
 
+    let accountKeys: anchor.web3.PublicKey[] = [obligationId];
+
     const depositReserves = obligationInfo.obligationCollaterals.map(
       (reserve) => reserve.reserveId
     );
-    const depositReserveRawData =
-      await this._connection.getMultipleAccountsInfo(depositReserves);
+    accountKeys = [...accountKeys, ...depositReserves];
 
     const borrowedReserves = obligationInfo.obligationLoans.map(
       (reserve) => reserve.reserveId
     );
-    const borrowedReserveRawData =
-      await this._connection.getMultipleAccountsInfo(borrowedReserves);
+    accountKeys = [...accountKeys, ...borrowedReserves];
+    const accountInfos = await utils.getMultipleAccounts(
+      this._connection,
+      accountKeys
+    );
+
+    const depositReserveData = accountInfos.slice(
+      1,
+      depositReserves.length + 1
+    );
+    const borrowedReserveData = accountInfos.slice(
+      depositReserves.length + 1,
+      depositReserves.length + borrowedReserves.length + 1
+    );
 
     let txPrerequisite = new anchor.web3.Transaction();
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
     // refresh all user's obligations
-    depositReserves.forEach((reserveId, index) => {
+    depositReserveData.forEach((reserveData) => {
       let reserveInfo = solend.infos.parseReserve(
-        depositReserveRawData[index]?.data,
-        reserveId
+        reserveData.account?.data,
+        reserveData.pubkey
       ) as solend.ReserveInfo;
 
       preInstructions.push(
         this._refreshReserveIx(
-          reserveId,
+          reserveData.pubkey,
           reserveInfo.liquidity.pythOraclePubkey,
           reserveInfo.liquidity.switchboardOraclePubkey
         )
       );
     });
 
-    borrowedReserves.forEach((reserveId, index) => {
+    borrowedReserveData.forEach((reserveData) => {
       let reserveInfo = solend.infos.parseReserve(
-        borrowedReserveRawData[index]?.data,
-        reserveId
+        reserveData.account?.data,
+        reserveData.pubkey
       ) as solend.ReserveInfo;
 
       preInstructions.push(
         this._refreshReserveIx(
-          reserveId,
+          reserveData.pubkey,
           reserveInfo.liquidity.pythOraclePubkey,
           reserveInfo.liquidity.switchboardOraclePubkey
         )
       );
     });
 
-    const oblidationInfo = await this._connection.getAccountInfo(obligationId);
+    const oblidationInfo = accountInfos[0].account;
     if (!oblidationInfo || oblidationInfo.data.length == 0) {
       preInstructions = preInstructions.concat(
         await this._createObligationAccountIx(userKey, reserve.lendingMarket)

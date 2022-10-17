@@ -14,7 +14,7 @@ import { INFTFarmInfo, INFTPoolInfo } from "@dappio-wonderland/navigator";
 import { GatewayParams, IProtocolNFTFarm, IProtocolNFTPool } from "../types";
 import { NFT_FINANCE_ADAPTER_PROGRAM_ID } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
-import { nftFinance } from "@dappio-wonderland/navigator";
+import { nftFinance, utils } from "@dappio-wonderland/navigator";
 
 const NFT_VAULT_SEED = "nft_vault";
 const MINER_SEED = "miner";
@@ -34,23 +34,17 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
     userNftAccounts: anchor.web3.PublicKey[]
   ): Promise<anchor.web3.Transaction[]> {
     const pool = poolInfo as nftFinance.NFTPoolInfo;
-    const userNftMints: anchor.web3.PublicKey[] = [];
-
-    const preInstructions: anchor.web3.TransactionInstruction[] = [];
-
-    const userNftAccountsInfo = await this._connection.getMultipleAccountsInfo(
+    const userNftAccountsInfo = await utils.getMultipleAccounts(
+      this._connection,
       userNftAccounts
     );
-    userNftAccountsInfo.forEach((accountInfo) => {
-      const tokenAccount = AccountLayout.decode(accountInfo.data);
-      userNftMints.push(tokenAccount.mint);
-    });
 
+    const preInstructions: anchor.web3.TransactionInstruction[] = [];
     const createAtaIxArr: anchor.web3.TransactionInstruction[] = [];
     let txAllCreateAta: anchor.web3.Transaction[] = [];
     const txAllLockNFT: anchor.web3.Transaction[] = [];
 
-    const setComputeUnitLimitParams = { units: 300000 };
+    const setComputeUnitLimitParams = { units: 600000 };
     const setComputeUnitLimitIx =
       anchor.web3.ComputeBudgetProgram.setComputeUnitLimit(
         setComputeUnitLimitParams
@@ -68,8 +62,11 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
     );
     createAtaIxArr.push(createProveTokenAtaIx);
 
-    for (let [index, nftMint] of userNftMints.entries()) {
-      const userNftAccount = userNftAccounts[index];
+    for (let userNftAccountInfo of userNftAccountsInfo) {
+      const userNftAccount = userNftAccountInfo.pubkey;
+      const nftMint = AccountLayout.decode(
+        userNftAccountInfo.account.data
+      ).mint;
 
       const nftVaultAccount = (
         await anchor.web3.PublicKey.findProgramAddress(

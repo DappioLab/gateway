@@ -13,7 +13,12 @@ import {
   getActivityIndex,
   getGatewayAuthority,
 } from "../utils";
-import { IFarmInfo, IPoolInfo, saber } from "@dappio-wonderland/navigator";
+import {
+  IFarmInfo,
+  IPoolInfo,
+  saber,
+  utils,
+} from "@dappio-wonderland/navigator";
 import {
   ActionType,
   GatewayParams,
@@ -181,25 +186,46 @@ export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
     removeLiquiditySingleToTokenMint: anchor.web3.PublicKey
   ): Promise<anchor.web3.Transaction[]> {
     const pool = poolInfo as saber.PoolInfo;
+    let accountKeys: anchor.web3.PublicKey[] = [];
     const userTokenAAccountKey = await getAssociatedTokenAddress(
       pool.tokenAMint,
       userKey
     );
+    accountKeys.push(userTokenAAccountKey);
     const userTokenBAccountKey = await getAssociatedTokenAddress(
       pool.tokenBMint,
       userKey
     );
+    accountKeys.push(userTokenBAccountKey);
     const userLPAccountKey = await getAssociatedTokenAddress(
       pool.lpMint,
       userKey
     );
+    let underlyingUserTokenAAccountKey: anchor.web3.PublicKey;
+    if (pool.mintAWrapped) {
+      underlyingUserTokenAAccountKey = await getAssociatedTokenAddress(
+        pool.mintAWrapInfo?.underlyingWrappedTokenMint,
+        userKey
+      );
+      accountKeys.push(underlyingUserTokenAAccountKey);
+    }
+    let underlyingUserTokenBAccountKey: anchor.web3.PublicKey;
+    if (pool.mintBWrapped) {
+      underlyingUserTokenBAccountKey = await getAssociatedTokenAddress(
+        pool.mintBWrapInfo?.underlyingWrappedTokenMint,
+        userKey
+      );
+      accountKeys.push(underlyingUserTokenBAccountKey);
+    }
 
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
-    const userTokenAAccountInfo = await this._connection.getAccountInfo(
-      userTokenAAccountKey
+    const userTokenAccountInfos = await utils.getMultipleAccounts(
+      this._connection,
+      accountKeys
     );
+    const userTokenAAccountInfo = userTokenAccountInfos[0].account;
     if (!userTokenAAccountInfo) {
       preInstructions.push(
         createAssociatedTokenAccountInstruction(
@@ -211,9 +237,7 @@ export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
       );
     }
 
-    const userTokenBAccountInfo = await this._connection.getAccountInfo(
-      userTokenBAccountKey
-    );
+    const userTokenBAccountInfo = userTokenAccountInfos[1].account;
     if (!userTokenBAccountInfo) {
       preInstructions.push(
         createAssociatedTokenAccountInstruction(
@@ -228,13 +252,7 @@ export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
     // if Token A is wrapped
     if (pool.mintAWrapped) {
       // check underlying token account is created
-      let underlyingUserTokenAAccountKey = await getAssociatedTokenAddress(
-        pool.mintAWrapInfo?.underlyingWrappedTokenMint,
-        userKey
-      );
-
-      const underlyingUserTokenAAcountInfo =
-        await this._connection.getAccountInfo(underlyingUserTokenAAccountKey);
+      const underlyingUserTokenAAcountInfo = userTokenAccountInfos[2].account;
       if (!underlyingUserTokenAAcountInfo) {
         postInstructions.push(
           createAssociatedTokenAccountInstruction(
@@ -258,13 +276,9 @@ export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
 
     if (pool.mintBWrapped) {
       // check underlying token account is created
-      let underlyingUserTokenBAccountKey = await getAssociatedTokenAddress(
-        pool.mintBWrapInfo?.underlyingWrappedTokenMint,
-        userKey
-      );
-
-      const underlyingUserTokenBAcountInfo =
-        await this._connection.getAccountInfo(underlyingUserTokenBAccountKey);
+      const underlyingUserTokenBAcountInfo = pool.mintAWrapped
+        ? userTokenAccountInfos[3].account
+        : userTokenAccountInfos[2].account;
       if (!underlyingUserTokenBAcountInfo) {
         postInstructions.push(
           createAssociatedTokenAccountInstruction(
@@ -570,7 +584,13 @@ export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
       farmId,
       userKey
     );
-    const minerInfo = await conn.getAccountInfo(minerKey);
+    const minerVault = await getAssociatedTokenAddress(lpMint, minerKey, true);
+    const accountInfos = await utils.getMultipleAccounts(this._connection, [
+      minerKey,
+      minerVault,
+    ]);
+
+    const minerInfo = accountInfos[0].account;
     if (!minerInfo) {
       // Create Miner
       const dataLayout = struct([u64("bump")]);
@@ -586,15 +606,9 @@ export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
       let dataString = "7e179d01935ef545".concat(bumpData.toString("hex"));
       let data = Buffer.from(dataString, "hex");
 
-      const minerVault = await getAssociatedTokenAddress(
-        lpMint,
-        minerKey,
-        true
-      );
-
       // Create minerVault if needed
 
-      const minerVaultInfo = await conn.getAccountInfo(minerVault);
+      const minerVaultInfo = accountInfos[1].account;
       if (!minerVaultInfo) {
         ixs.push(
           createAssociatedTokenAccountInstruction(
