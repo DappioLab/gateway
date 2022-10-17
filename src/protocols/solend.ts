@@ -11,11 +11,10 @@ import {
   createATAWithoutCheckIx,
   getGatewayAuthority,
 } from "../utils";
-import { IReserveInfo, solend } from "@dappio-wonderland/navigator";
+import { IReserveInfo, solend, utils } from "@dappio-wonderland/navigator";
 import { ActionType, GatewayParams, IProtocolMoneyMarket } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { NATIVE_SOL, SOLEND_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
-import { getMultipleAccounts } from "@dappio-wonderland/navigator/dist/utils";
 
 export class ProtocolSolend implements IProtocolMoneyMarket {
   constructor(
@@ -201,7 +200,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
       (reserve) => reserve.reserveId
     );
     accountKeys = [...accountKeys, ...borrowedReserves];
-    const accountInfos = await getMultipleAccounts(
+    const accountInfos = await utils.getMultipleAccounts(
       this._connection,
       accountKeys
     );
@@ -373,7 +372,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
       (reserve) => reserve.reserveId
     );
     accountKeys = [...accountKeys, ...borrowedReserves];
-    const accountInfos = await getMultipleAccounts(
+    const accountInfos = await utils.getMultipleAccounts(
       this._connection,
       accountKeys
     );
@@ -529,7 +528,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
       (reserve) => reserve.reserveId
     );
     accountKeys = [...accountKeys, ...borrowedReserves];
-    const accountInfos = await getMultipleAccounts(
+    const accountInfos = await utils.getMultipleAccounts(
       this._connection,
       accountKeys
     );

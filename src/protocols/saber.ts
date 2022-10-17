@@ -13,7 +13,12 @@ import {
   getActivityIndex,
   getGatewayAuthority,
 } from "../utils";
-import { IFarmInfo, IPoolInfo, saber } from "@dappio-wonderland/navigator";
+import {
+  IFarmInfo,
+  IPoolInfo,
+  saber,
+  utils,
+} from "@dappio-wonderland/navigator";
 import {
   ActionType,
   GatewayParams,
@@ -23,7 +28,6 @@ import {
 } from "../types";
 import { SABER_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
-import { getMultipleAccounts } from "@dappio-wonderland/navigator/dist/utils";
 
 export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
   constructor(
@@ -217,7 +221,7 @@ export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
-    const userTokenAccountInfos = await getMultipleAccounts(
+    const userTokenAccountInfos = await utils.getMultipleAccounts(
       this._connection,
       accountKeys
     );
@@ -581,7 +585,7 @@ export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
       userKey
     );
     const minerVault = await getAssociatedTokenAddress(lpMint, minerKey, true);
-    const accountInfos = await getMultipleAccounts(this._connection, [
+    const accountInfos = await utils.getMultipleAccounts(this._connection, [
       minerKey,
       minerVault,
     ]);

@@ -12,7 +12,12 @@ import {
   getActivityIndex,
   getGatewayAuthority,
 } from "../utils";
-import { IFarmInfo, IPoolInfo, raydium } from "@dappio-wonderland/navigator";
+import {
+  IFarmInfo,
+  IPoolInfo,
+  raydium,
+  utils,
+} from "@dappio-wonderland/navigator";
 import {
   ActionType,
   GatewayParams,
@@ -27,7 +32,6 @@ import {
   WSOL,
 } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
-import { getMultipleAccounts } from "@dappio-wonderland/navigator/dist/utils";
 
 const WSOL_BUFFER_FACTOR = 1.01; // 1%, actual amount might be different since pool balance might change.
 
@@ -173,10 +177,10 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       pool.lpMint,
       userKey
     );
-    const userTokenAccountInfos = await getMultipleAccounts(this._connection, [
-      userTokenAAccountKey,
-      userTokenBAccountKey,
-    ]);
+    const userTokenAccountInfos = await utils.getMultipleAccounts(
+      this._connection,
+      [userTokenAAccountKey, userTokenBAccountKey]
+    );
 
     const poolWithMarketInfo = raydium.poolsWithMarketInfo.find(
       (p) => pool.poolId.toString() == p.id
