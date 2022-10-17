@@ -27,7 +27,6 @@ import {
   WSOL,
 } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
-import { PoolInfoWrapper } from "@dappio-wonderland/navigator/dist/raydium";
 import { getMultipleAccounts } from "@dappio-wonderland/navigator/dist/utils";
 
 const WSOL_BUFFER_FACTOR = 1.01; // 1%, actual amount might be different since pool balance might change.
@@ -45,7 +44,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     userKey: anchor.web3.PublicKey
   ): Promise<anchor.web3.Transaction[]> {
     const pool = poolInfo as raydium.PoolInfo;
-    const poolWrapper = new PoolInfoWrapper(pool);
+    const poolWrapper = new raydium.PoolInfoWrapper(pool);
     const userTokenAAccountKey = await getAssociatedTokenAddress(
       pool.tokenAMint,
       userKey
