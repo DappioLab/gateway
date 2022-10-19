@@ -136,10 +136,15 @@ export class GatewayBuilder {
     // TODO: Move the logic into protocols
     switch (swapParams.protocol) {
       case SupportedProtocols.Jupiter:
-        const protocol = new ProtocolJupiter(this._provider.connection, {
-          ...swapParams,
-          userKey: this._provider.wallet.publicKey,
-        });
+        const protocol = new ProtocolJupiter(
+          this._provider.connection,
+          this._program,
+          await this.getGatewayStateKey(),
+          {
+            ...swapParams,
+            userKey: this._provider.wallet.publicKey,
+          }
+        );
 
         // Jupiter only
         await protocol.build();

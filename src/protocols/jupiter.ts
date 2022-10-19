@@ -1,8 +1,11 @@
 import * as anchor from "@project-serum/anchor";
 import { Jupiter, RouteInfo } from "@jup-ag/core";
-import { IProtocolSwap, SwapParams } from "../types";
-import { WSOL } from "../ids";
+import JSBI from "jsbi";
+import { IProtocolSwap } from "../types";
+import { JUPITER_ADAPTER_PROGRAM_ID, JUPITER_PROGRAM_ID, WSOL } from "../ids";
 import { getAssociatedTokenAddress } from "@solana/spl-token-v2";
+import { Gateway } from "@dappio-wonderland/gateway-idls";
+import { getActivityIndex, getGatewayAuthority } from "../utils";
 
 interface ProtocolJupiterParams extends SwapParams {
   userKey: anchor.web3.PublicKey;
@@ -13,7 +16,18 @@ export class ProtocolJupiter implements IProtocolSwap {
   private _bestRoute: RouteInfo;
   private _transactions: anchor.web3.Transaction[] = [];
 
-  constructor(private _connection: anchor.web3.Connection, private _params: ProtocolJupiterParams) {}
+  constructor(
+    private _connection: anchor.web3.Connection,
+    private _gatewayProgram: anchor.Program<Gateway>,
+    private _gatewayStateKey: anchor.web3.PublicKey,
+    private _params: ProtocolJupiterParams
+  ) {}
+  // constructor(
+  //   private _connection: anchor.web3.Connection,
+  //   private _gatewayProgram: anchor.Program<Gateway>,
+  //   private _gatewayStateKey: anchor.web3.PublicKey,
+  //   private _gatewayParams: GatewayParams
+  // ) {}
 
   async build(): Promise<void> {
     this._jupiter = await Jupiter.load({
@@ -24,8 +38,8 @@ export class ProtocolJupiter implements IProtocolSwap {
     const routes = await this._jupiter.computeRoutes({
       inputMint: this._params.fromTokenMint,
       outputMint: this._params.toTokenMint,
-      inputAmount: this._params.amount, // 1000000 => 1 USDC if inputToken.address is USDC mint
-      slippage: this._params.slippage, // 1 = 1%
+      amount: JSBI.BigInt(this._params.amount), // 1000000 => 1 USDC if inputToken.address is USDC mint
+      slippageBps: Math.ceil(this._params.slippage * 100), // 100 = 1%
       // forceFetch (optional) to force fetching routes and not use the cache
       // intermediateTokens, if provided will only find routes that use the intermediate tokens
       // feeBps
@@ -35,56 +49,44 @@ export class ProtocolJupiter implements IProtocolSwap {
   }
 
   async swap(): Promise<anchor.web3.Transaction[]> {
+    const preInstructions: anchor.web3.TransactionInstruction[] = [];
+    const postInstructions: anchor.web3.TransactionInstruction[] = [];
+    let remainingAccounts: anchor.web3.AccountMeta[];
+
     const { transactions } = await this._jupiter.exchange({
       routeInfo: this._bestRoute,
       userPublicKey: this._params.userKey,
     });
     const { setupTransaction, swapTransaction, cleanupTransaction } = transactions;
 
-    const userWSOLAta = await getAssociatedTokenAddress(WSOL, this._params.userKey);
+    // wrap through gateway
+    // TODO: export params to gateway state
+    let isPreIx = true;
+    for (let ix of swapTransaction.instructions) {
+      if (ix.programId.equals(JUPITER_PROGRAM_ID)) {
+        remainingAccounts = ix.keys;
+        isPreIx = false;
+      } else if (isPreIx) {
+        preInstructions.push(ix);
+      } else {
+        postInstructions.push(ix);
+      }
+    }
+    const txSwap = await this._gatewayProgram.methods
+      .swap()
+      .accounts({
+        gatewayState: this._gatewayStateKey,
+        adapterProgramId: JUPITER_ADAPTER_PROGRAM_ID,
+        baseProgramId: JUPITER_PROGRAM_ID,
+        activityIndex: await getActivityIndex(this._params.userKey),
+        gatewayAuthority: getGatewayAuthority(),
+      })
+      .preInstructions(preInstructions)
+      .postInstructions(postInstructions)
+      .remainingAccounts(remainingAccounts)
+      .transaction();
 
-    // Remove WSOL create instructions
-    // if (setupTransaction) {
-    //   setupTransaction.instructions = setupTransaction.instructions.filter(
-    //     (ix) =>
-    //       !(
-    //         ix.programId.equals(ASSOCIATED_TOKEN_PROGRAM_ID) &&
-    //         ix.keys[1].pubkey.equals(userWSOLAta)
-    //       )
-    //   );
-    // }
-
-    // Remove WSOL create/close instructions
-    // if (swapTransaction) {
-    //   swapTransaction.instructions = swapTransaction.instructions
-    //     .filter(
-    //       (ix) =>
-    //         !(
-    //           ix.programId.equals(ASSOCIATED_TOKEN_PROGRAM_ID) &&
-    //           ix.keys[1].pubkey.equals(userWSOLAta)
-    //         )
-    //     )
-    //     .filter(
-    //       (ix) =>
-    //         !(
-    //           ix.programId.equals(TOKEN_PROGRAM_ID) &&
-    //           ix.keys[0].pubkey.equals(userWSOLAta)
-    //         )
-    //     );
-    // }
-
-    // Remove WSOL close instructions
-    // if (cleanupTransaction) {
-    //   cleanupTransaction.instructions = cleanupTransaction.instructions.filter(
-    //     (ix) =>
-    //       !(
-    //         ix.programId.equals(TOKEN_PROGRAM_ID) &&
-    //         ix.keys[0].pubkey.equals(userWSOLAta)
-    //       )
-    //   );
-    // }
-
-    for (let transaction of [setupTransaction, swapTransaction, cleanupTransaction]
+    for (let transaction of [setupTransaction, txSwap, cleanupTransaction]
       .filter(Boolean)
       .filter((tx) => tx.instructions.length > 0)) {
       this._transactions.push(transaction);
@@ -97,7 +99,7 @@ export class ProtocolJupiter implements IProtocolSwap {
   }
 
   getSwapMinOutAmount(): number {
-    return this._bestRoute.outAmountWithSlippage;
+    return JSBI.toNumber(this._bestRoute.outAmount);
   }
 
   async getRoute() {
