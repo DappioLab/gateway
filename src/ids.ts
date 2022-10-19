@@ -15,6 +15,12 @@ export const SOLEND_ADAPTER_PROGRAM_ID = new PublicKey("ADPTCXAFfJFVqcw73B4PWRZQ
 
 export const NFT_FINANCE_ADAPTER_PROGRAM_ID = new PublicKey("ADPTyBr92sBCE1hdYBRvXbMpF4hKs17xyDjFPxopcsrh");
 
+export const JUPITER_ADAPTER_PROGRAM_ID = new PublicKey("ADPT8iF4A7BSUWQ8AsVwmcod2suFzA4bpYpJj7kUWK3E");
+
+export const SERUM_PROGRAM_ID = new PublicKey("9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin");
+
+export const JUPITER_PROGRAM_ID = new PublicKey("JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB");
+
 export const NATIVE_SOL = new PublicKey("11111111111111111111111111111111");
 
 export const WSOL = new PublicKey("So11111111111111111111111111111111111111112");
