@@ -8,6 +8,17 @@ import { GATEWAY_PROGRAM_ID } from "./ids";
 import { hash } from "@project-serum/anchor/dist/cjs/utils/sha256";
 import { ActionType } from "./types";
 import * as sha256 from "js-sha256";
+import {
+  PublicKey,
+  Transaction,
+  Connection,
+  Keypair,
+  sendAndConfirmTransaction,
+  VersionedTransaction,
+  MessageV0,
+  AddressLookupTableAccount,
+} from "@solana/web3.js";
+import { utils } from "@dappio-wonderland/navigator";
 
 export async function createATAWithoutCheckIx(
   wallet: anchor.web3.PublicKey,
@@ -104,4 +115,56 @@ export function getGatewayAuthority(): anchor.web3.PublicKey {
   // It will be hard-coded in gateway program for better efficiency.
 
   return gatewayAuthority;
+}
+
+export async function signAndSendAll(
+  allTx: Transaction,
+  connection: Connection,
+  wallet: Keypair[],
+  printRaw?: boolean,
+  tableAccount?: PublicKey[]
+): Promise<string> {
+  const walletPublicKey = wallet[0].publicKey;
+  const tx = new Transaction();
+  tx.add(allTx);
+  const recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+  tx.recentBlockhash = recentBlockhash;
+  tx.feePayer = walletPublicKey;
+
+  if (tableAccount) {
+    let tableInfos = await utils.getMultipleAccounts(connection, tableAccount);
+    let tableInfosData = tableInfos
+      .filter((info) => {
+        return info.account;
+      })
+      .map((info) => {
+        return new AddressLookupTableAccount({
+          key: info.pubkey,
+          state: AddressLookupTableAccount.deserialize(info.account!.data),
+        });
+      });
+
+    let message = MessageV0.compile({
+      payerKey: tx.feePayer,
+      recentBlockhash: tx.recentBlockhash,
+      instructions: tx.instructions,
+      addressLookupTableAccounts: tableInfosData,
+    });
+    let versionTx = new VersionedTransaction(message);
+    versionTx.sign(wallet);
+    let versionMessage = versionTx.serialize();
+    if (printRaw) {
+      console.log(Buffer.from(versionMessage).toString("base64"));
+    }
+    //const result = sendAndConfirmTransaction(connection, tx, wallet);
+    const result = await connection.sendRawTransaction(versionMessage);
+    return result;
+  } else {
+    if (printRaw) {
+      console.log(tx.serializeMessage().toString("base64"));
+    }
+
+    const result = await sendAndConfirmTransaction(connection, tx, wallet);
+    return result;
+  }
 }
