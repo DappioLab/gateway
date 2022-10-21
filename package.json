@@ -16,11 +16,12 @@
     "@project-serum/serum": "^0.13.61",
     "@solana/buffer-layout": "^4.0.0",
     "@solana/spl-token-v2": "npm:@solana/spl-token@0.2.0",
+    "@solana/web3.js": "npm:@solana/web3.js@1.64.0",
     "js-sha256": "^0.9.0"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
-    "@types/mocha": "^9.0.0",
+    "@types/mocha": "^10.0.0",
     "encoding": "^0.1.13",
     "mocha": "^9.0.3",
     "ts-mocha": "^10.0.0",
@@ -45,6 +46,7 @@
     "testAdapterNftFinance": "ANCHOR_WALLET=~/.config/solana/gateway.json ts-mocha -p ./tsconfig.json -t 1000000 tests/testAdapterNftFinance.ts",
     "testAdapterFrancium": "ANCHOR_WALLET=~/.config/solana/gateway.json ts-mocha -p ./tsconfig.json -t 1000000 tests/testAdapterFrancium.ts",
     "testAdapterKatana": "ANCHOR_WALLET=~/.config/solana/gateway.json ts-mocha -p ./tsconfig.json -t 1000000 tests/testAdapterKatana.ts",
-    "testAdapterFriktion": "ANCHOR_WALLET=~/.config/solana/gateway.json ts-mocha -p ./tsconfig.json -t 1000000 tests/testAdapterFriktion.ts"
+    "testAdapterFriktion": "ANCHOR_WALLET=~/.config/solana/gateway.json ts-mocha -p ./tsconfig.json -t 1000000 tests/testAdapterFriktion.ts",
+    "testTransactionV2": "ANCHOR_WALLET=~/.config/solana/G9.json ts-mocha -p ./tsconfig.json -t 1000000 tests/testTransactionV2.ts"
   }
 }
