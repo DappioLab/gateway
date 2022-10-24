@@ -94,7 +94,7 @@ export class ProtocolLifinity implements IProtocolPool {
     )[0];
 
     const remainingAccounts = [
-      { pubkey: pool.poolId, isSigner: false, isWritable: false }, // 0
+      { pubkey: pool.poolId, isSigner: false, isWritable: true }, // 0
       { pubkey: authority, isSigner: false, isWritable: false }, // 1
       { pubkey: userKey, isSigner: true, isWritable: false }, // 2
       { pubkey: userTokenAAccountKey, isSigner: false, isWritable: true }, // 3
@@ -171,7 +171,7 @@ export class ProtocolLifinity implements IProtocolPool {
     )[0];
 
     const remainingAccounts = [
-      { pubkey: pool.poolId, isSigner: false, isWritable: false }, // 0
+      { pubkey: pool.poolId, isSigner: false, isWritable: true }, // 0
       { pubkey: authority, isSigner: false, isWritable: false }, // 1
       { pubkey: userKey, isSigner: true, isWritable: false }, // 2
       { pubkey: userLPAccountKey, isSigner: false, isWritable: true }, // 3
