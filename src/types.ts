@@ -414,6 +414,23 @@ export type GatewayParams = TypeDef<
           };
         },
         {
+          name: "payloadQueue2";
+          type: {
+            array: [
+              {
+                array: ["u8", 32];
+              },
+              8
+            ];
+          };
+        },
+        {
+          name: "inputIndexQueue";
+          type: {
+            array: ["u8", 8];
+          };
+        },
+        {
           name: "swapMinOutAmount";
           type: "u64";
         },

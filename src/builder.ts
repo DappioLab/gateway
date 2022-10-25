@@ -1,4 +1,5 @@
 import * as anchor from "@project-serum/anchor";
+import { struct, u8, u64 } from "@project-serum/borsh";
 import {
   IFarmInfo,
   IPoolInfo,
@@ -63,6 +64,8 @@ import { ProtocolKatana } from "./protocols/katana";
 import { ProtocolTulip } from "./protocols/tulip";
 import { ProtocolFriktion } from "./protocols/friktion";
 
+const PAYLOAD_SIZE = 32;
+
 export class GatewayBuilder {
   public params: GatewayParams;
   private _metadata: GatewayMetadata;
@@ -105,6 +108,10 @@ export class GatewayBuilder {
       payloadQueue: [], // ex: [1000, 1200, 400000]
       poolDirection: PoolDirection.Obverse,
       swapMinOutAmount: new anchor.BN(0),
+
+      // WIP: Multiple I/O
+      payloadQueue2: [] as Uint8Array[], // ex: [1000, 1200, 400000]
+      inputIndexQueue: [],
     };
 
     this._metadata = {
@@ -176,6 +183,25 @@ export class GatewayBuilder {
       new anchor.BN(addLiquidityParams.tokenInAmount)
     );
     this._metadata.addLiquidityTokenMint = addLiquidityParams.tokenMint;
+
+    // NOTICE: The layout here needs to be consistent to *InputWrapper structs
+    const inputLayout = struct([
+      u64("tokenInAmount"),
+      u8("poolDirection"),
+      u64("dummy3"),
+    ]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        tokenInAmount: new anchor.BN(addLiquidityParams.tokenInAmount),
+        PoolDirection: this.params.poolDirection,
+        dummy3: new anchor.BN(1000),
+      },
+      payload
+    );
+
+    (this.params.payloadQueue2 as Uint8Array[]).push(payload);
+    this.params.inputIndexQueue.push(0);
 
     let protocol: IProtocolPool;
 
@@ -265,6 +291,23 @@ export class GatewayBuilder {
       new anchor.BN(new anchor.BN(removeLiquidityParams.lpAmount))
     );
 
+    // NOTICE: The layout here needs to be consistent to *InputWrapper structs
+    const inputLayout = struct([u64("lpAmount"), u8("action"), u64("dummy3")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        tokenInAmount: new anchor.BN(removeLiquidityParams.lpAmount),
+        action: removeLiquidityParams.singleToTokenMint
+          ? ActionType.RemoveLiquiditySingle
+          : ActionType.RemoveLiquidity,
+        dummy3: new anchor.BN(1000),
+      },
+      payload
+    );
+
+    (this.params.payloadQueue2 as Uint8Array[]).push(payload);
+    this.params.inputIndexQueue.push(0);
+
     let protocol: IProtocolPool;
 
     switch (removeLiquidityParams.protocol) {
@@ -351,6 +394,21 @@ export class GatewayBuilder {
     this.params.protocolQueue.push(stakeParams.protocol);
     this.params.versionQueue.push(stakeParams.version || 1);
     this.params.payloadQueue.push(new anchor.BN(stakeParams.lpAmount));
+
+    // NOTICE: The layout here needs to be consistent to *InputWrapper structs
+    const inputLayout = struct([u64("lpAmount"), u64("dummy2")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        tokenInAmount: new anchor.BN(stakeParams.lpAmount),
+        action: ActionType.Stake,
+        dummy2: new anchor.BN(1000),
+      },
+      payload
+    );
+
+    (this.params.payloadQueue2 as Uint8Array[]).push(payload);
+    this.params.inputIndexQueue.push(0);
 
     let protocol: IProtocolFarm;
 
@@ -445,6 +503,20 @@ export class GatewayBuilder {
     this.params.versionQueue.push(unstakeParams.version || 1);
     this.params.payloadQueue.push(new anchor.BN(unstakeParams.shareAmount));
 
+    // NOTICE: The layout here needs to be consistent to *InputWrapper structs
+    const inputLayout = struct([u64("shareAmount"), u64("dummy2")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        shareAmount: new anchor.BN(unstakeParams.shareAmount),
+        dummy2: new anchor.BN(1000),
+      },
+      payload
+    );
+
+    (this.params.payloadQueue2 as Uint8Array[]).push(payload);
+    this.params.inputIndexQueue.push(0);
+
     let protocol: IProtocolFarm;
 
     switch (unstakeParams.protocol) {
@@ -536,6 +608,20 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.Harvest);
     this.params.protocolQueue.push(harvestParams.protocol);
     this.params.versionQueue.push(harvestParams.version || 1);
+
+    // NOTICE: The layout here needs to be consistent to *InputWrapper structs
+    const inputLayout = struct([u64("dummy1"), u64("dummy2")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        dummy1: new anchor.BN(500),
+        dummy2: new anchor.BN(1000),
+      },
+      payload
+    );
+
+    (this.params.payloadQueue2 as Uint8Array[]).push(payload);
+    this.params.inputIndexQueue.push(0);
 
     let protocol: IProtocolFarm;
 
