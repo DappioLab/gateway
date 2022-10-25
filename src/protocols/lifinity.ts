@@ -11,10 +11,17 @@ import {
   getGatewayAuthority,
 } from "../utils";
 import { IPoolInfo, lifinity } from "@dappio-wonderland/navigator";
-import { ActionType, GatewayParams, IProtocolPool } from "../types";
+import {
+  ActionType,
+  AddLiquidityParams,
+  GatewayParams,
+  IProtocolPool,
+  RemoveLiquidityParams,
+} from "../types";
 import { LIFINITY_ADAPTER_PROGRAM_ID, NATIVE_SOL, WSOL } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey";
+import { struct, u64, u8 } from "@project-serum/borsh";
 
 export class ProtocolLifinity implements IProtocolPool {
   constructor(
@@ -25,9 +32,14 @@ export class ProtocolLifinity implements IProtocolPool {
   ) {}
 
   async addLiquidity(
+    params: AddLiquidityParams,
     poolInfo: IPoolInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const pool = poolInfo as lifinity.PoolInfo;
     const userTokenAAccountKey = await getAssociatedTokenAddress(
       pool.tokenAMint,
@@ -121,13 +133,19 @@ export class ProtocolLifinity implements IProtocolPool {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txAddLiquidity];
+    // TODO: Replace dummy input payload
+    return { txs: [txAddLiquidity], input: Buffer.alloc(0) };
   }
 
   async removeLiquidity(
+    params: RemoveLiquidityParams,
     poolInfo: IPoolInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const pool = poolInfo as lifinity.PoolInfo;
     const userTokenAAccountKey = await getAssociatedTokenAddress(
       pool.tokenAMint,
@@ -198,6 +216,7 @@ export class ProtocolLifinity implements IProtocolPool {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txRemoveLiquidity];
+    // TODO: Replace dummy input payload
+    return { txs: [txRemoveLiquidity], input: Buffer.alloc(0) };
   }
 }

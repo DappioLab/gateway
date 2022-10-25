@@ -21,6 +21,8 @@ import {
   GatewayParams,
   IProtocolFarm,
   IProtocolMoneyMarket,
+  StakeParams,
+  UnstakeParams,
 } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { FRANCIUM_ADAPTER_PROGRAM_ID } from "../ids";
@@ -193,9 +195,14 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
   }
 
   async stake(
+    params: StakeParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const farm = farmInfo as francium.FarmInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -271,7 +278,8 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
         isWritable: false,
       }, //11
     ];
-    const stakeTx = await this._gatewayProgram.methods
+
+    const txStake = await this._gatewayProgram.methods
       .stake()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -284,13 +292,20 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [stakeTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [txStake], input: Buffer.alloc(0) };
   }
 
   async unstake(
+    params: UnstakeParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const farm = farmInfo as francium.FarmInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -361,7 +376,7 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
         isWritable: false,
       }, //11
     ];
-    const unstakeTx = await this._gatewayProgram.methods
+    const txUnstake = await this._gatewayProgram.methods
       .unstake()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -374,7 +389,9 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [unstakeTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [txUnstake], input: Buffer.alloc(0) };
   }
 
   async collateralize(): Promise<anchor.web3.Transaction[]> {
@@ -385,8 +402,8 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
     return [];
   }
 
-  async harvest(): Promise<anchor.web3.Transaction[]> {
-    return [];
+  async harvest(): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    return { txs: [], input: Buffer.alloc(0) };
   }
 
   private async _initUserRewardIx(

@@ -21,8 +21,11 @@ import {
 import {
   ActionType,
   GatewayParams,
+  HarvestParams,
   IProtocolFarm,
   IProtocolMoneyMarket,
+  StakeParams,
+  UnstakeParams,
 } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { LARIX_ADAPTER_PROGRAM_ID } from "../ids";
@@ -680,10 +683,15 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
   }
 
   async stake(
+    params: StakeParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey,
     farmerId?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const farm = farmInfo as larix.FarmInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -727,7 +735,8 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
         { pubkey: farm.oraclePublickey, isWritable: false, isSigner: false },
       ]),
     ];
-    const stakeTx = await this._gatewayProgram.methods
+
+    const txStake = await this._gatewayProgram.methods
       .stake()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -740,14 +749,21 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [stakeTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [txStake], input: Buffer.alloc(0) };
   }
 
   async unstake(
+    params: UnstakeParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey,
     farmerId?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const farm = farmInfo as larix.FarmInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -794,7 +810,8 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
         { pubkey: farm.oraclePublickey, isWritable: false, isSigner: false },
       ]),
     ];
-    const unstakeTx = await this._gatewayProgram.methods
+
+    const txUnstake = await this._gatewayProgram.methods
       .unstake()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -807,14 +824,21 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [unstakeTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [txUnstake], input: Buffer.alloc(0) };
   }
 
   async harvest(
+    params: HarvestParams,
     farm: IFarmInfo,
     userKey: anchor.web3.PublicKey,
     farmerId?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     let rewardATA = await getAssociatedTokenAddress(larix.LARIX_MINT, userKey);
@@ -882,7 +906,7 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
     }
     preInstructions.push(this._refreshReservesIx(refreshMeta));
 
-    const harvestTx = await this._gatewayProgram.methods
+    const txHarvest = await this._gatewayProgram.methods
       .harvest()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -895,7 +919,9 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [harvestTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [txHarvest], input: Buffer.alloc(0) };
   }
 
   private async _initFarmerIxs(

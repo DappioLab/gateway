@@ -19,18 +19,17 @@ import {
   utils,
 } from "@dappio-wonderland/navigator";
 import {
-  ActionType,
+  AddLiquidityParams,
   GatewayParams,
+  HarvestParams,
   IProtocolFarm,
   IProtocolPool,
   PoolDirection,
+  RemoveLiquidityParams,
+  StakeParams,
+  UnstakeParams,
 } from "../types";
-import {
-  NATIVE_SOL,
-  RAYDIUM_ADAPTER_PROGRAM_ID,
-  SERUM_PROGRAM_ID,
-  WSOL,
-} from "../ids";
+import { RAYDIUM_ADAPTER_PROGRAM_ID, SERUM_PROGRAM_ID, WSOL } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 
 const WSOL_BUFFER_FACTOR = 1.01; // 1%, actual amount might be different since pool balance might change.
@@ -44,9 +43,14 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
   ) {}
 
   async addLiquidity(
+    params: AddLiquidityParams,
     poolInfo: IPoolInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const pool = poolInfo as raydium.PoolInfo;
     const poolWrapper = new raydium.PoolInfoWrapper(pool);
     const userTokenAAccountKey = await getAssociatedTokenAddress(
@@ -81,14 +85,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     );
     preInstructions.push(createUserLpAccountIx);
 
-    // Work-around of getting tokenAInAmount / tokenBInAmount
-    const indexAddLiquidity = this._gatewayParams.actionQueue.indexOf(
-      ActionType.AddLiquidity
-    );
-
-    let amount = BigInt(
-      Number(this._gatewayParams.payloadQueue[indexAddLiquidity])
-    );
+    let amount = BigInt(params.tokenInAmount);
 
     let isWSOL = false;
 
@@ -157,13 +154,19 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txAddLiquidity];
+    // TODO: Replace dummy input payload
+    return { txs: [txAddLiquidity], input: Buffer.alloc(0) };
   }
 
   async removeLiquidity(
+    params: RemoveLiquidityParams,
     poolInfo: IPoolInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const pool = poolInfo as raydium.PoolInfo;
     const userTokenAAccountKey = await getAssociatedTokenAddress(
       pool.tokenAMint,
@@ -298,13 +301,19 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txRemoveLiquidity];
+    // TODO: Replace dummy input payload
+    return { txs: [txRemoveLiquidity], input: Buffer.alloc(0) };
   }
 
   async stake(
+    params: StakeParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const farm = farmInfo as raydium.FarmInfo;
     const farmAuthority = await this._getFarmAuthority(farm);
     const farmWithMints = raydium.farmsWithMints.find(
@@ -394,13 +403,19 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txStake];
+    // TODO: Replace dummy input payload
+    return { txs: [txStake], input: Buffer.alloc(0) };
   }
 
   async unstake(
+    params: UnstakeParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const farm = farmInfo as raydium.FarmInfo;
 
     let preInstructions: anchor.web3.TransactionInstruction[] = [];
@@ -489,13 +504,19 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txUnstake];
+    // TODO: Replace dummy input payload
+    return { txs: [txUnstake], input: Buffer.alloc(0) };
   }
 
   async harvest(
+    params: HarvestParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const farm = farmInfo as raydium.FarmInfo;
 
     let preInstructions: anchor.web3.TransactionInstruction[] = [];
@@ -597,7 +618,8 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txHarvest];
+    // TODO: Replace dummy input payload
+    return { txs: [txHarvest], input: Buffer.alloc(0) };
   }
 
   private async _getFarmAuthority(

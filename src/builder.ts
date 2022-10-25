@@ -1,4 +1,5 @@
 import * as anchor from "@project-serum/anchor";
+import { struct, u8, u64 } from "@project-serum/borsh";
 import {
   IFarmInfo,
   IPoolInfo,
@@ -105,6 +106,10 @@ export class GatewayBuilder {
       payloadQueue: [], // ex: [1000, 1200, 400000]
       poolDirection: PoolDirection.Obverse,
       swapMinOutAmount: new anchor.BN(0),
+
+      // WIP: Multiple I/O
+      payloadQueue2: [] as Uint8Array[], // ex: [1000, 1200, 400000]
+      inputIndexQueue: [],
     };
 
     this._metadata = {
@@ -240,12 +245,22 @@ export class GatewayBuilder {
 
     this._adjustParams();
 
-    const txAddLiquidity = await protocol.addLiquidity(
+    // NOTICE:
+    // Ideally gateway params should be the only one single source of truth
+    // However input params are necessary in some circustances. Ex: WSOL, input payload, etc
+    // Need to pass params as argument
+    const { txs, input } = await protocol.addLiquidity(
+      addLiquidityParams,
       this._metadata.pool,
       this._provider.wallet.publicKey
     );
 
-    this._transactions = [...this._transactions, ...txAddLiquidity];
+    // Push input payload
+    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    // TODO: Extract the logic of index dispatch to a config file
+    this.params.inputIndexQueue.push(0);
+
+    this._transactions = [...this._transactions, ...txs];
 
     return this;
   }
@@ -334,13 +349,23 @@ export class GatewayBuilder {
 
     this._adjustParams();
 
-    const txRemoveLiquidity = await protocol.removeLiquidity(
+    // NOTICE:
+    // Ideally gateway params should be the only one single source of truth
+    // However input params are necessary in some circustances. Ex: WSOL, input payload, etc
+    // Need to pass params as argument
+    const { txs, input } = await protocol.removeLiquidity(
+      removeLiquidityParams,
       this._metadata.pool,
       this._provider.wallet.publicKey,
       this._metadata.removeLiquiditySingleToTokenMint
     );
 
-    this._transactions = [...this._transactions, ...txRemoveLiquidity];
+    // Push input payload
+    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    // TODO: Extract the logic of index dispatch to a config file
+    this.params.inputIndexQueue.push(0);
+
+    this._transactions = [...this._transactions, ...txs];
 
     return this;
   }
@@ -427,13 +452,23 @@ export class GatewayBuilder {
 
     this._adjustParams();
 
-    const txStake = await protocol.stake(
+    // NOTICE:
+    // Ideally gateway params should be the only one single source of truth
+    // However input params are necessary in some circustances. Ex: WSOL, input payload, etc
+    // Need to pass params as argument
+    const { txs, input } = await protocol.stake(
+      stakeParams,
       this._metadata.farm,
       this._provider.wallet.publicKey,
-      stakeParams.farmerKey
+      stakeParams.farmerKey // TODO: Remove duplication
     );
 
-    this._transactions = [...this._transactions, ...txStake];
+    // Push input payload
+    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    // TODO: Extract the logic of index dispatch to a config file
+    this.params.inputIndexQueue.push(0);
+
+    this._transactions = [...this._transactions, ...txs];
 
     return this;
   }
@@ -520,13 +555,23 @@ export class GatewayBuilder {
 
     this._adjustParams();
 
-    const txUnstake = await protocol.unstake(
+    // NOTICE:
+    // Ideally gateway params should be the only one single source of truth
+    // However input params are necessary in some circustances. Ex: WSOL, input payload, etc
+    // Need to pass params as argument
+    const { txs, input } = await protocol.unstake(
+      unstakeParams,
       this._metadata.farm,
       this._provider.wallet.publicKey,
       unstakeParams.farmerKey
     );
 
-    this._transactions = [...this._transactions, ...txUnstake];
+    // Push input payload
+    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    // TODO: Extract the logic of index dispatch to a config file
+    this.params.inputIndexQueue.push(0);
+
+    this._transactions = [...this._transactions, ...txs];
 
     return this;
   }
@@ -598,13 +643,23 @@ export class GatewayBuilder {
 
     this._adjustParams();
 
-    const txHarvest = await protocol.harvest(
+    // NOTICE:
+    // Ideally gateway params should be the only one single source of truth
+    // However input params are necessary in some circustances. Ex: WSOL, input payload, etc
+    // Need to pass params as argument
+    const { txs, input } = await protocol.harvest(
+      harvestParams,
       this._metadata.farm,
       this._provider.wallet.publicKey,
       harvestParams.farmerKey
     );
 
-    this._transactions = [...this._transactions, ...txHarvest];
+    // Push input payload
+    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    // TODO: Extract the logic of index dispatch to a config file
+    this.params.inputIndexQueue.push(0);
+
+    this._transactions = [...this._transactions, ...txs];
 
     return this;
   }

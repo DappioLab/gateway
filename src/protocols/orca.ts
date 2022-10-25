@@ -16,10 +16,15 @@ import {
 } from "@dappio-wonderland/navigator";
 import {
   ActionType,
+  AddLiquidityParams,
   GatewayParams,
+  HarvestParams,
   IProtocolFarm,
   IProtocolPool,
   PoolDirection,
+  RemoveLiquidityParams,
+  StakeParams,
+  UnstakeParams,
 } from "../types";
 import { ORCA_ADAPTER_PROGRAM_ID } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
@@ -33,9 +38,14 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
   ) {}
 
   async addLiquidity(
+    params: AddLiquidityParams,
     poolInfo: IPoolInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle input payload here
+    // TODO
+
+    // Handle transaction here
     const pool = poolInfo as orca.PoolInfo;
     const poolInfoWrapper = (await orca.infos.getPoolWrapper(
       this._connection,
@@ -109,7 +119,8 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
         createCloseAccountInstruction(bTokenATA, userKey, userKey)
       );
     }
-    let addLiquidity = await this._gatewayProgram.methods
+
+    const txAddLiquidity = await this._gatewayProgram.methods
       .addLiquidity()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -122,14 +133,21 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       .postInstructions(closeAccount)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [addLiquidity];
+
+    // TODO: Replace dummy input payload
+    return { txs: [txAddLiquidity], input: Buffer.alloc(0) };
   }
 
   async removeLiquidity(
+    params: RemoveLiquidityParams,
     poolInfo: IPoolInfo,
     userKey: anchor.web3.PublicKey,
     singleToTokenMint?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const pool = poolInfo as orca.PoolInfo;
     const poolInfoWrapper = (await orca.infos.getPoolWrapper(
       this._connection,
@@ -194,7 +212,8 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
         createCloseAccountInstruction(bTokenATA, userKey, userKey)
       );
     }
-    let removeLiquidity = await this._gatewayProgram.methods
+
+    const txRemoveLiquidity = await this._gatewayProgram.methods
       .removeLiquidity()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -207,13 +226,20 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       .postInstructions(closeAccount)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [removeLiquidity];
+
+    // TODO: Replace dummy input payload
+    return { txs: [txRemoveLiquidity], input: Buffer.alloc(0) };
   }
 
   async stake(
+    params: StakeParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const farm = farmInfo as orca.FarmInfo;
     const farmInfoWrapper = (await orca.infos.getFarmWrapper(
       this._connection,
@@ -260,7 +286,8 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       },
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
     ];
-    let stake = await this._gatewayProgram.methods
+
+    const txStake = await this._gatewayProgram.methods
       .stake()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -272,13 +299,16 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .preInstructions(createATAs)
       .transaction();
-    return [stake];
+
+    // TODO: Replace dummy input payload
+    return { txs: [txStake], input: Buffer.alloc(0) };
   }
 
   async unstake(
+    params: UnstakeParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     const farm = farmInfo as orca.FarmInfo;
     const farmInfoWrapper = (await orca.infos.getFarmWrapper(
       this._connection,
@@ -321,7 +351,8 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       },
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
     ];
-    let unstake = await this._gatewayProgram.methods
+
+    const txUnstake = await this._gatewayProgram.methods
       .unstake()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -333,13 +364,20 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .preInstructions(createATAs)
       .transaction();
-    return [unstake];
+
+    // TODO: Replace dummy input payload
+    return { txs: [txUnstake], input: Buffer.alloc(0) };
   }
 
   async harvest(
+    params: HarvestParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const farm = farmInfo as orca.FarmInfo;
     const farmInfoWrapper = (await orca.infos.getFarmWrapper(
       this._connection,
@@ -378,7 +416,8 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       },
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
     ];
-    let harvest = await this._gatewayProgram.methods
+
+    const txHarvest = await this._gatewayProgram.methods
       .harvest()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -390,7 +429,9 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .preInstructions(createATAs)
       .transaction();
-    return [harvest];
+
+    // TODO: Replace dummy input payload
+    return { txs: [txHarvest], input: Buffer.alloc(0) };
   }
 
   private async initFarmerIx(

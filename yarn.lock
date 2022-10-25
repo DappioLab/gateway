@@ -21,10 +21,10 @@
     tiny-invariant "^1.1.0"
     toformat "^2.0.0"
 
-"@dappio-wonderland/gateway-idls@^0.2.4":
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/@dappio-wonderland/gateway-idls/-/gateway-idls-0.2.4.tgz#ecc352d5288c3a31388eaf15059372902905ef22"
-  integrity sha512-IqUkXU8pWo3ew5wzA+X2u1TA65SaY+/HnVI+1wsU14fd5S5cIE3MtVS5VaiipLyC9m6TewNg3zc+ff+kzTSn1g==
+"@dappio-wonderland/gateway-idls@^0.2.5":
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/@dappio-wonderland/gateway-idls/-/gateway-idls-0.2.5.tgz#5235cc51411477e4351bd5adca38fcaa73594c6f"
+  integrity sha512-mMGP4E+7ZkTCVdcwjf/H/hRywezNK70S0RTgpdprh5Zffntc2un1WwJng/g/cGv6EStB8yElrPptDRker69+ow==
 
 "@dappio-wonderland/navigator@^0.2.11":
   version "0.2.11"

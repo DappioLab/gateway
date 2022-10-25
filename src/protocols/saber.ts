@@ -7,7 +7,7 @@ import {
   createSyncNativeInstruction,
   getAssociatedTokenAddress,
 } from "@solana/spl-token-v2";
-import { struct, u64 } from "@project-serum/borsh";
+import { struct, u64, u8 } from "@project-serum/borsh";
 import {
   createATAWithoutCheckIx,
   getActivityIndex,
@@ -21,10 +21,16 @@ import {
 } from "@dappio-wonderland/navigator";
 import {
   ActionType,
+  AddLiquidityParams,
   GatewayParams,
+  HarvestParams,
   IProtocolFarm,
   IProtocolPool,
+  PAYLOAD_SIZE,
   PoolDirection,
+  RemoveLiquidityParams,
+  StakeParams,
+  UnstakeParams,
 } from "../types";
 import { SABER_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
@@ -38,9 +44,31 @@ export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
   ) {}
 
   async addLiquidity(
+    params: AddLiquidityParams,
     poolInfo: IPoolInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle Input Payload Here
+    // NOTICE: The layout here needs to be consistent to *InputWrapper structs
+    const inputLayout = struct([
+      u64("tokenInAmount"),
+      u8("poolDirection"),
+      u64("dummy3"),
+    ]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        tokenInAmount: new anchor.BN(params.tokenInAmount),
+        dummy3: new anchor.BN(1000),
+
+        // From Metadatra
+        PoolDirection: this._gatewayParams.poolDirection,
+      },
+      payload
+    );
+
+    // Handle transaction body here
     const pool = poolInfo as saber.PoolInfo;
 
     const userTokenAAccountKey = await getAssociatedTokenAddress(
@@ -75,12 +103,7 @@ export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
     );
     preInstructions.push(createUserLpAccountIx);
 
-    // Work-around of getting tokenAInAmount / tokenBInAmount
-    const indexAddLiquidity = this._gatewayParams.actionQueue.indexOf(
-      ActionType.AddLiquidity
-    );
-
-    const amount = this._gatewayParams.payloadQueue[indexAddLiquidity];
+    const amount = new anchor.BN(params.tokenInAmount);
 
     // transfer and sync WSOL
     if (
@@ -177,14 +200,31 @@ export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txAddLiquidity];
+    return { txs: [txAddLiquidity], input: payload };
   }
 
   async removeLiquidity(
+    params: RemoveLiquidityParams,
     poolInfo: IPoolInfo,
     userKey: anchor.web3.PublicKey,
     removeLiquiditySingleToTokenMint: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle input payload here
+    // NOTICE: The layout here needs to be consistent to *InputWrapper structs
+    const inputLayout = struct([u64("lpAmount"), u8("action"), u64("dummy3")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        tokenInAmount: new anchor.BN(params.lpAmount),
+        action: params.singleToTokenMint
+          ? ActionType.RemoveLiquiditySingle
+          : ActionType.RemoveLiquidity,
+        dummy3: new anchor.BN(1000),
+      },
+      payload
+    );
+
+    // Handle transaction here
     const pool = poolInfo as saber.PoolInfo;
     let accountKeys: anchor.web3.PublicKey[] = [];
     const userTokenAAccountKey = await getAssociatedTokenAddress(
@@ -376,13 +416,28 @@ export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txRemoveLiquidity];
+    return { txs: [txRemoveLiquidity], input: payload };
   }
 
   async stake(
+    params: StakeParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload here
+    // NOTICE: The layout here needs to be consistent to *InputWrapper structs
+    const inputLayout = struct([u64("lpAmount"), u64("dummy2")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        tokenInAmount: new anchor.BN(params.lpAmount),
+        action: ActionType.Stake,
+        dummy2: new anchor.BN(1000),
+      },
+      payload
+    );
+
+    // Handle transaction here
     const farm = farmInfo as saber.FarmInfo;
 
     let preInstructions: anchor.web3.TransactionInstruction[] = [];
@@ -436,13 +491,29 @@ export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txStake];
+    return { txs: [txStake], input: payload };
   }
 
   async unstake(
+    params: UnstakeParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle input payload here
+    // NOTICE: The layout here needs to be consistent to *InputWrapper structs
+    // TODO: Move the encoding logic to each protocol implementation
+
+    const inputLayout = struct([u64("shareAmount"), u64("dummy2")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        shareAmount: new anchor.BN(params.shareAmount),
+        dummy2: new anchor.BN(1000),
+      },
+      payload
+    );
+
+    // Handle transaction here
     const farm = farmInfo as saber.FarmInfo;
 
     let preInstructions: anchor.web3.TransactionInstruction[] = [];
@@ -490,13 +561,26 @@ export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txUnstake];
+    return { txs: [txUnstake], input: payload };
   }
 
   async harvest(
+    params: HarvestParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle input payload here
+    // NOTICE: The layout here needs to be consistent to *InputWrapper structs
+    const inputLayout = struct([u64("dummy1"), u64("dummy2")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        dummy1: new anchor.BN(500),
+        dummy2: new anchor.BN(1000),
+      },
+      payload
+    );
+
     const farm = farmInfo as saber.FarmInfo;
 
     let preInstructions: anchor.web3.TransactionInstruction[] = [];
@@ -569,7 +653,7 @@ export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txHarvest];
+    return { txs: [txHarvest], input: payload };
   }
 
   private async _getCreateMinerInstruction(

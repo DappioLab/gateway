@@ -10,6 +10,8 @@ import {
 } from "@dappio-wonderland/navigator";
 import { RouteInfo, TransactionFeeInfo } from "@jup-ag/core";
 
+export const PAYLOAD_SIZE = 32;
+
 export interface IProtocolSwap {
   swap: () => void;
   getSwapMinOutAmount: () => void;
@@ -17,14 +19,16 @@ export interface IProtocolSwap {
 
 export interface IProtocolPool {
   addLiquidity: (
+    params: AddLiquidityParams,
     pool: IPoolInfo,
     userKey: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   removeLiquidity: (
+    params: RemoveLiquidityParams,
     pool: IPoolInfo,
     userKey: anchor.web3.PublicKey,
     singleToTokenMint?: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
 }
 
 export interface IProtocolNFTPool {
@@ -42,20 +46,23 @@ export interface IProtocolNFTPool {
 
 export interface IProtocolFarm {
   stake: (
+    params: StakeParams,
     farm: IFarmInfo,
     userKey: anchor.web3.PublicKey,
     farmerKey?: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   unstake: (
+    params: UnstakeParams,
     farm: IFarmInfo,
     userKey: anchor.web3.PublicKey,
     farmerKey?: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   harvest: (
+    params: HarvestParams,
     farm: IFarmInfo,
     userKey: anchor.web3.PublicKey,
     farmerKey?: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
 }
 
 export interface IProtocolNFTFarm {
@@ -411,6 +418,23 @@ export type GatewayParams = TypeDef<
           name: "payloadQueue";
           type: {
             array: ["u64", 8];
+          };
+        },
+        {
+          name: "payloadQueue2";
+          type: {
+            array: [
+              {
+                array: ["u8", 32];
+              },
+              8
+            ];
+          };
+        },
+        {
+          name: "inputIndexQueue";
+          type: {
+            array: ["u8", 8];
           };
         },
         {
