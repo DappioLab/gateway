@@ -32,7 +32,7 @@
   },
   "scripts": {
     "build": "rm -rf dist && tsc",
-    "typedocGen": "typedoc ts/index.ts --out ts/doc",
+    "typedocGen": "typedoc src/index.ts --out src/doc",
     "typedocServe": "node typedocServe.js",
     "testJupiter": "ANCHOR_WALLET=~/.config/solana/gateway.json ts-mocha -p ./tsconfig.json -t 1000000 tests/testJupiter.ts",
     "testAdapterRaydium": "ANCHOR_WALLET=~/.config/solana/gateway.json ts-mocha -p ./tsconfig.json -t 1000000 tests/testAdapterRaydium.ts",

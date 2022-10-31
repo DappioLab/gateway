@@ -12,7 +12,7 @@ const server = http.createServer((req, res) => {
     var fileUrl;
     if (req.url == "/") fileUrl = "/index.html";
     else fileUrl = req.url;
-    var filePath = path.resolve("./ts/doc" + fileUrl);
+    var filePath = path.resolve("./src/doc" + fileUrl);
 
     res.statusCode = 200;
     fs.createReadStream(filePath).pipe(res);
