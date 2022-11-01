@@ -103,13 +103,12 @@ export class GatewayBuilder {
       actionQueue: [], // ex: [Swap, AddLiquidity, Deposit]
       // CAUTION: It is very risky to accept versions passed in since the called might forget to change
       versionQueue: [], // ex: [0, 3, 2].
-      payloadQueue: [], // ex: [1000, 1200, 400000]
+      payloadQueue: [] as Uint8Array[], // ex: [1000, 1200, 400000]
+      inputIndexQueue: [],
+
+      // Extra Metadata
       poolDirection: PoolDirection.Obverse,
       swapMinOutAmount: new anchor.BN(0),
-
-      // WIP: Multiple I/O
-      payloadQueue2: [] as Uint8Array[], // ex: [1000, 1200, 400000]
-      inputIndexQueue: [],
     };
 
     this._metadata = {
@@ -177,9 +176,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.AddLiquidity);
     this.params.protocolQueue.push(addLiquidityParams.protocol);
     this.params.versionQueue.push(addLiquidityParams.version || 1);
-    this.params.payloadQueue.push(
-      new anchor.BN(addLiquidityParams.tokenInAmount)
-    );
     this._metadata.addLiquidityTokenMint = addLiquidityParams.tokenMint;
 
     let protocol: IProtocolPool;
@@ -256,7 +252,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -276,9 +272,6 @@ export class GatewayBuilder {
     );
     this.params.protocolQueue.push(removeLiquidityParams.protocol);
     this.params.versionQueue.push(removeLiquidityParams.version || 1);
-    this.params.payloadQueue.push(
-      new anchor.BN(new anchor.BN(removeLiquidityParams.lpAmount))
-    );
 
     let protocol: IProtocolPool;
 
@@ -361,7 +354,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -375,7 +368,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.Stake);
     this.params.protocolQueue.push(stakeParams.protocol);
     this.params.versionQueue.push(stakeParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(stakeParams.lpAmount));
 
     let protocol: IProtocolFarm;
 
@@ -464,7 +456,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -478,7 +470,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.Unstake);
     this.params.protocolQueue.push(unstakeParams.protocol);
     this.params.versionQueue.push(unstakeParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(unstakeParams.shareAmount));
 
     let protocol: IProtocolFarm;
 
@@ -567,7 +558,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -655,7 +646,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -669,7 +660,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.Supply);
     this.params.protocolQueue.push(supplyParams.protocol);
     this.params.versionQueue.push(supplyParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(supplyParams.supplyAmount));
 
     let protocol: IProtocolMoneyMarket;
 
@@ -747,7 +737,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -763,9 +753,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.Collateralize);
     this.params.protocolQueue.push(collateralizeParams.protocol);
     this.params.versionQueue.push(collateralizeParams.version || 1);
-    this.params.payloadQueue.push(
-      new anchor.BN(collateralizeParams.collateralizeAmount)
-    );
 
     let protocol: IProtocolMoneyMarket;
 
@@ -816,7 +803,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -830,7 +817,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.Unsupply);
     this.params.protocolQueue.push(unsupplyParams.protocol);
     this.params.versionQueue.push(unsupplyParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(unsupplyParams.reservedAmount));
 
     let protocol: IProtocolMoneyMarket;
 
@@ -909,7 +895,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -925,9 +911,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.Uncollateralize);
     this.params.protocolQueue.push(uncollateralizeParams.protocol);
     this.params.versionQueue.push(uncollateralizeParams.version || 1);
-    this.params.payloadQueue.push(
-      new anchor.BN(uncollateralizeParams.uncollateralizeAmount)
-    );
 
     let protocol: IProtocolMoneyMarket;
 
@@ -978,7 +961,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -992,7 +975,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.Borrow);
     this.params.protocolQueue.push(borrowParams.protocol);
     this.params.versionQueue.push(borrowParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(borrowParams.borrowAmount));
 
     let protocol: IProtocolMoneyMarket;
 
@@ -1042,7 +1024,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -1056,7 +1038,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.Repay);
     this.params.protocolQueue.push(repayParams.protocol);
     this.params.versionQueue.push(repayParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(repayParams.repayAmount));
 
     let protocol: IProtocolMoneyMarket;
 
@@ -1106,7 +1087,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -1161,7 +1142,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -1175,7 +1156,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.Deposit);
     this.params.protocolQueue.push(depositParams.protocol);
     this.params.versionQueue.push(depositParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(depositParams.depositAmount));
 
     let protocol: IProtocolVault;
 
@@ -1238,7 +1218,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -1250,7 +1230,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.InitiateDeposit);
     this.params.protocolQueue.push(depositParams.protocol);
     this.params.versionQueue.push(depositParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(depositParams.depositAmount));
 
     let protocol: IProtocolVault;
 
@@ -1285,7 +1264,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -1299,7 +1278,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.Withdraw);
     this.params.protocolQueue.push(withdrawParams.protocol);
     this.params.versionQueue.push(withdrawParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(withdrawParams.withdrawAmount));
 
     let protocol: IProtocolVault;
 
@@ -1336,7 +1314,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -1351,7 +1329,6 @@ export class GatewayBuilder {
 
     this.params.protocolQueue.push(withdrawParams.protocol);
     this.params.versionQueue.push(withdrawParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(withdrawParams.withdrawAmount));
 
     let protocol: IProtocolVault;
 
@@ -1385,7 +1362,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -1400,7 +1377,6 @@ export class GatewayBuilder {
 
     this.params.protocolQueue.push(withdrawParams.protocol);
     this.params.versionQueue.push(withdrawParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(withdrawParams.withdrawAmount));
 
     let protocol: IProtocolVault;
 
@@ -1434,7 +1410,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -1447,7 +1423,6 @@ export class GatewayBuilder {
 
     this.params.protocolQueue.push(withdrawParams.protocol);
     this.params.versionQueue.push(withdrawParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(withdrawParams.withdrawAmount));
 
     let protocol: IProtocolVault;
 
@@ -1481,7 +1456,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -1496,7 +1471,6 @@ export class GatewayBuilder {
 
     this.params.protocolQueue.push(withdrawParams.protocol);
     this.params.versionQueue.push(withdrawParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(withdrawParams.withdrawAmount));
 
     let protocol: IProtocolVault;
 
@@ -1530,7 +1504,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -1545,7 +1519,6 @@ export class GatewayBuilder {
 
     this.params.protocolQueue.push(withdrawParams.protocol);
     this.params.versionQueue.push(withdrawParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(withdrawParams.withdrawAmount));
 
     let protocol: IProtocolVault;
 
@@ -1579,7 +1552,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -1593,7 +1566,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.LockNft);
     this.params.protocolQueue.push(lockNFTParams.protocol);
     this.params.versionQueue.push(lockNFTParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(1));
 
     let protocol: IProtocolNFTPool;
 
@@ -1630,7 +1602,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -1644,7 +1616,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.UnlockNft);
     this.params.protocolQueue.push(unlockNFTParams.protocol);
     this.params.versionQueue.push(unlockNFTParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(1));
 
     let protocol: IProtocolNFTPool;
 
@@ -1681,7 +1652,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -1697,9 +1668,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.StakeProof);
     this.params.protocolQueue.push(stakeProofParams.protocol);
     this.params.versionQueue.push(stakeProofParams.version || 1);
-    this.params.payloadQueue.push(
-      new anchor.BN(stakeProofParams.proveTokenAmount)
-    );
 
     let protocol: IProtocolNFTFarm;
 
@@ -1735,7 +1703,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -1751,9 +1719,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.UnstakeProof);
     this.params.protocolQueue.push(unstakeProofParams.protocol);
     this.params.versionQueue.push(unstakeProofParams.version || 1);
-    this.params.payloadQueue.push(
-      new anchor.BN(unstakeProofParams.farmTokenAmount)
-    );
 
     let protocol: IProtocolNFTFarm;
 
@@ -1789,7 +1754,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
@@ -1803,7 +1768,6 @@ export class GatewayBuilder {
     this.params.actionQueue.push(ActionType.Claim);
     this.params.protocolQueue.push(claimParams.protocol);
     this.params.versionQueue.push(claimParams.version || 1);
-    this.params.payloadQueue.push(new anchor.BN(claimParams.rewardTokenAmount));
 
     let protocol: IProtocolNFTFarm;
 
@@ -1839,7 +1803,7 @@ export class GatewayBuilder {
     );
 
     // Push input payload
-    (this.params.payloadQueue2 as Uint8Array[]).push(input);
+    (this.params.payloadQueue as Uint8Array[]).push(input);
     // TODO: Extract the logic of index dispatch to a config file
     this.params.inputIndexQueue.push(0);
 
