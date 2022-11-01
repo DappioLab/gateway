@@ -11,11 +11,14 @@ import {
 import { katana, utils } from "@dappio-wonderland/navigator";
 
 describe("Gateway", () => {
-  const connection = new Connection("https://rpc-mainnet-fork.epochs.studio", {
-    commitment: "confirmed",
-    confirmTransactionInitialTimeout: 180 * 1000,
-    wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
-  });
+  const connection = new Connection(
+    "https://rpc-mainnet-fork.epochs.studio/notcache",
+    {
+      commitment: "confirmed",
+      confirmTransactionInitialTimeout: 180 * 1000,
+      wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
+    }
+  );
   const options = anchor.AnchorProvider.defaultOptions();
   const wallet = NodeWallet.local();
   const provider = new anchor.AnchorProvider(connection, wallet, options);
@@ -34,7 +37,7 @@ describe("Gateway", () => {
           vaultId: vault.vaultId,
           depositAmount: depositAmount,
         };
-        await gateway.deposit(depositParams);
+        await gateway.initiateDeposit(depositParams);
       }
     }
     await gateway.finalize();
@@ -52,7 +55,7 @@ describe("Gateway", () => {
         tx,
         connection,
         [wallet.payer],
-        false
+        true
       );
       console.log(sig2, "\n");
     }
@@ -126,7 +129,7 @@ describe("Gateway", () => {
         tx,
         connection,
         [wallet.payer],
-        false
+        true
       );
       console.log(sig2, "\n");
     }
@@ -163,7 +166,7 @@ describe("Gateway", () => {
         tx,
         connection,
         [wallet.payer],
-        false
+        true
       );
       console.log(sig2, "\n");
     }

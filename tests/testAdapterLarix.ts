@@ -37,11 +37,14 @@ describe("Gateway", () => {
   //   commitment: "confirmed",
   //   confirmTransactionInitialTimeout: 180 * 1000,
   // });
-  const connection = new Connection("https://rpc-mainnet-fork.epochs.studio", {
-    commitment: "confirmed",
-    confirmTransactionInitialTimeout: 180 * 1000,
-    wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
-  });
+  const connection = new Connection(
+    "https://rpc-mainnet-fork.epochs.studio/notcache",
+    {
+      commitment: "confirmed",
+      confirmTransactionInitialTimeout: 180 * 1000,
+      wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
+    }
+  );
   const options = anchor.AnchorProvider.defaultOptions();
   const wallet = NodeWallet.local();
   const provider = new anchor.AnchorProvider(connection, wallet, options);
@@ -52,9 +55,13 @@ describe("Gateway", () => {
 
   it("claim", async () => {
     const gateway = new GatewayBuilder(provider);
+    let obligationKey = await larix.infos.getObligationId!(
+      larix.LARIX_MARKET_ID_MAIN_POOL,
+      wallet.publicKey
+    );
     const obligationInfo = await larix.infos.getObligation!(
       connection,
-      wallet.publicKey
+      obligationKey
     );
     let claimParam: ClaimCollateralRewardParams = {
       protocol: SupportedProtocols.Larix,
