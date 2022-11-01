@@ -16,13 +16,13 @@ import {
   AddLiquidityParams,
   GatewayParams,
   IProtocolPool,
+  PAYLOAD_SIZE,
   RemoveLiquidityParams,
 } from "../types";
 import { LIFINITY_ADAPTER_PROGRAM_ID, NATIVE_SOL, WSOL } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey";
 import { struct, u64, u8 } from "@project-serum/borsh";
-
 export class ProtocolLifinity implements IProtocolPool {
   constructor(
     private _connection: anchor.web3.Connection,
@@ -37,8 +37,18 @@ export class ProtocolLifinity implements IProtocolPool {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    // TODO
 
+    const inputLayout = struct([u64("tokenInAmount"), u8("poolDirection")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        tokenInAmount: new anchor.BN(params.tokenInAmount),
+        // From Metadata
+        PoolDirection: this._gatewayParams.poolDirection,
+      },
+      payload
+    );
     // Handle transaction here
     const pool = poolInfo as lifinity.PoolInfo;
     const userTokenAAccountKey = await getAssociatedTokenAddress(
@@ -60,7 +70,7 @@ export class ProtocolLifinity implements IProtocolPool {
     const indexSupply = this._gatewayParams.actionQueue.indexOf(
       ActionType.AddLiquidity
     );
-    const addLiquidityAmount = this._gatewayParams.payloadQueue[indexSupply];
+    const addLiquidityAmount = params.tokenInAmount;
 
     preInstructions.push(
       await createATAWithoutCheckIx(userKey, pool.tokenAMint)
@@ -133,8 +143,7 @@ export class ProtocolLifinity implements IProtocolPool {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
-    return { txs: [txAddLiquidity], input: Buffer.alloc(0) };
+    return { txs: [txAddLiquidity], input: payload };
   }
 
   async removeLiquidity(
@@ -143,8 +152,18 @@ export class ProtocolLifinity implements IProtocolPool {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    // TODO
 
+    const inputLayout = struct([u64("lpAmount"), u8("poolDirection")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        lpAmount: new anchor.BN(params.lpAmount),
+        // From Metadata
+        poolDirection: this._gatewayParams.poolDirection,
+      },
+      payload
+    );
     // Handle transaction here
     const pool = poolInfo as lifinity.PoolInfo;
     const userTokenAAccountKey = await getAssociatedTokenAddress(
@@ -216,7 +235,6 @@ export class ProtocolLifinity implements IProtocolPool {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
-    return { txs: [txRemoveLiquidity], input: Buffer.alloc(0) };
+    return { txs: [txRemoveLiquidity], input: payload };
   }
 }

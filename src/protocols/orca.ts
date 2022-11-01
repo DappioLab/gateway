@@ -21,6 +21,7 @@ import {
   HarvestParams,
   IProtocolFarm,
   IProtocolPool,
+  PAYLOAD_SIZE,
   PoolDirection,
   RemoveLiquidityParams,
   StakeParams,
@@ -28,6 +29,8 @@ import {
 } from "../types";
 import { ORCA_ADAPTER_PROGRAM_ID } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
+
+import { struct, u64, u8 } from "@project-serum/borsh";
 
 export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
   constructor(
@@ -43,8 +46,16 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle input payload here
-    // TODO
 
+    const inputLayout = struct([u64("tokenInAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        tokenInAmount: new anchor.BN(params.tokenInAmount),
+      },
+      payload
+    );
     // Handle transaction here
     const pool = poolInfo as orca.PoolInfo;
     const poolInfoWrapper = (await orca.infos.getPoolWrapper(
@@ -94,9 +105,7 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
         anchor.web3.SystemProgram.transfer({
           fromPubkey: userKey,
           toPubkey: aTokenATA,
-          lamports: new anchor.BN(
-            this._gatewayParams.payloadQueue[indexSupply]
-          ).toNumber(),
+          lamports: new anchor.BN(params.tokenInAmount).toNumber(),
         })
       );
       createATAs.push(createSyncNativeInstruction(aTokenATA));
@@ -109,9 +118,7 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
         anchor.web3.SystemProgram.transfer({
           fromPubkey: userKey,
           toPubkey: bTokenATA,
-          lamports: new anchor.BN(
-            this._gatewayParams.payloadQueue[indexSupply]
-          ).toNumber(),
+          lamports: new anchor.BN(params.tokenInAmount).toNumber(),
         })
       );
       createATAs.push(createSyncNativeInstruction(bTokenATA));
@@ -134,8 +141,7 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
-    return { txs: [txAddLiquidity], input: Buffer.alloc(0) };
+    return { txs: [txAddLiquidity], input: payload };
   }
 
   async removeLiquidity(
@@ -145,8 +151,19 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
     singleToTokenMint?: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    // TODO
 
+    const inputLayout = struct([u64("lpAmount"), u8("action")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        lpAmount: new anchor.BN(params.lpAmount),
+        action: params.singleToTokenMint
+          ? ActionType.RemoveLiquiditySingle
+          : ActionType.RemoveLiquidity,
+      },
+      payload
+    );
     // Handle transaction here
     const pool = poolInfo as orca.PoolInfo;
     const poolInfoWrapper = (await orca.infos.getPoolWrapper(
@@ -227,8 +244,7 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
-    return { txs: [txRemoveLiquidity], input: Buffer.alloc(0) };
+    return { txs: [txRemoveLiquidity], input: payload };
   }
 
   async stake(
@@ -237,8 +253,16 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    // TODO
 
+    const inputLayout = struct([u64("lpAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        lpAmount: new anchor.BN(params.lpAmount),
+      },
+      payload
+    );
     // Handle transaction here
     const farm = farmInfo as orca.FarmInfo;
     const farmInfoWrapper = (await orca.infos.getFarmWrapper(
@@ -300,8 +324,7 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       .preInstructions(createATAs)
       .transaction();
 
-    // TODO: Replace dummy input payload
-    return { txs: [txStake], input: Buffer.alloc(0) };
+    return { txs: [txStake], input: payload };
   }
 
   async unstake(
@@ -309,6 +332,15 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    const inputLayout = struct([u64("shareAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        shareAmount: new anchor.BN(params.shareAmount),
+      },
+      payload
+    );
     const farm = farmInfo as orca.FarmInfo;
     const farmInfoWrapper = (await orca.infos.getFarmWrapper(
       this._connection,
@@ -365,8 +397,7 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       .preInstructions(createATAs)
       .transaction();
 
-    // TODO: Replace dummy input payload
-    return { txs: [txUnstake], input: Buffer.alloc(0) };
+    return { txs: [txUnstake], input: payload };
   }
 
   async harvest(
@@ -375,8 +406,10 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    // TODO
+    const inputLayout = struct();
 
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode({}, payload);
     // Handle transaction here
     const farm = farmInfo as orca.FarmInfo;
     const farmInfoWrapper = (await orca.infos.getFarmWrapper(
@@ -430,8 +463,7 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       .preInstructions(createATAs)
       .transaction();
 
-    // TODO: Replace dummy input payload
-    return { txs: [txHarvest], input: Buffer.alloc(0) };
+    return { txs: [txHarvest], input: payload };
   }
 
   private async initFarmerIx(

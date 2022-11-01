@@ -11,11 +11,12 @@ import {
   DepositParams,
   GatewayParams,
   IProtocolVault,
+  PAYLOAD_SIZE,
   WithdrawParams,
 } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { IVaultInfo, katana } from "@dappio-wonderland/navigator";
-import { struct, u8 } from "@project-serum/borsh";
+import { struct, u64, u8 } from "@project-serum/borsh";
 import {
   getActivityIndex,
   sigHash,
@@ -38,8 +39,16 @@ export class ProtocolKatana implements IProtocolVault {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    // TODO
 
+    const inputLayout = struct([u64("depositAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        depositAmount: new anchor.BN(params.depositAmount),
+      },
+      payload
+    );
     // Handle transaction here
     const vault = vaultInfo as katana.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -123,8 +132,8 @@ export class ProtocolKatana implements IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
-    return { txs: [depositTx], input: Buffer.alloc(0) };
+
+    return { txs: [depositTx], input: payload };
   }
 
   async initiateWithdrawal(
@@ -133,8 +142,16 @@ export class ProtocolKatana implements IProtocolVault {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    // TODO
 
+    const inputLayout = struct([u64("shareAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        shareAmount: new anchor.BN(params.withdrawAmount),
+      },
+      payload
+    );
     // Handle transaction here
     const vault = vaultInfo as katana.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -203,8 +220,8 @@ export class ProtocolKatana implements IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
-    return { txs: [initiateWithdrawTx], input: Buffer.alloc(0) };
+
+    return { txs: [initiateWithdrawTx], input: payload };
   }
 
   async finalizeDeposit(
@@ -213,8 +230,11 @@ export class ProtocolKatana implements IProtocolVault {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    // TODO
 
+    const inputLayout = struct([]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode({}, payload);
     // Handle transaction here
     const vault = vaultInfo as katana.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -289,8 +309,8 @@ export class ProtocolKatana implements IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
-    return { txs: [finalizeDepositTx], input: Buffer.alloc(0) };
+
+    return { txs: [finalizeDepositTx], input: payload };
   }
 
   async cancelDeposit(
@@ -299,8 +319,16 @@ export class ProtocolKatana implements IProtocolVault {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    // TODO
 
+    const inputLayout = struct([u64("shareAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        shareAmount: new anchor.BN(params.withdrawAmount),
+      },
+      payload
+    );
     // Handle transaction here
     const vault = vaultInfo as katana.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -360,8 +388,8 @@ export class ProtocolKatana implements IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
-    return { txs: [cancelDepositTx], input: Buffer.alloc(0) };
+
+    return { txs: [cancelDepositTx], input: payload };
   }
 
   async finalizeWithdrawal(
@@ -370,8 +398,11 @@ export class ProtocolKatana implements IProtocolVault {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    // TODO
 
+    const inputLayout = struct([]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode({}, payload);
     // Handle transaction here
     const vault = vaultInfo as katana.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -447,8 +478,8 @@ export class ProtocolKatana implements IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
-    return { txs: [finalizeWithdrawalTx], input: Buffer.alloc(0) };
+
+    return { txs: [finalizeWithdrawalTx], input: payload };
   }
 
   private async _initDepositorIx(
