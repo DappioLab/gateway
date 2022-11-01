@@ -561,7 +561,6 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
     return { txs: [txWithdraw], input: payload };
   }
 

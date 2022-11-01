@@ -163,7 +163,6 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
     return { txs: [txAddLiquidity], input: payload };
   }
 
@@ -318,7 +317,6 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
     return { txs: [txRemoveLiquidity], input: payload };
   }
 
@@ -428,7 +426,6 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
     return { txs: [txStake], input: payload };
   }
 
@@ -537,7 +534,6 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
     return { txs: [txUnstake], input: payload };
   }
 
@@ -658,7 +654,6 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
     return { txs: [txHarvest], input: payload };
   }
 
