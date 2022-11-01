@@ -33,15 +33,17 @@ export interface IProtocolPool {
 
 export interface IProtocolNFTPool {
   lockNFT: (
+    params: LockNFTParams,
     pool: INFTPoolInfo,
     userKey: anchor.web3.PublicKey,
     userNftMint?: anchor.web3.PublicKey[]
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   unlockNFT: (
+    params: UnlockNFTParams,
     pool: INFTPoolInfo,
     userKey: anchor.web3.PublicKey,
     nftMint?: anchor.web3.PublicKey[]
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
 }
 
 export interface IProtocolFarm {
@@ -67,87 +69,105 @@ export interface IProtocolFarm {
 
 export interface IProtocolNFTFarm {
   stakeProof: (
+    params: StakeProofParams,
     farm: INFTFarmInfo,
     userKey: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   unstakeProof: (
+    params: UnstakeProofParams,
     farm: INFTFarmInfo,
     userKey: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   claim: (
+    params: ClaimParams,
     farm: INFTFarmInfo,
     userKey: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
 }
 
 export interface IProtocolMoneyMarket {
   supply: (
+    params: SupplyParams,
     reserve: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   collateralize: (
+    params: CollateralizeParams,
     reserve: IReserveInfo,
     userKey: anchor.web3.PublicKey,
     obligationKey?: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   unsupply: (
+    params: UnsupplyParams,
     reserve: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   uncollateralize: (
+    params: UncollateralizeParams,
     reserve: IReserveInfo,
     userKey: anchor.web3.PublicKey,
     obligationKey?: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   borrow?: (
+    params: BorrowParams,
     reserve: IReserveInfo,
     userKey: anchor.web3.PublicKey,
     obligationKey?: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   repay?: (
+    params: RepayParams,
     reserve: IReserveInfo,
     userKey: anchor.web3.PublicKey,
     obligationKey?: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   claimCollateralReward?: (
+    params: ClaimCollateralRewardParams,
     userKey: anchor.web3.PublicKey,
     obligationKey?: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
 }
 
 export interface IProtocolVault {
   deposit?: (
+    params: DepositParams,
     vaultId: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   withdraw?: (
+    params: WithdrawParams,
     vaultId: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   initiateWithdrawal?: (
+    params: WithdrawParams,
     vaultId: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   initiateDeposit?: (
+    params: DepositParams,
     vaultId: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   finalizeDeposit?: (
+    params: WithdrawParams,
     vaultId: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   cancelDeposit?: (
+    params: WithdrawParams,
     vaultId: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   finalizeWithdrawal?: (
+    params: WithdrawParams,
     vaultId: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
   cancelWithdrawal?: (
+    params: WithdrawParams,
     vaultId: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ) => Promise<anchor.web3.Transaction[]>;
+  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
 }
 
 export enum ActionType {

@@ -6,7 +6,13 @@ import {
   createSyncNativeInstruction,
   getAssociatedTokenAddress,
 } from "@solana/spl-token-v2";
-import { ActionType, GatewayParams, IProtocolVault } from "../types";
+import {
+  ActionType,
+  DepositParams,
+  GatewayParams,
+  IProtocolVault,
+  WithdrawParams,
+} from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { IVaultInfo, friktion, utils } from "@dappio-wonderland/navigator";
 import { getActivityIndex, getGatewayAuthority } from "../utils";
@@ -21,9 +27,14 @@ export class ProtocolFriktion implements IProtocolVault {
   ) {}
 
   async initiateDeposit(
+    params: DepositParams,
     vaultInfo: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const indexSupply = this._gatewayParams.actionQueue.indexOf(
       ActionType.InitiateDeposit
     );
@@ -123,13 +134,19 @@ export class ProtocolFriktion implements IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [depositTx];
+    // TODO: Replace dummy input payload
+    return { txs: [depositTx], input: Buffer.alloc(0) };
   }
 
   async initiateWithdrawal(
+    params: WithdrawParams,
     vaultInfo: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const vault = vaultInfo as friktion.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -228,13 +245,20 @@ export class ProtocolFriktion implements IProtocolVault {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [withdrawTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [withdrawTx], input: Buffer.alloc(0) };
   }
 
   async finalizeDeposit(
+    params: WithdrawParams,
     vaultInfo: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const vault = vaultInfo as friktion.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -307,13 +331,20 @@ export class ProtocolFriktion implements IProtocolVault {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [finalizeDepositTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [finalizeDepositTx], input: Buffer.alloc(0) };
   }
 
   async cancelDeposit(
+    params: WithdrawParams,
     vaultInfo: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const vault = vaultInfo as friktion.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -382,13 +413,20 @@ export class ProtocolFriktion implements IProtocolVault {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [cancelDepositTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [cancelDepositTx], input: Buffer.alloc(0) };
   }
 
   async finalizeWithdrawal(
+    params: WithdrawParams,
     vaultInfo: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const vault = vaultInfo as friktion.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -467,13 +505,20 @@ export class ProtocolFriktion implements IProtocolVault {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [finalizeWithdrawalTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [finalizeWithdrawalTx], input: Buffer.alloc(0) };
   }
 
   async cancelWithdrawal(
+    params: WithdrawParams,
     vaultInfo: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const vault = vaultInfo as friktion.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -545,6 +590,8 @@ export class ProtocolFriktion implements IProtocolVault {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [cancelWithdrawalTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [cancelWithdrawalTx], input: Buffer.alloc(0) };
   }
 }

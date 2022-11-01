@@ -20,12 +20,19 @@ import {
 } from "@dappio-wonderland/navigator";
 import {
   ActionType,
+  BorrowParams,
+  ClaimCollateralRewardParams,
+  CollateralizeParams,
   GatewayParams,
   HarvestParams,
   IProtocolFarm,
   IProtocolMoneyMarket,
+  RepayParams,
   StakeParams,
+  SupplyParams,
+  UncollateralizeParams,
   UnstakeParams,
+  UnsupplyParams,
 } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { LARIX_ADAPTER_PROGRAM_ID } from "../ids";
@@ -40,9 +47,14 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
   ) {}
 
   async supply(
+    params: SupplyParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const reserve = reserveInfo as larix.ReserveInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -121,14 +133,21 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [supplyTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [supplyTx], input: Buffer.alloc(0) };
   }
 
   async collateralize(
+    params: CollateralizeParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey,
     obligationId?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const reserve = reserveInfo as larix.ReserveInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -236,13 +255,20 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [collateralizeTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [collateralizeTx], input: Buffer.alloc(0) };
   }
 
   async unsupply(
+    params: UnsupplyParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const reserve = reserveInfo as larix.ReserveInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -307,14 +333,20 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [unsupplyTx];
+    // TODO: Replace dummy input payload
+    return { txs: [unsupplyTx], input: Buffer.alloc(0) };
   }
 
   async uncollateralize(
+    params: UncollateralizeParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey,
     obligationId?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const reserve = reserveInfo as larix.ReserveInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -388,14 +420,21 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [uncollateralizeTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [uncollateralizeTx], input: Buffer.alloc(0) };
   }
 
   async borrow(
+    params: BorrowParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey,
     obligationId?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     let preTx = new anchor.web3.Transaction();
     const reserve = reserveInfo as larix.ReserveInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -489,14 +528,20 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [preTx, borrowTx];
+    // TODO: Replace dummy input payload
+    return { txs: [preTx, borrowTx], input: Buffer.alloc(0) };
   }
 
   async repay(
+    params: RepayParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey,
     obligationId?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     let preTx = new anchor.web3.Transaction();
     const reserve = reserveInfo as larix.ReserveInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -601,13 +646,19 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [preTx, repayTx];
+    // TODO: Replace dummy input payload
+    return { txs: [preTx, repayTx], input: Buffer.alloc(0) };
   }
 
   async claimCollateralReward(
+    params: ClaimCollateralRewardParams,
     userKey: anchor.web3.PublicKey,
     obligationId?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
@@ -679,7 +730,8 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [claimTx];
+    // TODO: Replace dummy input payload
+    return { txs: [claimTx], input: Buffer.alloc(0) };
   }
 
   async stake(

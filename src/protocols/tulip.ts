@@ -15,9 +15,15 @@ import {
 import { IReserveInfo, IVaultInfo, tulip } from "@dappio-wonderland/navigator";
 import {
   ActionType,
+  CollateralizeParams,
+  DepositParams,
   GatewayParams,
   IProtocolMoneyMarket,
   IProtocolVault,
+  SupplyParams,
+  UncollateralizeParams,
+  UnsupplyParams,
+  WithdrawParams,
 } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { NATIVE_SOL, TULIP_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
@@ -31,9 +37,14 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
   ) {}
 
   async supply(
+    params: SupplyParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const reserve = reserveInfo as tulip.ReserveInfo;
     const reserveWrapper = new tulip.ReserveInfoWrapper(reserve);
     const supplyTokenMint = reserve.liquidity.mintPubkey;
@@ -132,21 +143,28 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txSupply];
+    // TODO: Replace dummy input payload
+    return { txs: [txSupply], input: Buffer.alloc(0) };
   }
 
   async uncollateralize(
+    params: UncollateralizeParams,
     reserve: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // TODO
-    return [];
+    return { txs: [], input: Buffer.alloc(0) };
   }
 
   async unsupply(
+    params: UnsupplyParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const reserve = reserveInfo as tulip.ReserveInfo;
     const reserveWrapper = new tulip.ReserveInfoWrapper(reserve);
     const reserveTokenMint = reserve.collateral.reserveTokenMint;
@@ -248,21 +266,28 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txUnsupply];
+    // TODO: Replace dummy input payload
+    return { txs: [txUnsupply], input: Buffer.alloc(0) };
   }
 
   async collateralize(
+    params: CollateralizeParams,
     reserve: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // TODO
-    return [];
+    return { txs: [], input: Buffer.alloc(0) };
   }
 
   async deposit(
+    params: DepositParams,
     vault: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const vaultInfo = vault as tulip.VaultInfo;
     const vaultInfoWrapper = new tulip.VaultInfoWrapper(vaultInfo);
 
@@ -350,13 +375,19 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txDeposit];
+    // TODO: Replace dummy input payload
+    return { txs: [txDeposit], input: Buffer.alloc(0) };
   }
 
   async withdraw(
+    params: WithdrawParams,
     vault: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const vaultInfo = vault as tulip.RaydiumVaultInfo;
     const vaultInfoWrapper = new tulip.VaultInfoWrapper(vaultInfo);
 
@@ -516,7 +547,8 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txWithdraw];
+    // TODO: Replace dummy input payload
+    return { txs: [txWithdraw], input: Buffer.alloc(0) };
   }
 
   private _refreshReserveIx(

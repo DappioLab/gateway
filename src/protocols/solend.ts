@@ -12,7 +12,17 @@ import {
   getGatewayAuthority,
 } from "../utils";
 import { IReserveInfo, solend, utils } from "@dappio-wonderland/navigator";
-import { ActionType, GatewayParams, IProtocolMoneyMarket } from "../types";
+import {
+  ActionType,
+  BorrowParams,
+  CollateralizeParams,
+  GatewayParams,
+  IProtocolMoneyMarket,
+  RepayParams,
+  SupplyParams,
+  UncollateralizeParams,
+  UnsupplyParams,
+} from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { NATIVE_SOL, SOLEND_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
 
@@ -25,9 +35,14 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
   ) {}
 
   async supply(
+    params: SupplyParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const reserve = reserveInfo as solend.ReserveInfo;
     const supplyTokenMint = reserve.liquidity.mintPubkey;
     const reserveTokenMint = reserve.collateral.reserveTokenMint;
@@ -162,21 +177,28 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txSupply];
+    // TODO: Replace dummy input payload
+    return { txs: [txSupply], input: Buffer.alloc(0) };
   }
 
   async collateralize(
+    params: CollateralizeParams,
     reserve: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // TODO
-    return [];
+    return { txs: [], input: Buffer.alloc(0) };
   }
 
   async unsupply(
+    params: UnsupplyParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const reserve = reserveInfo as solend.ReserveInfo;
     const obligationId = await solend.infos.getObligationId(
       reserve.lendingMarket,
@@ -334,21 +356,28 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txPrerequisite, txUnsupply];
+    // TODO: Replace dummy input payload
+    return { txs: [txPrerequisite, txUnsupply], input: Buffer.alloc(0) };
   }
 
   async uncollateralize(
+    params: UncollateralizeParams,
     reserve: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // TODO
-    return [];
+    return { txs: [], input: Buffer.alloc(0) };
   }
 
   async borrow(
+    params: BorrowParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const reserve = reserveInfo as solend.ReserveInfo;
     const obligationId = await solend.infos.getObligationId(
       reserve.lendingMarket,
@@ -497,13 +526,19 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txPrerequisite, txBorrow];
+    // TODO: Replace dummy input payload
+    return { txs: [txPrerequisite, txBorrow], input: Buffer.alloc(0) };
   }
 
   async repay(
+    params: RepayParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const reserve = reserveInfo as solend.ReserveInfo;
     const obligationId = await solend.infos.getObligationId(
       reserve.lendingMarket,
@@ -655,7 +690,8 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txPrerequisite, txRepay];
+    // TODO: Replace dummy input payload
+    return { txs: [txPrerequisite, txRepay], input: Buffer.alloc(0) };
   }
 
   private async _createObligationAccountIx(

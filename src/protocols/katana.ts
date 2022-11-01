@@ -6,7 +6,13 @@ import {
   createSyncNativeInstruction,
   getAssociatedTokenAddress,
 } from "@solana/spl-token-v2";
-import { ActionType, GatewayParams, IProtocolVault } from "../types";
+import {
+  ActionType,
+  DepositParams,
+  GatewayParams,
+  IProtocolVault,
+  WithdrawParams,
+} from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { IVaultInfo, katana } from "@dappio-wonderland/navigator";
 import { struct, u8 } from "@project-serum/borsh";
@@ -27,9 +33,14 @@ export class ProtocolKatana implements IProtocolVault {
   ) {}
 
   async initiateDeposit(
+    params: DepositParams,
     vaultInfo: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const vault = vaultInfo as katana.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -112,13 +123,19 @@ export class ProtocolKatana implements IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [depositTx];
+    // TODO: Replace dummy input payload
+    return { txs: [depositTx], input: Buffer.alloc(0) };
   }
 
   async initiateWithdrawal(
+    params: WithdrawParams,
     vaultInfo: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const vault = vaultInfo as katana.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -185,13 +202,20 @@ export class ProtocolKatana implements IProtocolVault {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [initiateWithdrawTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [initiateWithdrawTx], input: Buffer.alloc(0) };
   }
 
   async finalizeDeposit(
+    params: WithdrawParams,
     vaultInfo: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const vault = vaultInfo as katana.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -264,13 +288,20 @@ export class ProtocolKatana implements IProtocolVault {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [finalizeDepositTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [finalizeDepositTx], input: Buffer.alloc(0) };
   }
 
   async cancelDeposit(
+    params: WithdrawParams,
     vaultInfo: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const vault = vaultInfo as katana.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -328,13 +359,20 @@ export class ProtocolKatana implements IProtocolVault {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [cancelDepositTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [cancelDepositTx], input: Buffer.alloc(0) };
   }
 
   async finalizeWithdrawal(
+    params: WithdrawParams,
     vaultInfo: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const vault = vaultInfo as katana.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -408,7 +446,9 @@ export class ProtocolKatana implements IProtocolVault {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [finalizeWithdrawalTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [finalizeWithdrawalTx], input: Buffer.alloc(0) };
   }
 
   private async _initDepositorIx(

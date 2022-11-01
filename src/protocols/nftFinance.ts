@@ -11,7 +11,16 @@ import {
   getGatewayAuthority,
 } from "../utils";
 import { INFTFarmInfo, INFTPoolInfo } from "@dappio-wonderland/navigator";
-import { GatewayParams, IProtocolNFTFarm, IProtocolNFTPool } from "../types";
+import {
+  ClaimParams,
+  GatewayParams,
+  IProtocolNFTFarm,
+  IProtocolNFTPool,
+  LockNFTParams,
+  StakeProofParams,
+  UnlockNFTParams,
+  UnstakeProofParams,
+} from "../types";
 import { NFT_FINANCE_ADAPTER_PROGRAM_ID } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { nftFinance, utils } from "@dappio-wonderland/navigator";
@@ -29,10 +38,15 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
   ) {}
 
   async lockNFT(
+    params: LockNFTParams,
     poolInfo: INFTPoolInfo,
     userKey: anchor.web3.PublicKey,
     userNftAccounts: anchor.web3.PublicKey[]
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const pool = poolInfo as nftFinance.NFTPoolInfo;
     const userNftAccountsInfo = await utils.getMultipleAccounts(
       this._connection,
@@ -130,14 +144,23 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
 
     txAllCreateAta = this.packInstructionsToTransaction(createAtaIxArr);
 
-    return [...txAllCreateAta, ...txAllLockNFT];
+    // TODO: Replace dummy input payload
+    return {
+      txs: [...txAllCreateAta, ...txAllLockNFT],
+      input: Buffer.alloc(0),
+    };
   }
 
   async unlockNFT(
+    params: UnlockNFTParams,
     poolInfo: INFTPoolInfo,
     userKey: anchor.web3.PublicKey,
     nftMints: anchor.web3.PublicKey[]
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const pool = poolInfo as nftFinance.NFTPoolInfo;
 
     const txAllUnlockNFT: anchor.web3.Transaction[] = [];
@@ -203,13 +226,20 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
 
       txAllUnlockNFT.push(txUnlockNFT);
     }
-    return [...txAllUnlockNFT];
+
+    // TODO: Replace dummy input payload
+    return { txs: [...txAllUnlockNFT], input: Buffer.alloc(0) };
   }
 
   async stakeProof(
+    params: StakeProofParams,
     farmInfo: INFTFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const farm = farmInfo as nftFinance.NFTFarmInfo;
 
     const preInstructions: anchor.web3.TransactionInstruction[] = [];
@@ -289,13 +319,19 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txStakeProof];
+    // TODO: Replace dummy input payload
+    return { txs: [txStakeProof], input: Buffer.alloc(0) };
   }
 
   async unstakeProof(
+    params: UnstakeProofParams,
     farmInfo: INFTFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const farm = farmInfo as nftFinance.NFTFarmInfo;
 
     const preInstructions: anchor.web3.TransactionInstruction[] = [];
@@ -359,13 +395,19 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txUnstakeProof];
+    // TODO: Replace dummy input payload
+    return { txs: [txUnstakeProof], input: Buffer.alloc(0) };
   }
 
   async claim(
+    params: ClaimParams,
     farmInfo: INFTFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const farm = farmInfo as nftFinance.NFTFarmInfo;
 
     const preInstructions: anchor.web3.TransactionInstruction[] = [];
@@ -417,7 +459,8 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txClaim];
+    // TODO: Replace dummy input payload
+    return { txs: [txClaim], input: Buffer.alloc(0) };
   }
 
   async _initializeMinerIx(

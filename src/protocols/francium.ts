@@ -22,7 +22,9 @@ import {
   IProtocolFarm,
   IProtocolMoneyMarket,
   StakeParams,
+  SupplyParams,
   UnstakeParams,
+  UnsupplyParams,
 } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { FRANCIUM_ADAPTER_PROGRAM_ID } from "../ids";
@@ -37,9 +39,14 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
   ) {}
 
   async supply(
+    params: SupplyParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     const reserve = reserveInfo as francium.ReserveInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -114,13 +121,20 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [preTx, supplyTx];
+
+    // TODO: Replace dummy input payload
+    return { txs: [preTx, supplyTx], input: Buffer.alloc(0) };
   }
 
   async unsupply(
+    params: UnsupplyParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    // TODO
+
+    // Handle transaction here
     let preTx = new anchor.web3.Transaction();
     const reserve = reserveInfo as francium.ReserveInfo;
 
@@ -183,15 +197,18 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [preTx, unsupplyTx];
+    // TODO: Replace dummy input payload
+    return { txs: [preTx, unsupplyTx], input: Buffer.alloc(0) };
   }
 
-  async borrow(): Promise<anchor.web3.Transaction[]> {
-    return [];
+  async borrow(): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // TODO
+    return { txs: [], input: Buffer.alloc(0) };
   }
 
-  async repay(): Promise<anchor.web3.Transaction[]> {
-    return [];
+  async repay(): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // TODO
+    return { txs: [], input: Buffer.alloc(0) };
   }
 
   async stake(
@@ -394,12 +411,20 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
     return { txs: [txUnstake], input: Buffer.alloc(0) };
   }
 
-  async collateralize(): Promise<anchor.web3.Transaction[]> {
-    return [];
+  async collateralize(): Promise<{
+    txs: anchor.web3.Transaction[];
+    input: Buffer;
+  }> {
+    // TODO
+    return { txs: [], input: Buffer.alloc(0) };
   }
 
-  async uncollateralize(): Promise<anchor.web3.Transaction[]> {
-    return [];
+  async uncollateralize(): Promise<{
+    txs: anchor.web3.Transaction[];
+    input: Buffer;
+  }> {
+    // TODO
+    return { txs: [], input: Buffer.alloc(0) };
   }
 
   async harvest(): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
