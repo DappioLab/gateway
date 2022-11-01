@@ -73,10 +73,10 @@ export class ProtocolKatana implements IProtocolVault {
       await createATAWithoutCheckIx(userKey, shareTokenMint)
     );
     const indexSupply = this._gatewayParams.actionQueue.indexOf(
-      ActionType.Deposit
+      ActionType.InitiateDeposit
     );
 
-    const vaultDepositAmount = this._gatewayParams.payloadQueue[indexSupply];
+    const vaultDepositAmount = new anchor.BN(params.depositAmount);
     if (depositTokenMint.equals(NATIVE_MINT)) {
       preInstructions.push(
         anchor.web3.SystemProgram.transfer({
@@ -131,7 +131,6 @@ export class ProtocolKatana implements IProtocolVault {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-
 
     return { txs: [depositTx], input: payload };
   }
@@ -219,7 +218,6 @@ export class ProtocolKatana implements IProtocolVault {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-
 
     return { txs: [initiateWithdrawTx], input: payload };
   }
@@ -309,7 +307,6 @@ export class ProtocolKatana implements IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-
     return { txs: [finalizeDepositTx], input: payload };
   }
 
@@ -387,7 +384,6 @@ export class ProtocolKatana implements IProtocolVault {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-
 
     return { txs: [cancelDepositTx], input: payload };
   }
@@ -477,7 +473,6 @@ export class ProtocolKatana implements IProtocolVault {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-
 
     return { txs: [finalizeWithdrawalTx], input: payload };
   }

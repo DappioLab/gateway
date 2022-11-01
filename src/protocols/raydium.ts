@@ -176,7 +176,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     let payload = Buffer.alloc(PAYLOAD_SIZE);
     inputLayout.encode(
       {
-        tokenInAmount: new anchor.BN(params.lpAmount),
+        lpAmount: new anchor.BN(params.lpAmount),
         PoolDirection: this._gatewayParams.poolDirection,
       },
       payload
@@ -330,7 +330,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     let payload = Buffer.alloc(PAYLOAD_SIZE);
     inputLayout.encode(
       {
-        tokenInAmount: new anchor.BN(params.lpAmount),
+        lpAmount: new anchor.BN(params.lpAmount),
         version: params.version || 1,
       },
       payload

@@ -1174,19 +1174,6 @@ export class GatewayBuilder {
         );
 
         break;
-      case SupportedProtocols.Katana:
-        this._metadata.vault = await katana.infos.getVault(
-          this._provider.connection,
-          depositParams.vaultId
-        );
-        protocol = new ProtocolKatana(
-          this._provider.connection,
-          this._program,
-          await this.getGatewayStateKey(),
-          this.params
-        );
-
-        break;
 
       case SupportedProtocols.Friktion:
         this._metadata.vault = await friktion.infos.getVault(
@@ -1240,6 +1227,19 @@ export class GatewayBuilder {
           depositParams.vaultId
         );
         protocol = new ProtocolFriktion(
+          this._provider.connection,
+          this._program,
+          await this.getGatewayStateKey(),
+          this.params
+        );
+
+        break;
+      case SupportedProtocols.Katana:
+        this._metadata.vault = await katana.infos.getVault(
+          this._provider.connection,
+          depositParams.vaultId
+        );
+        protocol = new ProtocolKatana(
           this._provider.connection,
           this._program,
           await this.getGatewayStateKey(),
@@ -1345,6 +1345,19 @@ export class GatewayBuilder {
           this.params
         );
         break;
+      case SupportedProtocols.Katana:
+        this._metadata.vault = await katana.infos.getVault(
+          this._provider.connection,
+          withdrawParams.vaultId
+        );
+        protocol = new ProtocolKatana(
+          this._provider.connection,
+          this._program,
+          await this.getGatewayStateKey(),
+          this.params
+        );
+
+        break;
       default:
         throw new Error("Unsupported Protocol");
     }
@@ -1393,6 +1406,19 @@ export class GatewayBuilder {
           this.params
         );
         break;
+      case SupportedProtocols.Katana:
+        this._metadata.vault = await katana.infos.getVault(
+          this._provider.connection,
+          withdrawParams.vaultId
+        );
+        protocol = new ProtocolKatana(
+          this._provider.connection,
+          this._program,
+          await this.getGatewayStateKey(),
+          this.params
+        );
+
+        break;
       default:
         throw new Error("Unsupported Protocol");
     }
@@ -1438,6 +1464,19 @@ export class GatewayBuilder {
           await this.getGatewayStateKey(),
           this.params
         );
+        break;
+      case SupportedProtocols.Katana:
+        this._metadata.vault = await katana.infos.getVault(
+          this._provider.connection,
+          withdrawParams.vaultId
+        );
+        protocol = new ProtocolKatana(
+          this._provider.connection,
+          this._program,
+          await this.getGatewayStateKey(),
+          this.params
+        );
+
         break;
       default:
         throw new Error("Unsupported Protocol");
@@ -1486,6 +1525,19 @@ export class GatewayBuilder {
           await this.getGatewayStateKey(),
           this.params
         );
+        break;
+      case SupportedProtocols.Katana:
+        this._metadata.vault = await katana.infos.getVault(
+          this._provider.connection,
+          withdrawParams.vaultId
+        );
+        protocol = new ProtocolKatana(
+          this._provider.connection,
+          this._program,
+          await this.getGatewayStateKey(),
+          this.params
+        );
+
         break;
       default:
         throw new Error("Unsupported Protocol");

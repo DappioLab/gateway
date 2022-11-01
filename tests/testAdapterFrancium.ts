@@ -93,7 +93,7 @@ describe("Gateway", () => {
         [wallet.payer],
         true
       );
-      console.log(sig2, "\n");
+      console.log("https://mf.wei1769.com/tx/" + sig2);
     }
     console.log("Txs are executed");
     console.log("======");
@@ -156,7 +156,7 @@ describe("Gateway", () => {
         [wallet.payer],
         true
       );
-      console.log(sig2, "\n");
+      console.log("https://mf.wei1769.com/tx/" + sig2);
     }
     console.log("Txs are executed");
     console.log("======");
