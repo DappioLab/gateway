@@ -47,7 +47,7 @@ export class ProtocolFriktion implements IProtocolVault {
     const indexSupply = this._gatewayParams.actionQueue.indexOf(
       ActionType.InitiateDeposit
     );
-    const vaultDepositAmount = this._gatewayParams.payloadQueue[indexSupply];
+    const vaultDepositAmount = new anchor.BN(params.depositAmount);
     const vault = vaultInfo as friktion.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];

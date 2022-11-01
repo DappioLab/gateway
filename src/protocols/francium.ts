@@ -79,8 +79,7 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
       ActionType.Supply
     );
 
-    const moneyMarketSupplyAmount =
-      this._gatewayParams.payloadQueue[indexSupply];
+    const moneyMarketSupplyAmount = new anchor.BN(params.supplyAmount);
 
     if (supplyTokenMint.equals(NATIVE_MINT)) {
       preInstructions.push(
@@ -131,7 +130,6 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-
     return { txs: [preTx, supplyTx], input: payload };
   }
 
@@ -141,7 +139,6 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-
 
     const inputLayout = struct([u64("reserveAmount")]);
 
@@ -215,17 +212,14 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-
     return { txs: [preTx, unsupplyTx], input: payload };
   }
 
   async borrow(): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
-
     return { txs: [], input: Buffer.alloc(0) };
   }
 
   async repay(): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
-
     return { txs: [], input: Buffer.alloc(0) };
   }
 
@@ -331,7 +325,6 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-
     return { txs: [txStake], input: payload };
   }
 
@@ -347,7 +340,7 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
     let payload = Buffer.alloc(PAYLOAD_SIZE);
     inputLayout.encode(
       {
-        tokenInAmount: new anchor.BN(params.shareAmount),
+        reserveOutAmount: new anchor.BN(params.shareAmount),
       },
       payload
     );
@@ -436,7 +429,6 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-
     return { txs: [txUnstake], input: payload };
   }
 
@@ -444,7 +436,6 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
     txs: anchor.web3.Transaction[];
     input: Buffer;
   }> {
-
     return { txs: [], input: Buffer.alloc(PAYLOAD_SIZE) };
   }
 
@@ -452,7 +443,6 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
     txs: anchor.web3.Transaction[];
     input: Buffer;
   }> {
-
     return { txs: [], input: Buffer.alloc(PAYLOAD_SIZE) };
   }
 

@@ -634,7 +634,7 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       ActionType.Repay
     );
 
-    let repayAmount = this._gatewayParams.payloadQueue[indexSupply];
+    let repayAmount = new anchor.BN(params.repayAmount);
 
     if (liquidityTokenMint.equals(NATIVE_MINT)) {
       let wSOLAmount = repayAmount;
@@ -785,15 +785,11 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       userKey
     );
 
-    if (
-      farmerId == null &&
-      !(await larix.checkFarmerCreated(this._connection, userKey))
-    ) {
-      farmerId ||= await larix.infos.getFarmerId(farmInfo, userKey);
-
+    if (!(await larix.checkFarmerCreated(this._connection, userKey))) {
       let createFarmerIx = await this._initFarmerIxs(farmerId, userKey);
       preInstructions = [...preInstructions, ...createFarmerIx];
     }
+    farmerId ||= await larix.infos.getFarmerId(farmInfo, userKey);
 
     let remainingAccounts = [
       { pubkey: reserveTokenAddress, isSigner: false, isWritable: true },
@@ -944,16 +940,13 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       this._connection,
       farmerId
     )) as larix.FarmerInfo;
-    let allReserves = await larix.infos.getAllReserves(this._connection);
-    let reservesMap = allReserves.reduce(function (
-      map: Map<String, larix.ReserveInfo>,
-      reserve: larix.ReserveInfo
-    ) {
-      map[reserve.toString()] = reserve;
-
-      return map;
-    },
-    {} as Map<String, larix.ReserveInfo>);
+    let allReserves = await larix.infos.getAllReserveWrappers(this._connection);
+    let reservesMap = new Map(
+      allReserves.map((r) => [
+        r.reserveInfo.reserveId.toString(),
+        r as larix.ReserveInfoWrapper,
+      ])
+    );
     let refreshMeta = [];
     let remainingAccounts = [
       {
@@ -980,8 +973,9 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
     ];
     for (let farmingReserve of farmerInfo.indexs) {
-      let reserveInfo = reservesMap[farmingReserve.reserveId.toString()]
-        .reserve as larix.ReserveInfoWrapper;
+      let reserveInfo = reservesMap.get(
+        farmingReserve.reserveId.toString()
+      )! as larix.ReserveInfoWrapper;
       remainingAccounts.push({
         pubkey: farmingReserve.reserveId,
         isSigner: false,

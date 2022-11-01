@@ -383,7 +383,6 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       },
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
     ];
-
     const txUnstake = await this._gatewayProgram.methods
       .unstake()
       .accounts({
@@ -406,7 +405,7 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    const inputLayout = struct();
+    const inputLayout = struct([]);
 
     let payload = Buffer.alloc(PAYLOAD_SIZE);
     inputLayout.encode({}, payload);
