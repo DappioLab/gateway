@@ -437,12 +437,6 @@ export type GatewayParams = TypeDef<
         {
           name: "payloadQueue";
           type: {
-            array: ["u64", 8];
-          };
-        },
-        {
-          name: "payloadQueue2";
-          type: {
             array: [
               {
                 array: ["u8", 32];
