@@ -16,13 +16,21 @@ import {
 } from "@dappio-wonderland/navigator";
 import {
   ActionType,
+  AddLiquidityParams,
   GatewayParams,
+  HarvestParams,
   IProtocolFarm,
   IProtocolPool,
+  PAYLOAD_SIZE,
   PoolDirection,
+  RemoveLiquidityParams,
+  StakeParams,
+  UnstakeParams,
 } from "../types";
 import { ORCA_ADAPTER_PROGRAM_ID } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
+
+import { struct, u64, u8 } from "@project-serum/borsh";
 
 export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
   constructor(
@@ -33,9 +41,22 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
   ) {}
 
   async addLiquidity(
+    params: AddLiquidityParams,
     poolInfo: IPoolInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle input payload here
+
+    const inputLayout = struct([u64("tokenInAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        tokenInAmount: new anchor.BN(params.tokenInAmount),
+      },
+      payload
+    );
+    // Handle transaction here
     const pool = poolInfo as orca.PoolInfo;
     const poolInfoWrapper = (await orca.infos.getPoolWrapper(
       this._connection,
@@ -84,9 +105,7 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
         anchor.web3.SystemProgram.transfer({
           fromPubkey: userKey,
           toPubkey: aTokenATA,
-          lamports: new anchor.BN(
-            this._gatewayParams.payloadQueue[indexSupply]
-          ).toNumber(),
+          lamports: new anchor.BN(params.tokenInAmount).toNumber(),
         })
       );
       createATAs.push(createSyncNativeInstruction(aTokenATA));
@@ -99,9 +118,7 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
         anchor.web3.SystemProgram.transfer({
           fromPubkey: userKey,
           toPubkey: bTokenATA,
-          lamports: new anchor.BN(
-            this._gatewayParams.payloadQueue[indexSupply]
-          ).toNumber(),
+          lamports: new anchor.BN(params.tokenInAmount).toNumber(),
         })
       );
       createATAs.push(createSyncNativeInstruction(bTokenATA));
@@ -109,7 +126,8 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
         createCloseAccountInstruction(bTokenATA, userKey, userKey)
       );
     }
-    let addLiquidity = await this._gatewayProgram.methods
+
+    const txAddLiquidity = await this._gatewayProgram.methods
       .addLiquidity()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -122,14 +140,31 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       .postInstructions(closeAccount)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [addLiquidity];
+
+    return { txs: [txAddLiquidity], input: payload };
   }
 
   async removeLiquidity(
+    params: RemoveLiquidityParams,
     poolInfo: IPoolInfo,
     userKey: anchor.web3.PublicKey,
     singleToTokenMint?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+
+    const inputLayout = struct([u64("lpAmount"), u8("action")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        lpAmount: new anchor.BN(params.lpAmount),
+        action: params.singleToTokenMint
+          ? ActionType.RemoveLiquiditySingle
+          : ActionType.RemoveLiquidity,
+      },
+      payload
+    );
+    // Handle transaction here
     const pool = poolInfo as orca.PoolInfo;
     const poolInfoWrapper = (await orca.infos.getPoolWrapper(
       this._connection,
@@ -194,7 +229,8 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
         createCloseAccountInstruction(bTokenATA, userKey, userKey)
       );
     }
-    let removeLiquidity = await this._gatewayProgram.methods
+
+    const txRemoveLiquidity = await this._gatewayProgram.methods
       .removeLiquidity()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -207,13 +243,27 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       .postInstructions(closeAccount)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [removeLiquidity];
+
+    return { txs: [txRemoveLiquidity], input: payload };
   }
 
   async stake(
+    params: StakeParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+
+    const inputLayout = struct([u64("lpAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        lpAmount: new anchor.BN(params.lpAmount),
+      },
+      payload
+    );
+    // Handle transaction here
     const farm = farmInfo as orca.FarmInfo;
     const farmInfoWrapper = (await orca.infos.getFarmWrapper(
       this._connection,
@@ -260,7 +310,8 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       },
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
     ];
-    let stake = await this._gatewayProgram.methods
+
+    const txStake = await this._gatewayProgram.methods
       .stake()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -272,13 +323,24 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .preInstructions(createATAs)
       .transaction();
-    return [stake];
+
+    return { txs: [txStake], input: payload };
   }
 
   async unstake(
+    params: UnstakeParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    const inputLayout = struct([u64("shareAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        shareAmount: new anchor.BN(params.shareAmount),
+      },
+      payload
+    );
     const farm = farmInfo as orca.FarmInfo;
     const farmInfoWrapper = (await orca.infos.getFarmWrapper(
       this._connection,
@@ -321,7 +383,8 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       },
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
     ];
-    let unstake = await this._gatewayProgram.methods
+
+    const txUnstake = await this._gatewayProgram.methods
       .unstake()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -333,13 +396,21 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .preInstructions(createATAs)
       .transaction();
-    return [unstake];
+
+    return { txs: [txUnstake], input: payload };
   }
 
   async harvest(
+    params: HarvestParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    const inputLayout = struct();
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode({}, payload);
+    // Handle transaction here
     const farm = farmInfo as orca.FarmInfo;
     const farmInfoWrapper = (await orca.infos.getFarmWrapper(
       this._connection,
@@ -378,7 +449,8 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       },
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
     ];
-    let harvest = await this._gatewayProgram.methods
+
+    const txHarvest = await this._gatewayProgram.methods
       .harvest()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -390,7 +462,8 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .preInstructions(createATAs)
       .transaction();
-    return [harvest];
+
+    return { txs: [txHarvest], input: payload };
   }
 
   private async initFarmerIx(

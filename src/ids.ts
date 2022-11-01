@@ -43,16 +43,19 @@ export const LARIX_ADAPTER_PROGRAM_ID = new PublicKey(
 export const LIFINITY_ADAPTER_PROGRAM_ID = new PublicKey(
   "ADPTF4WmNPebELw6UvnSVBdL7BAqs5ceg9tyrHsQfrJK"
 );
+
 export const ORCA_ADAPTER_PROGRAM_ID = new PublicKey(
   "ADPTTyNqameXftbqsxwXhbs7v7XP8E82YMaUStPgjmU5"
 );
+
 export const KATANA_ADAPTER_PROGRAM_ID = new PublicKey(
   "ADPTwDKJTizC3V8gZXDxt5uLjJv4pBnh1nTTf9dZJnS2"
 );
+
 export const FRANCIUM_ADAPTER_PROGRAM_ID = new PublicKey(
   "ADPTax5HwQ2ZWVLmceCek8UrqMhwCy5q3SHwi8W71Kv2"
 );
 
 export const FRIKTION_ADAPTER_PROGRAM_ID = new PublicKey(
-  "ADPTpx75iFvNVQiYS9cW43Tqrq9HdbawEywa7brKyoAm"
+  "ADPTzbsaBdXA3FqXoPHjaTjPfh9kadxxFKxonZihP1Ji"
 );

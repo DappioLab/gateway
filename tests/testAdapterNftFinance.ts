@@ -49,7 +49,7 @@ describe("Gateway", () => {
     farmInfo: nftFinance.NFTFarmInfo;
   };
 
-  it("Lock NFT", async () => {
+  it("Lock NFT + Stake Proof", async () => {
     const fullInfos = await nftFinance.getFullInfo(connection);
     targetInfo = (
       await nftFinance.getFullInfosByMints(connection, [nftMint], fullInfos)
@@ -66,34 +66,7 @@ describe("Gateway", () => {
       poolId: targetInfo.poolInfo.poolId,
       userNftAccount: [userNftAta],
     };
-    const gateway = new GatewayBuilder(provider);
 
-    await gateway.lockNFT(lockNFTParams);
-
-    await gateway.finalize();
-
-    console.log(gateway.params);
-
-    const txs = gateway.transactions();
-
-    console.log("======");
-    console.log("Txs are sent...");
-    for (let tx of txs) {
-      // tx.feePayer = wallet.publicKey;
-      // tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-      // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
-
-      const sig = await provider.sendAndConfirm(tx, [], {
-        skipPreflight: false,
-        commitment: "confirmed",
-      } as unknown as anchor.web3.ConfirmOptions);
-      console.log(sig);
-    }
-    console.log("Txs are executed");
-    console.log("======");
-  });
-
-  it("Stake Proof", async () => {
     const stakeProofParams: StakeProofParams = {
       protocol: SupportedProtocols.NftFinance,
       farmId: targetInfo.farmInfo.farmId,
@@ -101,6 +74,7 @@ describe("Gateway", () => {
     };
     const gateway = new GatewayBuilder(provider);
 
+    await gateway.lockNFT(lockNFTParams);
     await gateway.stakeProof(stakeProofParams);
 
     await gateway.finalize();
@@ -117,7 +91,7 @@ describe("Gateway", () => {
       // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
 
       const sig = await provider.sendAndConfirm(tx, [], {
-        skipPreflight: false,
+        skipPreflight: true,
         commitment: "confirmed",
       } as unknown as anchor.web3.ConfirmOptions);
       console.log(sig);
@@ -126,88 +100,45 @@ describe("Gateway", () => {
     console.log("======");
   });
 
-  it("Unstake Proof", async () => {
+  it("Unstake Proof + Unlock NFT + Claim", async () => {
+    const fullInfos = await nftFinance.getFullInfo(connection);
+    targetInfo = (
+      await nftFinance.getFullInfosByMints(connection, [nftMint], fullInfos)
+    )[0] as {
+      rarityInfo: nftFinance.NFTRarityInfo;
+      poolInfo: nftFinance.NFTPoolInfo;
+      farmInfo: nftFinance.NFTFarmInfo;
+    };
+
     const unstakeProofParams: UnstakeProofParams = {
       protocol: SupportedProtocols.NftFinance,
       farmId: targetInfo.farmInfo.farmId,
       farmTokenAmount: 1,
     };
-    const gateway = new GatewayBuilder(provider);
 
-    await gateway.unstakeProof(unstakeProofParams);
-
-    await gateway.finalize();
-
-    console.log(gateway.params);
-
-    const txs = gateway.transactions();
-
-    console.log("======");
-    console.log("Txs are sent...");
-    for (let tx of txs) {
-      // tx.feePayer = wallet.publicKey;
-      // tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-      // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
-
-      const sig = await provider.sendAndConfirm(tx, [], {
-        skipPreflight: false,
-        commitment: "confirmed",
-      } as unknown as anchor.web3.ConfirmOptions);
-      console.log(sig);
-    }
-    console.log("Txs are executed");
-    console.log("======");
-  });
-
-  it("Unlock NFT", async () => {
     const unlockNFTParams: UnlockNFTParams = {
       protocol: SupportedProtocols.NftFinance,
       poolId: targetInfo.poolInfo.poolId,
       nftMint: [nftMint],
     };
-    const gateway = new GatewayBuilder(provider);
 
-    await gateway.unlockNFT(unlockNFTParams);
-
-    await gateway.finalize();
-
-    console.log(gateway.params);
-
-    const txs = gateway.transactions();
-
-    console.log("======");
-    console.log("Txs are sent...");
-    for (let tx of txs) {
-      // tx.feePayer = wallet.publicKey;
-      // tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-      // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
-
-      const sig = await provider.sendAndConfirm(tx, [], {
-        skipPreflight: false,
-        commitment: "confirmed",
-      } as unknown as anchor.web3.ConfirmOptions);
-      console.log(sig);
-    }
-    console.log("Txs are executed");
-    console.log("======");
-  });
-
-  it("Claim", async () => {
     const claimParams: ClaimParams = {
       protocol: SupportedProtocols.NftFinance,
       farmId: targetInfo.farmInfo.farmId,
-      rewardTokenAmount: 100,
+      rewardTokenAmount: 100, // dummy amount
     };
+
     const gateway = new GatewayBuilder(provider);
 
+    await gateway.unstakeProof(unstakeProofParams);
+    await gateway.unlockNFT(unlockNFTParams);
     await gateway.claim(claimParams);
 
     await gateway.finalize();
 
-    console.log(gateway.params);
-
     const txs = gateway.transactions();
 
+    console.log(gateway.params);
     console.log("======");
     console.log("Txs are sent...");
     for (let tx of txs) {
@@ -216,7 +147,7 @@ describe("Gateway", () => {
       // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
 
       const sig = await provider.sendAndConfirm(tx, [], {
-        skipPreflight: false,
+        skipPreflight: true,
         commitment: "confirmed",
       } as unknown as anchor.web3.ConfirmOptions);
       console.log(sig);

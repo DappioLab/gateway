@@ -21,10 +21,15 @@ import {
   GatewayParams,
   IProtocolFarm,
   IProtocolMoneyMarket,
+  PAYLOAD_SIZE,
+  StakeParams,
+  SupplyParams,
+  UnstakeParams,
+  UnsupplyParams,
 } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { FRANCIUM_ADAPTER_PROGRAM_ID } from "../ids";
-import { struct, u8 } from "@project-serum/borsh";
+import { struct, u64, u8 } from "@project-serum/borsh";
 
 export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
   constructor(
@@ -35,9 +40,22 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
   ) {}
 
   async supply(
+    params: SupplyParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+
+    const inputLayout = struct([u64("tokenInAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        tokenInAmount: new anchor.BN(params.supplyAmount),
+      },
+      payload
+    );
+    // Handle transaction here
     const reserve = reserveInfo as francium.ReserveInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -112,13 +130,29 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [preTx, supplyTx];
+
+
+    return { txs: [preTx, supplyTx], input: payload };
   }
 
   async unsupply(
+    params: UnsupplyParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+
+
+    const inputLayout = struct([u64("reserveAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        tokenInAmount: new anchor.BN(params.reservedAmount),
+      },
+      payload
+    );
+    // Handle transaction here
     let preTx = new anchor.web3.Transaction();
     const reserve = reserveInfo as francium.ReserveInfo;
 
@@ -181,21 +215,32 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [preTx, unsupplyTx];
+
+    return { txs: [preTx, unsupplyTx], input: payload };
   }
 
-  async borrow(): Promise<anchor.web3.Transaction[]> {
-    return [];
+  async borrow(): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+
+    return { txs: [], input: Buffer.alloc(0) };
   }
 
-  async repay(): Promise<anchor.web3.Transaction[]> {
-    return [];
+  async repay(): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+
+    return { txs: [], input: Buffer.alloc(0) };
   }
 
   async stake(
+    params: StakeParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+
+    const inputLayout = struct([]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode({}, payload);
+    // Handle transaction here
     const farm = farmInfo as francium.FarmInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -271,7 +316,8 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
         isWritable: false,
       }, //11
     ];
-    const stakeTx = await this._gatewayProgram.methods
+
+    const txStake = await this._gatewayProgram.methods
       .stake()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -284,13 +330,28 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [stakeTx];
+
+
+    return { txs: [txStake], input: payload };
   }
 
   async unstake(
+    params: UnstakeParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+
+    const inputLayout = struct([u64("reserveOutAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        tokenInAmount: new anchor.BN(params.shareAmount),
+      },
+      payload
+    );
+    // Handle transaction here
     const farm = farmInfo as francium.FarmInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -361,7 +422,7 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
         isWritable: false,
       }, //11
     ];
-    const unstakeTx = await this._gatewayProgram.methods
+    const txUnstake = await this._gatewayProgram.methods
       .unstake()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -374,19 +435,29 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [unstakeTx];
+
+
+    return { txs: [txUnstake], input: payload };
   }
 
-  async collateralize(): Promise<anchor.web3.Transaction[]> {
-    return [];
+  async collateralize(): Promise<{
+    txs: anchor.web3.Transaction[];
+    input: Buffer;
+  }> {
+
+    return { txs: [], input: Buffer.alloc(PAYLOAD_SIZE) };
   }
 
-  async uncollateralize(): Promise<anchor.web3.Transaction[]> {
-    return [];
+  async uncollateralize(): Promise<{
+    txs: anchor.web3.Transaction[];
+    input: Buffer;
+  }> {
+
+    return { txs: [], input: Buffer.alloc(PAYLOAD_SIZE) };
   }
 
-  async harvest(): Promise<anchor.web3.Transaction[]> {
-    return [];
+  async harvest(): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    return { txs: [], input: Buffer.alloc(PAYLOAD_SIZE) };
   }
 
   private async _initUserRewardIx(

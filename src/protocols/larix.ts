@@ -20,13 +20,24 @@ import {
 } from "@dappio-wonderland/navigator";
 import {
   ActionType,
+  BorrowParams,
+  ClaimCollateralRewardParams,
+  CollateralizeParams,
   GatewayParams,
+  HarvestParams,
   IProtocolFarm,
   IProtocolMoneyMarket,
+  PAYLOAD_SIZE,
+  RepayParams,
+  StakeParams,
+  SupplyParams,
+  UncollateralizeParams,
+  UnstakeParams,
+  UnsupplyParams,
 } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { LARIX_ADAPTER_PROGRAM_ID } from "../ids";
-import { struct, u8 } from "@project-serum/borsh";
+import { struct, u64, u8 } from "@project-serum/borsh";
 
 export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
   constructor(
@@ -37,9 +48,22 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
   ) {}
 
   async supply(
+    params: SupplyParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+
+    const inputLayout = struct([u64("supplyAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        supplyAmount: new anchor.BN(params.supplyAmount),
+      },
+      payload
+    );
+    // Handle transaction here
     const reserve = reserveInfo as larix.ReserveInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -62,20 +86,14 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       await createATAWithoutCheckIx(userKey, reserveTokenMint)
     );
 
-    // Work-around of getting moneyMarketSupplyAmount
-    const indexSupply = this._gatewayParams.actionQueue.indexOf(
-      ActionType.Supply
-    );
-
-    const moneyMarketSupplyAmount =
-      this._gatewayParams.payloadQueue[indexSupply];
+    const moneyMarketSupplyAmount = new anchor.BN(params.supplyAmount);
 
     if (supplyTokenMint.equals(NATIVE_MINT)) {
       preInstructions.push(
         anchor.web3.SystemProgram.transfer({
           fromPubkey: userKey,
           toPubkey: supplyTokenAddress,
-          lamports: moneyMarketSupplyAmount.toNumber(),
+          lamports: Number(moneyMarketSupplyAmount),
         })
       );
       preInstructions.push(createSyncNativeInstruction(supplyTokenAddress));
@@ -118,14 +136,23 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [supplyTx];
+
+    return { txs: [supplyTx], input: payload };
   }
 
   async collateralize(
+    params: CollateralizeParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey,
     obligationId?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+
+    const inputLayout = struct([]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode({}, payload);
+    // Handle transaction here
     const reserve = reserveInfo as larix.ReserveInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -233,13 +260,22 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [collateralizeTx];
+
+    return { txs: [collateralizeTx], input: payload };
   }
 
   async unsupply(
+    params: UnsupplyParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+
+    const inputLayout = struct([]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode({}, payload);
+    // Handle transaction here
     const reserve = reserveInfo as larix.ReserveInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -304,14 +340,27 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [unsupplyTx];
+    return { txs: [unsupplyTx], input: payload };
   }
 
   async uncollateralize(
+    params: UncollateralizeParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey,
     obligationId?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+
+    const inputLayout = struct([u64("reserveOutAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        reserveOutAmount: new anchor.BN(params.uncollateralizeAmount),
+      },
+      payload
+    );
+    // Handle transaction here
     const reserve = reserveInfo as larix.ReserveInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -385,14 +434,28 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [uncollateralizeTx];
+
+    return { txs: [uncollateralizeTx], input: payload };
   }
 
   async borrow(
+    params: BorrowParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey,
     obligationId?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+
+    const inputLayout = struct([u64("borrowAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        borrowAmount: new anchor.BN(params.borrowAmount),
+      },
+      payload
+    );
+    // Handle transaction here
     let preTx = new anchor.web3.Transaction();
     const reserve = reserveInfo as larix.ReserveInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -486,14 +549,27 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [preTx, borrowTx];
+    return { txs: [preTx, borrowTx], input: payload };
   }
 
   async repay(
+    params: RepayParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey,
     obligationId?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+
+    const inputLayout = struct([u64("repayAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        repayAmount: new anchor.BN(params.repayAmount),
+      },
+      payload
+    );
+    // Handle transaction here
     let preTx = new anchor.web3.Transaction();
     const reserve = reserveInfo as larix.ReserveInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -598,13 +674,21 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [preTx, repayTx];
+    return { txs: [preTx, repayTx], input: payload };
   }
 
   async claimCollateralReward(
+    params: ClaimCollateralRewardParams,
     userKey: anchor.web3.PublicKey,
     obligationId?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+
+    const inputLayout = struct([]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode({}, payload);
+    // Handle transaction here
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
@@ -676,14 +760,22 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [claimTx];
+    return { txs: [claimTx], input: payload };
   }
 
   async stake(
+    params: StakeParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey,
     farmerId?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+
+    const inputLayout = struct([]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode({}, payload);
+    // Handle transaction here
     const farm = farmInfo as larix.FarmInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -727,7 +819,8 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
         { pubkey: farm.oraclePublickey, isWritable: false, isSigner: false },
       ]),
     ];
-    const stakeTx = await this._gatewayProgram.methods
+
+    const txStake = await this._gatewayProgram.methods
       .stake()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -740,14 +833,28 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [stakeTx];
+
+    return { txs: [txStake], input: payload };
   }
 
   async unstake(
+    params: UnstakeParams,
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey,
     farmerId?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+
+    const inputLayout = struct([u64("reserveOutAmount")]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        reserveOutAmount: new anchor.BN(params.shareAmount),
+      },
+      payload
+    );
+    // Handle transaction here
     const farm = farmInfo as larix.FarmInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
@@ -794,7 +901,8 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
         { pubkey: farm.oraclePublickey, isWritable: false, isSigner: false },
       ]),
     ];
-    const unstakeTx = await this._gatewayProgram.methods
+
+    const txUnstake = await this._gatewayProgram.methods
       .unstake()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -807,14 +915,24 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [unstakeTx];
+
+    return { txs: [txUnstake], input: payload };
   }
 
   async harvest(
+    params: HarvestParams,
     farm: IFarmInfo,
     userKey: anchor.web3.PublicKey,
     farmerId?: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+
+    const inputLayout = struct([]);
+
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode({}, payload);
+
+    // Handle transaction here
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     let rewardATA = await getAssociatedTokenAddress(larix.LARIX_MINT, userKey);
@@ -882,7 +1000,7 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
     }
     preInstructions.push(this._refreshReservesIx(refreshMeta));
 
-    const harvestTx = await this._gatewayProgram.methods
+    const txHarvest = await this._gatewayProgram.methods
       .harvest()
       .accounts({
         gatewayState: this._gatewayStateKey,
@@ -895,7 +1013,8 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-    return [harvestTx];
+
+    return { txs: [txHarvest], input: payload };
   }
 
   private async _initFarmerIxs(

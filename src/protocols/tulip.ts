@@ -15,9 +15,16 @@ import {
 import { IReserveInfo, IVaultInfo, tulip } from "@dappio-wonderland/navigator";
 import {
   ActionType,
+  CollateralizeParams,
+  DepositParams,
   GatewayParams,
   IProtocolMoneyMarket,
   IProtocolVault,
+  PAYLOAD_SIZE,
+  SupplyParams,
+  UncollateralizeParams,
+  UnsupplyParams,
+  WithdrawParams,
 } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { NATIVE_SOL, TULIP_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
@@ -31,9 +38,21 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
   ) {}
 
   async supply(
+    params: SupplyParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    const inputLayout = struct([u64("supplyAmount")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        supplyAmount: new anchor.BN(params.supplyAmount),
+      },
+      payload
+    );
+
+    // Handle transaction here
     const reserve = reserveInfo as tulip.ReserveInfo;
     const reserveWrapper = new tulip.ReserveInfoWrapper(reserve);
     const supplyTokenMint = reserve.liquidity.mintPubkey;
@@ -50,12 +69,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       await createATAWithoutCheckIx(userKey, supplyTokenMint)
     );
 
-    // Work-around of getting moneyMarketSupplyAmount
-    const indexSupply = this._gatewayParams.actionQueue.indexOf(
-      ActionType.Supply
-    );
-    const moneyMarketSupplyAmount =
-      this._gatewayParams.payloadQueue[indexSupply];
+    const moneyMarketSupplyAmount = new anchor.BN(params.supplyAmount);
 
     if (supplyTokenMint.equals(NATIVE_SOL) || supplyTokenMint.equals(WSOL)) {
       preInstructions.push(
@@ -132,21 +146,24 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txSupply];
+    return { txs: [txSupply], input: payload };
   }
 
   async uncollateralize(
+    params: UncollateralizeParams,
     reserve: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // TODO
-    return [];
+    return { txs: [], input: Buffer.alloc(0) };
   }
 
   async unsupply(
+    params: UnsupplyParams,
     reserveInfo: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle transaction here
     const reserve = reserveInfo as tulip.ReserveInfo;
     const reserveWrapper = new tulip.ReserveInfoWrapper(reserve);
     const reserveTokenMint = reserve.collateral.reserveTokenMint;
@@ -155,18 +172,11 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
-    // Work-around of getting moneyMarketUnsupplyAmount
-    const indexUnsupply = this._gatewayParams.actionQueue.indexOf(
-      ActionType.Unsupply
+    const moneyMarketUnsupplyAmount = new anchor.BN(params.reservedAmount);
+    const collateralAmount = await reserveWrapper.calculateCollateralAmount(
+      this._connection,
+      moneyMarketUnsupplyAmount
     );
-    const moneyMarketUnsupplyAmount =
-      this._gatewayParams.payloadQueue[indexUnsupply];
-
-    this._gatewayParams.payloadQueue[indexUnsupply] =
-      await reserveWrapper.calculateCollateralAmount(
-        this._connection,
-        moneyMarketUnsupplyAmount
-      );
 
     const reserveTokenAddress = await getAssociatedTokenAddress(
       reserveTokenMint,
@@ -248,21 +258,44 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txUnsupply];
+    // Handle payload input here
+    const inputLayout = struct([u64("reservedAmount")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        reservedAmount: collateralAmount,
+      },
+      payload
+    );
+
+    return { txs: [txUnsupply], input: payload };
   }
 
   async collateralize(
+    params: CollateralizeParams,
     reserve: IReserveInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // TODO
-    return [];
+    return { txs: [], input: Buffer.alloc(0) };
   }
 
   async deposit(
+    params: DepositParams,
     vault: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    const inputLayout = struct([u64("lpAmount")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        lpAmount: new anchor.BN(params.depositAmount),
+      },
+      payload
+    );
+
+    // Handle transaction here
     const vaultInfo = vault as tulip.VaultInfo;
     const vaultInfoWrapper = new tulip.VaultInfoWrapper(vaultInfo);
 
@@ -350,13 +383,25 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txDeposit];
+    return { txs: [txDeposit], input: payload };
   }
 
   async withdraw(
+    params: WithdrawParams,
     vault: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    const inputLayout = struct([u64("shareAmount")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        shareAmount: new anchor.BN(params.withdrawAmount),
+      },
+      payload
+    );
+
+    // Handle transaction here
     const vaultInfo = vault as tulip.RaydiumVaultInfo;
     const vaultInfoWrapper = new tulip.VaultInfoWrapper(vaultInfo);
 
@@ -516,7 +561,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txWithdraw];
+    return { txs: [txWithdraw], input: payload };
   }
 
   private _refreshReserveIx(

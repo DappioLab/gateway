@@ -11,10 +11,21 @@ import {
   getGatewayAuthority,
 } from "../utils";
 import { INFTFarmInfo, INFTPoolInfo } from "@dappio-wonderland/navigator";
-import { GatewayParams, IProtocolNFTFarm, IProtocolNFTPool } from "../types";
+import {
+  ClaimParams,
+  GatewayParams,
+  IProtocolNFTFarm,
+  IProtocolNFTPool,
+  LockNFTParams,
+  PAYLOAD_SIZE,
+  StakeProofParams,
+  UnlockNFTParams,
+  UnstakeProofParams,
+} from "../types";
 import { NFT_FINANCE_ADAPTER_PROGRAM_ID } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { nftFinance, utils } from "@dappio-wonderland/navigator";
+import { struct, u64 } from "@project-serum/borsh";
 
 const NFT_VAULT_SEED = "nft_vault";
 const MINER_SEED = "miner";
@@ -29,10 +40,22 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
   ) {}
 
   async lockNFT(
+    params: LockNFTParams,
     poolInfo: INFTPoolInfo,
     userKey: anchor.web3.PublicKey,
     userNftAccounts: anchor.web3.PublicKey[]
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    const inputLayout = struct([u64("dummy1")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        dummy1: new anchor.BN(1000),
+      },
+      payload
+    );
+
+    // Handle transaction here
     const pool = poolInfo as nftFinance.NFTPoolInfo;
     const userNftAccountsInfo = await utils.getMultipleAccounts(
       this._connection,
@@ -130,14 +153,29 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
 
     txAllCreateAta = this.packInstructionsToTransaction(createAtaIxArr);
 
-    return [...txAllCreateAta, ...txAllLockNFT];
+    return {
+      txs: [...txAllCreateAta, ...txAllLockNFT],
+      input: payload,
+    };
   }
 
   async unlockNFT(
+    params: UnlockNFTParams,
     poolInfo: INFTPoolInfo,
     userKey: anchor.web3.PublicKey,
     nftMints: anchor.web3.PublicKey[]
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    const inputLayout = struct([u64("dummy1")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        dummy1: new anchor.BN(2000),
+      },
+      payload
+    );
+
+    // Handle transaction here
     const pool = poolInfo as nftFinance.NFTPoolInfo;
 
     const txAllUnlockNFT: anchor.web3.Transaction[] = [];
@@ -203,13 +241,26 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
 
       txAllUnlockNFT.push(txUnlockNFT);
     }
-    return [...txAllUnlockNFT];
+
+    return { txs: [...txAllUnlockNFT], input: payload };
   }
 
   async stakeProof(
+    params: StakeProofParams,
     farmInfo: INFTFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    const inputLayout = struct([u64("proveTokenAmount")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        proveTokenAmount: new anchor.BN(params.proveTokenAmount),
+      },
+      payload
+    );
+
+    // Handle transaction here
     const farm = farmInfo as nftFinance.NFTFarmInfo;
 
     const preInstructions: anchor.web3.TransactionInstruction[] = [];
@@ -289,13 +340,25 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txStakeProof];
+    return { txs: [txStakeProof], input: payload };
   }
 
   async unstakeProof(
+    params: UnstakeProofParams,
     farmInfo: INFTFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    const inputLayout = struct([u64("farmTokenAmount")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        farmTokenAmount: new anchor.BN(params.farmTokenAmount),
+      },
+      payload
+    );
+
+    // Handle transaction here
     const farm = farmInfo as nftFinance.NFTFarmInfo;
 
     const preInstructions: anchor.web3.TransactionInstruction[] = [];
@@ -359,13 +422,25 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txUnstakeProof];
+    return { txs: [txUnstakeProof], input: payload };
   }
 
   async claim(
+    params: ClaimParams,
     farmInfo: INFTFarmInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<anchor.web3.Transaction[]> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    // Handle payload input here
+    const inputLayout = struct([u64("dummy1")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        dummy1: new anchor.BN(5000),
+      },
+      payload
+    );
+
+    // Handle transaction here
     const farm = farmInfo as nftFinance.NFTFarmInfo;
 
     const preInstructions: anchor.web3.TransactionInstruction[] = [];
@@ -417,7 +492,7 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return [txClaim];
+    return { txs: [txClaim], input: payload };
   }
 
   async _initializeMinerIx(
