@@ -86,20 +86,14 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       await createATAWithoutCheckIx(userKey, reserveTokenMint)
     );
 
-    // Work-around of getting moneyMarketSupplyAmount
-    const indexSupply = this._gatewayParams.actionQueue.indexOf(
-      ActionType.Supply
-    );
-
-    const moneyMarketSupplyAmount =
-      this._gatewayParams.payloadQueue[indexSupply];
+    const moneyMarketSupplyAmount = new anchor.BN(params.supplyAmount);
 
     if (supplyTokenMint.equals(NATIVE_MINT)) {
       preInstructions.push(
         anchor.web3.SystemProgram.transfer({
           fromPubkey: userKey,
           toPubkey: supplyTokenAddress,
-          lamports: moneyMarketSupplyAmount.toNumber(),
+          lamports: Number(moneyMarketSupplyAmount),
         })
       );
       preInstructions.push(createSyncNativeInstruction(supplyTokenAddress));
@@ -555,7 +549,6 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-
     return { txs: [preTx, borrowTx], input: payload };
   }
 
@@ -681,7 +674,6 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-
     return { txs: [preTx, repayTx], input: payload };
   }
 
@@ -768,7 +760,6 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-
     return { txs: [claimTx], input: payload };
   }
 
@@ -842,7 +833,6 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-
 
     return { txs: [txStake], input: payload };
   }
@@ -925,7 +915,6 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-
 
     return { txs: [txUnstake], input: payload };
   }
@@ -1024,7 +1013,6 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-
 
     return { txs: [txHarvest], input: payload };
   }
