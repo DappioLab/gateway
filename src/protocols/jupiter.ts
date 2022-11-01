@@ -62,16 +62,39 @@ export class ProtocolJupiter implements IProtocolSwap {
     // wrap through gateway
     // TODO: export params to gateway state
     let isPreIx = true;
+    let swapIx: anchor.web3.TransactionInstruction;
     for (let ix of swapTransaction.instructions) {
       if (ix.programId.equals(JUPITER_PROGRAM_ID)) {
         remainingAccounts = ix.keys;
         isPreIx = false;
+        swapIx = ix;
       } else if (isPreIx) {
         preInstructions.push(ix);
       } else {
         postInstructions.push(ix);
       }
     }
+
+    // Extract config
+    const rawData = Uint8Array.from(swapIx.data);
+    const swapConfig = {
+      protocolConfig: Buffer.from(rawData.slice(8, rawData.byteLength - 19)), // 7 - 9 bytes
+      inputAmount: Buffer.from(
+        rawData.slice(rawData.byteLength - 19, rawData.byteLength - 11)
+      ), // u64
+      outputAmount: Buffer.from(
+        rawData.slice(rawData.byteLength - 11, rawData.byteLength - 3)
+      ), // u64
+      slippageBps: Buffer.from(
+        rawData.slice(rawData.byteLength - 3, rawData.byteLength - 1)
+      ), // u16
+      platformFeeBps: Buffer.from(
+        rawData.slice(rawData.byteLength - 1, rawData.byteLength)
+      ), // u8
+    };
+    console.log("data:", swapIx.data);
+    console.log("swapConfig:", swapConfig);
+
     const txSwap = await this._gatewayProgram.methods
       .swap()
       .accounts({
