@@ -5,7 +5,7 @@ import {
   createSyncNativeInstruction,
   getAssociatedTokenAddress,
 } from "@solana/spl-token-v2";
-import { struct, u8 } from "@project-serum/borsh";
+import { struct, u64, u8 } from "@project-serum/borsh";
 import {
   getActivityIndex,
   createATAWithoutCheckIx,
@@ -18,6 +18,7 @@ import {
   CollateralizeParams,
   GatewayParams,
   IProtocolMoneyMarket,
+  PAYLOAD_SIZE,
   RepayParams,
   SupplyParams,
   UncollateralizeParams,
@@ -40,7 +41,14 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    // TODO
+    const inputLayout = struct([u64("supplyAmount")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        supplyAmount: new anchor.BN(params.supplyAmount),
+      },
+      payload
+    );
 
     // Handle transaction here
     const reserve = reserveInfo as solend.ReserveInfo;
@@ -58,12 +66,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
       await createATAWithoutCheckIx(userKey, supplyTokenMint)
     );
 
-    // Work-around of getting moneyMarketSupplyAmount
-    const indexSupply = this._gatewayParams.actionQueue.indexOf(
-      ActionType.Supply
-    );
-    const moneyMarketSupplyAmount =
-      this._gatewayParams.payloadQueue[indexSupply];
+    const moneyMarketSupplyAmount = new anchor.BN(params.supplyAmount);
 
     if (supplyTokenMint.equals(NATIVE_SOL) || supplyTokenMint.equals(WSOL)) {
       preInstructions.push(
@@ -177,8 +180,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
-    return { txs: [txSupply], input: Buffer.alloc(0) };
+    return { txs: [txSupply], input: payload };
   }
 
   async collateralize(
@@ -196,7 +198,14 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    // TODO
+    const inputLayout = struct([u64("reservedAmount")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        reservedAmount: new anchor.BN(params.reservedAmount),
+      },
+      payload
+    );
 
     // Handle transaction here
     const reserve = reserveInfo as solend.ReserveInfo;
@@ -356,8 +365,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
-    return { txs: [txPrerequisite, txUnsupply], input: Buffer.alloc(0) };
+    return { txs: [txPrerequisite, txUnsupply], input: payload };
   }
 
   async uncollateralize(
@@ -375,7 +383,14 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    // TODO
+    const inputLayout = struct([u64("borrowAmount")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        borrowAmount: new anchor.BN(params.borrowAmount),
+      },
+      payload
+    );
 
     // Handle transaction here
     const reserve = reserveInfo as solend.ReserveInfo;
@@ -526,8 +541,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
-    return { txs: [txPrerequisite, txBorrow], input: Buffer.alloc(0) };
+    return { txs: [txPrerequisite, txBorrow], input: payload };
   }
 
   async repay(
@@ -536,7 +550,14 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    // TODO
+    const inputLayout = struct([u64("repayAmount")]);
+    let payload = Buffer.alloc(PAYLOAD_SIZE);
+    inputLayout.encode(
+      {
+        repayAmount: new anchor.BN(params.repayAmount),
+      },
+      payload
+    );
 
     // Handle transaction here
     const reserve = reserveInfo as solend.ReserveInfo;
@@ -628,11 +649,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
     );
     txPrerequisite.add(await createATAWithoutCheckIx(userKey, repayTokenMint));
 
-    // Work-around of getting moneyMarketRepayAmount
-    const indexRepay = this._gatewayParams.actionQueue.indexOf(
-      ActionType.Repay
-    );
-    const moneyMarketRepayAmount = this._gatewayParams.payloadQueue[indexRepay];
+    const moneyMarketRepayAmount = new anchor.BN(params.repayAmount);
 
     if (repayTokenMint.equals(NATIVE_SOL) || repayTokenMint.equals(WSOL)) {
       preInstructions.push(
@@ -690,8 +707,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // TODO: Replace dummy input payload
-    return { txs: [txPrerequisite, txRepay], input: Buffer.alloc(0) };
+    return { txs: [txPrerequisite, txRepay], input: payload };
   }
 
   private async _createObligationAccountIx(
