@@ -145,7 +145,7 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
     let payload = Buffer.alloc(PAYLOAD_SIZE);
     inputLayout.encode(
       {
-        tokenInAmount: new anchor.BN(params.reservedAmount),
+        reserveAmount: new anchor.BN(params.reservedAmount),
       },
       payload
     );
