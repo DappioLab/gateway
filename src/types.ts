@@ -274,6 +274,7 @@ export interface StakeParams {
   lpAmount?: number;
   version?: number;
   lockDuration?: number;
+  mint?: anchor.web3.PublicKey;
 }
 
 export interface UnstakeParams {
@@ -282,6 +283,7 @@ export interface UnstakeParams {
   shareAmount: number;
   farmerKey?: anchor.web3.PublicKey;
   version?: number;
+  mint?: anchor.web3.PublicKey;
 }
 
 export interface HarvestParams {
@@ -290,6 +292,7 @@ export interface HarvestParams {
   farmerKey?: anchor.web3.PublicKey;
   version?: number;
   type?: HarvestType;
+  mint?: anchor.web3.PublicKey;
 }
 
 export interface SupplyParams {
