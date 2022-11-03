@@ -21,15 +21,15 @@
     tiny-invariant "^1.1.0"
     toformat "^2.0.0"
 
-"@dappio-wonderland/gateway-idls@^0.2.6":
-  version "0.2.6"
-  resolved "https://registry.yarnpkg.com/@dappio-wonderland/gateway-idls/-/gateway-idls-0.2.6.tgz#dcd823b6527036aef7dbec5e9eb28cf5cdea2e60"
-  integrity sha512-jOvrS74Vnw5MlH6DTgHJQWoXlO81f71/2+LdefrKbybjorDUZ3xeQOCUofBA83PFNGXGP4VyWY4qGenVRuH+SQ==
+"@dappio-wonderland/gateway-idls@^0.2.7-test.2":
+  version "0.2.7-test.2"
+  resolved "https://registry.yarnpkg.com/@dappio-wonderland/gateway-idls/-/gateway-idls-0.2.7-test.2.tgz#840b766db3479633ceba542f62ed5ac1ed3c0156"
+  integrity sha512-5pXfz+kcPXgHJF93Wgmu49sNzg5yIZ0DDdjwRYXPXS4eVwh65+J4wgnNN2l4wVfwxTe9dYsjifKnY1Ckg56JXQ==
 
-"@dappio-wonderland/navigator@^0.2.11":
-  version "0.2.11"
-  resolved "https://registry.yarnpkg.com/@dappio-wonderland/navigator/-/navigator-0.2.11.tgz#825599fd563eaee5ffc70aff7344006d190fb6c3"
-  integrity sha512-3o0+/4edUvI0smFnt8xxS0tKkcT4GPpw3us2uX1I8bAj/kIlgU5Ndqq+AOeAUc4vHnD9NH/pC6G3FhM72184rg==
+"@dappio-wonderland/navigator@^0.2.14-test.10":
+  version "0.2.14-test.10"
+  resolved "https://registry.yarnpkg.com/@dappio-wonderland/navigator/-/navigator-0.2.14-test.10.tgz#c58e8f7fa3cbe067efc1b3e9b59f12df7acf386f"
+  integrity sha512-VB1VLycfWEgr/wFjdyo7OiLs1fIRDr0+sdtA6ZmpncVX1XqLeroC+gA8lk9RmiJptGINEeDx9Ww881+1ksna7Q==
   dependencies:
     "@project-serum/borsh" "^0.2.2"
     "@project-serum/serum" "^0.13.61"
