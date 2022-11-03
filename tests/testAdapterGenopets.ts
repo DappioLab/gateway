@@ -140,7 +140,7 @@ describe("Gateway", () => {
     const harvestParams1: HarvestParams = {
       protocol: SupportedProtocols.Genopets,
       farmId,
-      type: HarvestType.ClaimRewards,
+      type: HarvestType.initialize,
       mint,
     };
 
@@ -153,7 +153,7 @@ describe("Gateway", () => {
     const harvestParams2: HarvestParams = {
       protocol: SupportedProtocols.Genopets,
       farmId,
-      type: HarvestType.WithdrawAsSgene,
+      type: HarvestType.completeAsSGene,
       farmerKey: depositId!,
       mint,
     };
@@ -172,7 +172,7 @@ describe("Gateway", () => {
     const harvestParams3: HarvestParams = {
       protocol: SupportedProtocols.Genopets,
       farmId,
-      type: HarvestType.Withdraw,
+      type: HarvestType.completeAsGene,
       farmerKey: depositId!,
       mint,
     };

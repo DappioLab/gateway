@@ -405,9 +405,9 @@ export enum PoolDirection {
 }
 
 export enum HarvestType {
-  WithdrawAsSgene,
-  ClaimRewards,
-  Withdraw,
+  initialize,
+  completeAsGene,
+  completeAsSGene,
 }
 
 export type GatewayParams = TypeDef<
