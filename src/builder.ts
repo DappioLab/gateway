@@ -112,7 +112,7 @@ export class GatewayBuilder {
       poolDirection: PoolDirection.Obverse,
       swapMinOutAmount: new anchor.BN(0),
       lockDuration: 0,
-      asSgene: 0,
+      harvestType: 0,
     };
 
     this._metadata = {

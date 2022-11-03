@@ -476,7 +476,7 @@ export type GatewayParams = TypeDef<
           type: "u8";
         },
         {
-          name: "asSgene";
+          name: "harvestType";
           type: "u8";
         }
       ];
