@@ -43,7 +43,6 @@ describe("Gateway", () => {
 
   anchor.setProvider(provider);
 
-  const zapInAmount = 10000;
   const GENE_USDC_LP = new PublicKey(
     "7GKvfHEXenNiWYbJBKae89mdaMPr5gGMYwZmyC8gBNVG"
   );
@@ -55,25 +54,17 @@ describe("Gateway", () => {
   // const mint = GENE_MINT;
 
   it("Stake in Genopets", async () => {
-    const farmId = new anchor.web3.PublicKey(
-      "tEAbLeDznDdQ5jvdk1cdm2qUzoYmyc6nX5FChAyAB2U" // GENE
+    const poolId = new anchor.web3.PublicKey(
+      "Enq8vJucRbkzKA1i1PahJNhMyUTzoVL5Cs8n5rC3NLGn" // GENE-USDC
     );
-    const swapParams: SwapParams = {
-      protocol: SupportedProtocols.Jupiter,
-      fromTokenMint: new PublicKey(
-        // "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
-        "So11111111111111111111111111111111111111112" // WSOL
-      ),
-      toTokenMint: new PublicKey(
-        "GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz" // GENE
-      ),
-      amount: zapInAmount / 2, // Swap half of the fromToken to proceed zapIn
-      slippage: 1,
+    const farmId = new anchor.web3.PublicKey(
+      "tEAbLeDznDdQ5jvdk1cdm2qUzoYmyc6nX5FChAyAB2U"
+    );
+    const addLiquidityParams: AddLiquidityParams = {
+      protocol: SupportedProtocols.Raydium,
+      poolId,
+      tokenInAmount: 100,
     };
-    // const addLiquidityParams: AddLiquidityParams = {
-    //   protocol: SupportedProtocols.Genopets,
-    //   poolId,
-    // };
     const farm = (await genopets.infos.getFarm(
       connection,
       farmId
@@ -89,12 +80,7 @@ describe("Gateway", () => {
 
     const gateway = new GatewayBuilder(provider);
 
-    // await gateway.swap(swapParams);
-    console.log(gateway.params.swapMinOutAmount.toNumber());
-    // Work-around
-    // addLiquidityParams.tokenInAmount =
-    //   gateway.params.swapMinOutAmount.toNumber();
-    // await gateway.addLiquidity(addLiquidityParams);
+    await gateway.addLiquidity(addLiquidityParams);
     await gateway.stake(stakeParams);
 
     await gateway.finalize();
@@ -121,6 +107,9 @@ describe("Gateway", () => {
   it("Unstake + Harvest in Genopets", async () => {
     const farmId = new anchor.web3.PublicKey(
       "tEAbLeDznDdQ5jvdk1cdm2qUzoYmyc6nX5FChAyAB2U"
+    );
+    const poolId = new anchor.web3.PublicKey(
+      "Enq8vJucRbkzKA1i1PahJNhMyUTzoVL5Cs8n5rC3NLGn" // GENE-USDC
     );
 
     const farm = (await genopets.infos.getFarm(
@@ -183,21 +172,10 @@ describe("Gateway", () => {
       farmerKey: depositId!,
       mint,
     };
-    // const removeLiquidityParams: RemoveLiquidityParams = {
-    //   protocol: SupportedProtocols.Raydium,
-    //   poolId,
-    // };
-    // const swapParams: SwapParams = {
-    //   protocol: SupportedProtocols.Jupiter,
-    //   fromTokenMint: new PublicKey(
-    //     "GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz" // GENE
-    //   ),
-    //   toTokenMint: new PublicKey(
-    //     "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
-    //   ),
-    //   amount: 100, // swap coin to pc
-    //   slippage: 3,
-    // };
+    const removeLiquidityParams: RemoveLiquidityParams = {
+      protocol: SupportedProtocols.Raydium,
+      poolId,
+    };
 
     const gateway = new GatewayBuilder(provider);
 
@@ -205,7 +183,7 @@ describe("Gateway", () => {
     // await gateway.harvest(harvestParams2);
     // await gateway.harvest(harvestParams3);
     await gateway.unstake(unstakeParams);
-    // await gateway.removeLiquidity(removeLiquidityParams);
+    await gateway.removeLiquidity(removeLiquidityParams);
     // await gateway.swap(swapParams);
 
     await gateway.finalize();
