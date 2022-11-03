@@ -72,10 +72,10 @@ export class ProtocolGenopets implements IProtocolFarm {
     let preInstructions: anchor.web3.TransactionInstruction[] = [];
 
     const userPoolTokenAccount = await getAssociatedTokenAddress(
-      farm.geneMint,
+      params.mint,
       userKey
     );
-    preInstructions.push(await createATAWithoutCheckIx(userKey, farm.geneMint));
+    preInstructions.push(await createATAWithoutCheckIx(userKey, params.mint));
 
     const userSgeneTokenAccount = await getAssociatedTokenAddress(
       farm.mintSgene,
@@ -86,23 +86,23 @@ export class ProtocolGenopets implements IProtocolFarm {
     );
 
     const vaultATA = await getAssociatedTokenAddress(
-      farm.geneMint,
+      params.mint,
       farmerId,
       true
     );
     preInstructions.push(
-      await createATAWithoutCheckIx(farmerId, farm.geneMint, userKey)
+      await createATAWithoutCheckIx(farmerId, params.mint, userKey)
     );
 
     const remainingAccounts = [
       { pubkey: userKey, isSigner: true, isWritable: true }, // 0
       { pubkey: farm.farmId, isSigner: false, isWritable: true }, // 1
       {
-        pubkey: farmWrapper.getStakingPool(farm.geneMint),
+        pubkey: farmWrapper.getStakingPool(params.mint),
         isSigner: false,
         isWritable: true,
       }, // 2
-      { pubkey: farm.geneMint, isSigner: false, isWritable: true }, // 3
+      { pubkey: params.mint, isSigner: false, isWritable: true }, // 3
       { pubkey: farmerId, isSigner: false, isWritable: true }, // 4
       {
         pubkey: userPoolTokenAccount,
@@ -205,17 +205,17 @@ export class ProtocolGenopets implements IProtocolFarm {
         farmerId
       )) as genopets.FarmerInfo;
       const farmerWrapper = new genopets.FarmerInfoWrapper(farmer);
-      userDeposit = farmerWrapper.getUserDeposit();
-      userReDeposit = farmerWrapper.getUserReDeposit();
+      userDeposit = params.farmerKey || farmerWrapper.getUserDeposit();
+      userReDeposit = farmerWrapper.getUserDeposit();
     }
 
     let preInstructions: anchor.web3.TransactionInstruction[] = [];
 
     const userPoolTokenAccount = await getAssociatedTokenAddress(
-      farm.geneMint,
+      params.mint,
       userKey
     );
-    preInstructions.push(await createATAWithoutCheckIx(userKey, farm.geneMint));
+    preInstructions.push(await createATAWithoutCheckIx(userKey, params.mint));
 
     const userSgeneTokenAccount = await getAssociatedTokenAddress(
       farm.mintSgene,
@@ -226,7 +226,7 @@ export class ProtocolGenopets implements IProtocolFarm {
     );
 
     const vaultATA = await getAssociatedTokenAddress(
-      farm.geneMint,
+      params.mint,
       farmerId,
       true
     );
@@ -235,11 +235,11 @@ export class ProtocolGenopets implements IProtocolFarm {
       { pubkey: userKey, isSigner: true, isWritable: true }, // 0
       { pubkey: farm.farmId, isSigner: false, isWritable: true }, // 1
       {
-        pubkey: farmWrapper.getStakingPool(farm.geneMint),
+        pubkey: farmWrapper.getStakingPool(params.mint),
         isSigner: false,
         isWritable: true,
       }, // 2
-      { pubkey: farm.geneMint, isSigner: false, isWritable: false }, // 3
+      { pubkey: params.mint, isSigner: false, isWritable: false }, // 3
       { pubkey: farmerId, isSigner: false, isWritable: true }, // 4
       {
         pubkey: userPoolTokenAccount,
@@ -277,12 +277,12 @@ export class ProtocolGenopets implements IProtocolFarm {
         isWritable: true,
       }, // 11
       {
-        pubkey: userDeposit,
+        pubkey: userReDeposit,
         isSigner: false,
         isWritable: true,
       }, // 12
       {
-        pubkey: userReDeposit,
+        pubkey: userDeposit,
         isSigner: false,
         isWritable: true,
       }, // 13
@@ -352,17 +352,6 @@ export class ProtocolGenopets implements IProtocolFarm {
 
     console.log("before userDeposit:", userDeposit.toBase58());
     console.log("before userReDeposit:", userReDeposit.toBase58());
-    // if (farmerAccount) {
-    //   const farmer = (await genopets.infos.getFarmer(
-    //     this._connection,
-    //     farmerId
-    //   )) as genopets.FarmerInfo;
-    //   const farmerWrapper = new genopets.FarmerInfoWrapper(farmer);
-    //   userDeposit = farmerWrapper.getUserDeposit();
-    //   userReDeposit = farmerWrapper.getUserReDeposit();
-    // }
-    // console.log("userDeposit:", userDeposit.toBase58());
-    // console.log("userReDeposit:", userReDeposit.toBase58());
 
     let preInstructions: anchor.web3.TransactionInstruction[] = [];
 
@@ -449,15 +438,15 @@ export class ProtocolGenopets implements IProtocolFarm {
         console.log("userReDeposit:", userReDeposit.toBase58());
 
         const userPoolTokenAccount = await getAssociatedTokenAddress(
-          farm.geneMint,
+          params.mint,
           userKey
         );
         preInstructions.push(
-          await createATAWithoutCheckIx(userKey, farm.geneMint)
+          await createATAWithoutCheckIx(userKey, params.mint)
         );
 
         const vaultATA = await getAssociatedTokenAddress(
-          farm.geneMint,
+          params.mint,
           farmerId,
           true
         );
@@ -465,11 +454,11 @@ export class ProtocolGenopets implements IProtocolFarm {
           { pubkey: userKey, isSigner: true, isWritable: true }, // 0
           { pubkey: farm.farmId, isSigner: false, isWritable: true }, // 1
           {
-            pubkey: farmWrapper.getStakingPool(farm.geneMint),
+            pubkey: farmWrapper.getStakingPool(params.mint),
             isSigner: false,
             isWritable: true,
           }, // 2
-          { pubkey: farm.geneMint, isSigner: false, isWritable: false }, // 3
+          { pubkey: params.mint, isSigner: false, isWritable: false }, // 3
           { pubkey: farmerId, isSigner: false, isWritable: true }, // 4
           {
             pubkey: userPoolTokenAccount,
