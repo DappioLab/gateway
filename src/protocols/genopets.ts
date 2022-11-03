@@ -329,7 +329,7 @@ export class ProtocolGenopets implements IProtocolFarm {
     let payload = Buffer.alloc(PAYLOAD_SIZE);
     inputLayout.encode(
       {
-        harvestType: params.type == params.type,
+        harvestType: params.type,
       },
       payload
     );
