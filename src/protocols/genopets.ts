@@ -47,7 +47,6 @@ export class ProtocolGenopets implements IProtocolFarm {
       payload
     );
 
-    this._gatewayParams.asSgene = params.version ? 1 : 0;
     this._gatewayParams.lockDuration = params.lockDuration
       ? params.lockDuration
       : 0;
@@ -178,8 +177,6 @@ export class ProtocolGenopets implements IProtocolFarm {
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
-    const isAsSgene = params.version ? true : false;
-
     // Handle payload input here
     const inputLayout = struct([u64("dummy1")]);
     let payload = Buffer.alloc(PAYLOAD_SIZE);
@@ -189,8 +186,6 @@ export class ProtocolGenopets implements IProtocolFarm {
       },
       payload
     );
-
-    this._gatewayParams.asSgene = isAsSgene ? 1 : 0;
 
     // Handle transaction here
     const farm = farmInfo as genopets.FarmInfo;
@@ -334,13 +329,13 @@ export class ProtocolGenopets implements IProtocolFarm {
     let payload = Buffer.alloc(PAYLOAD_SIZE);
     inputLayout.encode(
       {
-        asSgene: params.type == HarvestType.WithdrawAsSgene ? 1 : 0,
+        asSgene: params.type == HarvestType.completeAsSGene ? 1 : 0,
       },
       payload
     );
 
     this._gatewayParams.asSgene =
-      params.type == HarvestType.WithdrawAsSgene ? 1 : 0;
+      params.type == HarvestType.completeAsSGene ? 1 : 0;
 
     // Handle transaction here
     const farm = farmInfo as genopets.FarmInfo;
@@ -365,18 +360,16 @@ export class ProtocolGenopets implements IProtocolFarm {
 
     let remainingAccounts: anchor.web3.AccountMeta[] = [];
     switch (params.type) {
-      case HarvestType.WithdrawAsSgene:
+      case HarvestType.initialize:
         if (farmerAccount) {
           const farmer = (await genopets.infos.getFarmer(
             this._connection,
             farmerId
           )) as genopets.FarmerInfo;
           const farmerWrapper = new genopets.FarmerInfoWrapper(farmer);
-          userDeposit = params.farmerKey || farmerWrapper.getUserDeposit();
+          userDeposit = farmerWrapper.getUserDeposit();
           userReDeposit = farmerWrapper.getUserReDeposit();
         }
-        console.log("userDeposit:", userDeposit.toBase58());
-        console.log("userReDeposit:", userReDeposit.toBase58());
 
         remainingAccounts = [
           { pubkey: userKey, isSigner: true, isWritable: true }, // 0
@@ -388,12 +381,12 @@ export class ProtocolGenopets implements IProtocolFarm {
             isWritable: false,
           }, // 3
           {
-            pubkey: userSgeneTokenAccount,
+            pubkey: farm.mintSgene,
             isSigner: false,
             isWritable: true,
           }, // 4
           {
-            pubkey: farm.mintSgene,
+            pubkey: userSgeneTokenAccount,
             isSigner: false,
             isWritable: true,
           }, // 5
@@ -424,7 +417,7 @@ export class ProtocolGenopets implements IProtocolFarm {
           }, // 10
         ];
         break;
-      case HarvestType.Withdraw:
+      case HarvestType.completeAsGene:
         if (farmerAccount) {
           const farmer = (await genopets.infos.getFarmer(
             this._connection,
@@ -434,8 +427,6 @@ export class ProtocolGenopets implements IProtocolFarm {
           userDeposit = params.farmerKey || farmerWrapper.getUserDeposit();
           userReDeposit = farmerWrapper.getUserDeposit();
         }
-        console.log("userDeposit:", userDeposit.toBase58());
-        console.log("userReDeposit:", userReDeposit.toBase58());
 
         const userPoolTokenAccount = await getAssociatedTokenAddress(
           params.mint,
@@ -527,18 +518,16 @@ export class ProtocolGenopets implements IProtocolFarm {
           }, // 17
         ];
         break;
-      default:
+      case HarvestType.completeAsSGene:
         if (farmerAccount) {
           const farmer = (await genopets.infos.getFarmer(
             this._connection,
             farmerId
           )) as genopets.FarmerInfo;
           const farmerWrapper = new genopets.FarmerInfoWrapper(farmer);
-          userDeposit = farmerWrapper.getUserDeposit();
+          userDeposit = params.farmerKey || farmerWrapper.getUserDeposit();
           userReDeposit = farmerWrapper.getUserReDeposit();
         }
-        console.log("userDeposit:", userDeposit.toBase58());
-        console.log("userReDeposit:", userReDeposit.toBase58());
 
         remainingAccounts = [
           { pubkey: userKey, isSigner: true, isWritable: true }, // 0
@@ -550,12 +539,12 @@ export class ProtocolGenopets implements IProtocolFarm {
             isWritable: false,
           }, // 3
           {
-            pubkey: farm.mintSgene,
+            pubkey: userSgeneTokenAccount,
             isSigner: false,
             isWritable: true,
           }, // 4
           {
-            pubkey: userSgeneTokenAccount,
+            pubkey: farm.mintSgene,
             isSigner: false,
             isWritable: true,
           }, // 5
@@ -585,6 +574,10 @@ export class ProtocolGenopets implements IProtocolFarm {
             isWritable: false,
           }, // 10
         ];
+        break;
+
+      default:
+        console.error("Error: Unsupported harvest type");
         break;
     }
 
