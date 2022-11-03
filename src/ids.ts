@@ -3,7 +3,7 @@ import { PublicKey } from "@solana/web3.js";
 // Program IDs
 
 export const GATEWAY_PROGRAM_ID = new PublicKey(
-  "GATEp6AEtXtwHABNWHKH9qeh3uJDZtZJ7YBNYzHsX3FS"
+  "9dwUanLrLHoaUEw7YYZG4VkqWWvMpxjmNYmTB71Gzwnu"
 );
 
 export const RAYDIUM_ADAPTER_PROGRAM_ID = new PublicKey(
@@ -24,6 +24,10 @@ export const SOLEND_ADAPTER_PROGRAM_ID = new PublicKey(
 
 export const NFT_FINANCE_ADAPTER_PROGRAM_ID = new PublicKey(
   "ADPTyBr92sBCE1hdYBRvXbMpF4hKs17xyDjFPxopcsrh"
+);
+
+export const GENOPETS_ADAPTER_PROGRAM_ID = new PublicKey(
+  "ADPTR3wPKDCZ8HNBBpY3GGXB8hu6DZDqyPJMimyHjKNk"
 );
 
 export const SERUM_PROGRAM_ID = new PublicKey(

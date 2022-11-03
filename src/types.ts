@@ -219,6 +219,7 @@ export enum SupportedProtocols {
   Francium = 9,
   Friktion = 10,
   Katana = 11,
+  Genopets = 12,
 }
 
 export interface RouteInfoExtend extends RouteInfo {
@@ -272,6 +273,7 @@ export interface StakeParams {
   farmerKey?: anchor.web3.PublicKey;
   lpAmount?: number;
   version?: number;
+  lockDuration?: number;
 }
 
 export interface UnstakeParams {
@@ -287,6 +289,7 @@ export interface HarvestParams {
   farmId: anchor.web3.PublicKey;
   farmerKey?: anchor.web3.PublicKey;
   version?: number;
+  type?: HarvestType;
 }
 
 export interface SupplyParams {
@@ -398,6 +401,12 @@ export enum PoolDirection {
   Reverse,
 }
 
+export enum HarvestType {
+  WithdrawAsSgene,
+  ClaimRewards,
+  Withdraw,
+}
+
 export type GatewayParams = TypeDef<
   {
     name: "GatewayParams";
@@ -457,6 +466,14 @@ export type GatewayParams = TypeDef<
         },
         {
           name: "poolDirection";
+          type: "u8";
+        },
+        {
+          name: "lockDuration";
+          type: "u8";
+        },
+        {
+          name: "asSgene";
           type: "u8";
         }
       ];
