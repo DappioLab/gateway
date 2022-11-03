@@ -56,8 +56,8 @@ export class ProtocolGenopets implements IProtocolFarm {
     const farmWrapper = new genopets.FarmInfoWrapper(farm);
     const farmerId = await genopets.infos.getFarmerId(farm, userKey);
     const farmerAccount = await this._connection.getAccountInfo(farmerId);
-    let userDeposit = genopets.calcDeposit(userKey, 0);
-    let userReDeposit = genopets.calcDeposit(userKey, 1);
+    let userDeposit = genopets.getFarmerDepositKey(userKey, 0);
+    let userReDeposit = genopets.getFarmerDepositKey(userKey, 1);
     if (farmerAccount) {
       const farmer = (await genopets.infos.getFarmer(
         this._connection,
@@ -192,8 +192,8 @@ export class ProtocolGenopets implements IProtocolFarm {
     const farmWrapper = new genopets.FarmInfoWrapper(farm);
     const farmerId = await genopets.infos.getFarmerId(farm, userKey);
     const farmerAccount = await this._connection.getAccountInfo(farmerId);
-    let userDeposit = genopets.calcDeposit(userKey, 0);
-    let userReDeposit = genopets.calcDeposit(userKey, 1);
+    let userDeposit = genopets.getFarmerDepositKey(userKey, 0);
+    let userReDeposit = genopets.getFarmerDepositKey(userKey, 1);
     if (farmerAccount) {
       const farmer = (await genopets.infos.getFarmer(
         this._connection,
@@ -325,28 +325,24 @@ export class ProtocolGenopets implements IProtocolFarm {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    const inputLayout = struct([u8("asSgene")]);
+    const inputLayout = struct([u8("harvestType")]);
     let payload = Buffer.alloc(PAYLOAD_SIZE);
     inputLayout.encode(
       {
-        asSgene: params.type == HarvestType.completeAsSGene ? 1 : 0,
+        harvestType: params.type == params.type,
       },
       payload
     );
 
-    this._gatewayParams.asSgene =
-      params.type == HarvestType.completeAsSGene ? 1 : 0;
+    this._gatewayParams.harvestType = params.type;
 
     // Handle transaction here
     const farm = farmInfo as genopets.FarmInfo;
     const farmWrapper = new genopets.FarmInfoWrapper(farm);
     const farmerId = await genopets.infos.getFarmerId(farm, userKey);
     const farmerAccount = await this._connection.getAccountInfo(farmerId);
-    let userDeposit = genopets.calcDeposit(userKey, 0);
-    let userReDeposit = genopets.calcDeposit(userKey, 1);
-
-    console.log("before userDeposit:", userDeposit.toBase58());
-    console.log("before userReDeposit:", userReDeposit.toBase58());
+    let userDeposit = genopets.getFarmerDepositKey(userKey, 0);
+    let userReDeposit = genopets.getFarmerDepositKey(userKey, 1);
 
     let preInstructions: anchor.web3.TransactionInstruction[] = [];
 
