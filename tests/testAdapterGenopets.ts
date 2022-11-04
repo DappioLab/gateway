@@ -52,7 +52,7 @@ describe("Gateway", () => {
 
   const mint = GENE_USDC_LP;
   // const mint = GENE_MINT;
-
+  let outAmount = 0;
   it("Stake in Genopets", async () => {
     const poolId = new anchor.web3.PublicKey(
       "Enq8vJucRbkzKA1i1PahJNhMyUTzoVL5Cs8n5rC3NLGn" // GENE-USDC
@@ -67,7 +67,7 @@ describe("Gateway", () => {
         "GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz" // GENE
       ),
       amount: 100, // Swap half of the fromToken to proceed zapIn
-      slippage: 1,
+      slippage: 50,
     };
     const addLiquidityParams: AddLiquidityParams = {
       protocol: SupportedProtocols.Raydium,
@@ -90,6 +90,7 @@ describe("Gateway", () => {
     const gateway = new GatewayBuilder(provider);
 
     await gateway.swap(swapParams);
+    outAmount = gateway.params.swapMinOutAmount.toNumber();
     await gateway.addLiquidity(addLiquidityParams);
     await gateway.stake(stakeParams);
 
@@ -143,8 +144,8 @@ describe("Gateway", () => {
         "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
         // "GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz" // GENE
       ),
-      amount: 100, // Swap half of the fromToken to proceed zapIn
-      slippage: 1,
+      amount: outAmount, // Swap half of the fromToken to proceed zapIn
+      slippage: 50,
     };
 
     const harvestParams1: HarvestParams = {
