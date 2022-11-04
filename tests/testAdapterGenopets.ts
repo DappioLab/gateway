@@ -49,6 +49,9 @@ describe("Gateway", () => {
   const GENE_MINT = new PublicKey(
     "GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz"
   );
+  const USDC_MINT = new PublicKey(
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+  );
 
   const mint = GENE_USDC_LP;
   // const mint = GENE_MINT;
@@ -60,14 +63,10 @@ describe("Gateway", () => {
     const farmId = genopets.getFarmId(mint);
     const swapParams: SwapParams = {
       protocol: SupportedProtocols.Jupiter,
-      fromTokenMint: new PublicKey(
-        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
-      ),
-      toTokenMint: new PublicKey(
-        "GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz" // GENE
-      ),
+      fromTokenMint: USDC_MINT,
+      toTokenMint: GENE_MINT,
       amount: 100, // Swap half of the fromToken to proceed zapIn
-      slippage: 50,
+      slippage: 1,
     };
     const addLiquidityParams: AddLiquidityParams = {
       protocol: SupportedProtocols.Raydium,
@@ -96,7 +95,7 @@ describe("Gateway", () => {
 
     await gateway.finalize();
 
-    console.log(gateway.params);
+    
     // console.log(`swapInAmount: ${gateway.params.swapInAmount}`);
     // console.log(`swapMinOutAmount: ${gateway.params.swapMinOutAmount}`);
 
@@ -136,16 +135,10 @@ describe("Gateway", () => {
     )) as genopets.FarmerInfo;
     const swapParams: SwapParams = {
       protocol: SupportedProtocols.Jupiter,
-      fromTokenMint: new PublicKey(
-        // "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
-        "GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz" // GENE
-      ),
-      toTokenMint: new PublicKey(
-        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
-        // "GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz" // GENE
-      ),
+      fromTokenMint: GENE_MINT,
+      toTokenMint: USDC_MINT,
       amount: outAmount, // Swap half of the fromToken to proceed zapIn
-      slippage: 50,
+      slippage: 2,
     };
 
     const harvestParams1: HarvestParams = {
@@ -210,7 +203,7 @@ describe("Gateway", () => {
 
     await gateway.finalize();
 
-    console.log(gateway.params);
+    
     // console.log(`swapInAmount: ${gateway.gatewayParams.swapInAmount}`);
     // console.log(`swapMinOutAmount: ${gateway.gatewayParams.swapMinOutAmount}`);
 
@@ -284,7 +277,7 @@ describe("Gateway", () => {
 
   //   await gateway.finalize();
 
-  //   console.log(gateway.params);
+  //   
 
   //   const txs = gateway.transactions();
 
@@ -342,7 +335,7 @@ describe("Gateway", () => {
 
   //   await gateway.finalize();
 
-  //   console.log(gateway.params);
+  //   
 
   //   const txs = gateway.transactions();
 
