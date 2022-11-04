@@ -63,7 +63,7 @@ export class ProtocolSaber implements IProtocolPool, IProtocolFarm {
         dummy3: new anchor.BN(1000),
 
         // From Metadatra
-        PoolDirection: this._gatewayParams.poolDirection,
+        poolDirection: this._gatewayParams.poolDirection,
       },
       payload
     );

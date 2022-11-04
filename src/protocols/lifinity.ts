@@ -45,7 +45,7 @@ export class ProtocolLifinity implements IProtocolPool {
       {
         tokenInAmount: new anchor.BN(params.tokenInAmount),
         // From Metadata
-        PoolDirection: this._gatewayParams.poolDirection,
+        poolDirection: this._gatewayParams.poolDirection,
       },
       payload
     );

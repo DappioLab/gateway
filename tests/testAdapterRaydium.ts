@@ -19,15 +19,19 @@ describe("Gateway", () => {
   //   commitment: "confirmed",
   //   wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
   // });
-  const connection = new Connection("https://solana-api.tt-prod.net", {
+  const connection = new Connection("https://solana-api.projectserum.com", {
     commitment: "confirmed",
     confirmTransactionInitialTimeout: 180 * 1000,
   });
+  // const connection = new Connection("https://solana-api.tt-prod.net", {
+  //   commitment: "confirmed",
+  //   confirmTransactionInitialTimeout: 180 * 1000,
+  // });
   // const connection = new Connection("https://ssc-dao.genesysgo.net", {
   //   commitment: "confirmed",
   //   confirmTransactionInitialTimeout: 180 * 1000,
   // });
-  // const connection = new Connection("https:////api.mainnet-beta.solana.com", {
+  // const connection = new Connection("https://api.mainnet-beta.solana.com", {
   //   commitment: "confirmed",
   //   confirmTransactionInitialTimeout: 180 * 1000,
   // });
@@ -48,8 +52,9 @@ describe("Gateway", () => {
       // "6UmmUiYoBjSrhakAobJw8BvkmJtDVxaeBtbt7rxWo1mg" // RAY-USDC
       // "Enq8vJucRbkzKA1i1PahJNhMyUTzoVL5Cs8n5rC3NLGn" // GENE-USDC (Pool V4)
       // "8FrCybrh7UFznP1hVHg8kXZ8bhii37c7BGzmjkdcsGJp" // GENE-RAY (Pool V4)
-      "DPgYdwgz7ZytfrzLeRYJwXq9JGeskaXTRrM8biFEnLs1" // PRGC-USDC
+      // "DPgYdwgz7ZytfrzLeRYJwXq9JGeskaXTRrM8biFEnLs1" // PRGC-USDC
       // "2N5HpqiZe2b5EKGhW1adx56chbWCAURHVqaH1gL9mppH" // GEAR-USDC
+      "58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2" // SOL-USDC
     );
     const farmId = new anchor.web3.PublicKey(
       // "5DFbcYNLLy5SJiBpCCDzNSs7cWCsUbYnCkLXzcPQiKnR" // RAY-SRM
@@ -58,8 +63,9 @@ describe("Gateway", () => {
       // "CHYrUBX2RKX8iBg7gYTkccoGNBzP44LdaazMHCLcdEgS" // RAY-USDC
       // "DDRNVVJBEXEemcprVVUcrTbYnR88JyN6jjT2ypgAQHC8" // GENE-USDC (Farm V5)
       // "GVfLbXA3dpEHPvc4do9HvMZ8TACxm3x54BVrHPMEixcr" // GENE-RAY (Farm V5)
-      "GBjTMHf9TsRdMnP6S3ewAgpSoCacpZqQF1tXmnchborv" // PRGC-USDC (Farm V5)
+      // "GBjTMHf9TsRdMnP6S3ewAgpSoCacpZqQF1tXmnchborv" // PRGC-USDC (Farm V5)
       // "B7A3hAej7ZbAsVPM3M5ietDigQgxyucYPANJSGDVpQEw" // GEAR-USDC (Farm V5)
+      "GUzaohfNuFbBqQTnPgPSNciv3aUvriXYjQduRE3ZkqFw" // SOL-USDC
     );
     const swapParams: SwapParams = {
       protocol: SupportedProtocols.Jupiter,
@@ -72,9 +78,9 @@ describe("Gateway", () => {
         // "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" // USDT
         // "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
         // "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" // SRM
-        // "So11111111111111111111111111111111111111112" // WSOL
+        "So11111111111111111111111111111111111111112" // WSOL
         // "GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz" // GENE
-        "66edZnAPEJSxnAK4SckuupssXpbu5doV57FUcghaqPsY" // PRGC
+        // "66edZnAPEJSxnAK4SckuupssXpbu5doV57FUcghaqPsY" // PRGC
         // "7s6NLX42eURZfpyuKkVLrr9ED9hJE8718cyXFsYKqq5g" // GEAR
       ),
       amount: zapInAmount / 2, // Swap half of the fromToken to proceed zapIn
@@ -368,15 +374,19 @@ describe("Gateway", () => {
     const gateway = new GatewayBuilder(provider);
     const poolId = new anchor.web3.PublicKey(
       // "GaqgfieVmnmY4ZsZHHA6L5RSVzCGL3sKx4UgHBaYNy8m" // RAY-SRM
-      "AVs9TA4nWDzfPJE9gGVNJMVhcQy3V9PGazuz33BfG2RA" // RAY-WSOL
+      // "AVs9TA4nWDzfPJE9gGVNJMVhcQy3V9PGazuz33BfG2RA" // RAY-WSOL
       // "DVa7Qmb5ct9RCpaU7UTpSaf3GVMYz17vNVU67XpdCRut" // RAY-USDT
       // "6UmmUiYoBjSrhakAobJw8BvkmJtDVxaeBtbt7rxWo1mg" // RAY-USDC
+      // "58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2" // SOL-USDC
+      "7XawhbbxtsRcQA8KTkHT9f9nc6d69UwqCDh6U5EEbEmX" // SOL-USDT
     );
     const farmId = new anchor.web3.PublicKey(
       // "5DFbcYNLLy5SJiBpCCDzNSs7cWCsUbYnCkLXzcPQiKnR" // RAY-SRM
-      "HUDr9BDaAGqi37xbQHzxCyXvfMCKPTPNF8g9c9bPu1Fu" // RAY-WSOL
+      // "HUDr9BDaAGqi37xbQHzxCyXvfMCKPTPNF8g9c9bPu1Fu" // RAY-WSOL
       // "AvbVWpBi2e4C9HPmZgShGdPoNydG4Yw8GJvG9HUcLgce" // RAY-USDT
       // "CHYrUBX2RKX8iBg7gYTkccoGNBzP44LdaazMHCLcdEgS" // RAY-USDC
+      // "GUzaohfNuFbBqQTnPgPSNciv3aUvriXYjQduRE3ZkqFw" // SOL-USDC
+      "5r878BSWPtoXgnqaeFJi7BCycKZ5CodBB2vS9SeiV8q" // SOL-USDT
     );
     const addLiquidityParams: AddLiquidityParams = {
       protocol: SupportedProtocols.Raydium,
@@ -393,9 +403,10 @@ describe("Gateway", () => {
         "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
       ),
       toTokenMint: new PublicKey(
-        "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" // RAY
+        // "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" // RAY
+        "So11111111111111111111111111111111111111112" // WSOL
       ),
-      amount: zapInAmount,
+      amount: zapInAmount / 2,
       slippage: 3,
     };
 
@@ -405,19 +416,24 @@ describe("Gateway", () => {
     const swapParams2: SwapParams = {
       protocol: SupportedProtocols.Jupiter,
       fromTokenMint: new PublicKey(
-        // "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
-        "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" // RAY
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
+        // "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" // RAY
       ),
       toTokenMint: new PublicKey(
-        // "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" // USDT
+        "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" // USDT
         // "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" // SRM
-        "So11111111111111111111111111111111111111112" // WSOL
+        // "So11111111111111111111111111111111111111112" // WSOL
       ),
       amount: swapMinOutAmount / 2, // Swap half of the fromToken to proceed zapIn
       slippage: 3,
     };
 
     await gateway.swap(swapParams2);
+
+    // Work-around
+    addLiquidityParams.tokenInAmount =
+      gateway.params.swapMinOutAmount.toNumber();
+
     await gateway.addLiquidity(addLiquidityParams);
     await gateway.stake(stakeParams);
 
@@ -431,13 +447,13 @@ describe("Gateway", () => {
 
     console.log("======");
     console.log("Txs are sent...");
-    // for (let tx of txs) {
-    //   const sig = await provider.sendAndConfirm(tx, [], {
-    //     skipPreflight: true,
-    //     commitment: "confirmed",
-    //   } as unknown as anchor.web3.ConfirmOptions);
-    //   console.log(sig);
-    // }
+    for (let tx of txs) {
+      const sig = await provider.sendAndConfirm(tx, [], {
+        skipPreflight: true,
+        commitment: "confirmed",
+      } as unknown as anchor.web3.ConfirmOptions);
+      console.log(sig);
+    }
     console.log("Txs are executed");
     console.log("======");
   });
