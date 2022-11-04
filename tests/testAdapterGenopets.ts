@@ -58,6 +58,17 @@ describe("Gateway", () => {
       "Enq8vJucRbkzKA1i1PahJNhMyUTzoVL5Cs8n5rC3NLGn" // GENE-USDC
     );
     const farmId = genopets.getFarmId(mint);
+    const swapParams: SwapParams = {
+      protocol: SupportedProtocols.Jupiter,
+      fromTokenMint: new PublicKey(
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
+      ),
+      toTokenMint: new PublicKey(
+        "GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz" // GENE
+      ),
+      amount: 100, // Swap half of the fromToken to proceed zapIn
+      slippage: 1,
+    };
     const addLiquidityParams: AddLiquidityParams = {
       protocol: SupportedProtocols.Raydium,
       poolId,
@@ -78,6 +89,7 @@ describe("Gateway", () => {
 
     const gateway = new GatewayBuilder(provider);
 
+    await gateway.swap(swapParams);
     await gateway.addLiquidity(addLiquidityParams);
     await gateway.stake(stakeParams);
 
@@ -121,6 +133,19 @@ describe("Gateway", () => {
       connection,
       farmerId
     )) as genopets.FarmerInfo;
+    const swapParams: SwapParams = {
+      protocol: SupportedProtocols.Jupiter,
+      fromTokenMint: new PublicKey(
+        // "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
+        "GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz" // GENE
+      ),
+      toTokenMint: new PublicKey(
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
+        // "GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz" // GENE
+      ),
+      amount: 100, // Swap half of the fromToken to proceed zapIn
+      slippage: 1,
+    };
 
     const harvestParams1: HarvestParams = {
       protocol: SupportedProtocols.Genopets,
@@ -180,7 +205,7 @@ describe("Gateway", () => {
     // await gateway.harvest(harvestParams3);
     await gateway.unstake(unstakeParams);
     await gateway.removeLiquidity(removeLiquidityParams);
-    // await gateway.swap(swapParams);
+    await gateway.swap(swapParams);
 
     await gateway.finalize();
 
