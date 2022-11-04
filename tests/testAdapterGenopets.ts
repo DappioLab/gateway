@@ -57,9 +57,7 @@ describe("Gateway", () => {
     const poolId = new anchor.web3.PublicKey(
       "Enq8vJucRbkzKA1i1PahJNhMyUTzoVL5Cs8n5rC3NLGn" // GENE-USDC
     );
-    const farmId = new anchor.web3.PublicKey(
-      "tEAbLeDznDdQ5jvdk1cdm2qUzoYmyc6nX5FChAyAB2U"
-    );
+    const farmId = genopets.getFarmId(mint);
     const addLiquidityParams: AddLiquidityParams = {
       protocol: SupportedProtocols.Raydium,
       poolId,
@@ -105,9 +103,7 @@ describe("Gateway", () => {
   });
 
   it("Unstake + Harvest in Genopets", async () => {
-    const farmId = new anchor.web3.PublicKey(
-      "tEAbLeDznDdQ5jvdk1cdm2qUzoYmyc6nX5FChAyAB2U"
-    );
+    const farmId = genopets.getFarmId(mint);
     const poolId = new anchor.web3.PublicKey(
       "Enq8vJucRbkzKA1i1PahJNhMyUTzoVL5Cs8n5rC3NLGn" // GENE-USDC
     );
@@ -133,43 +129,43 @@ describe("Gateway", () => {
       mint,
     };
 
-    let depositId: anchor.web3.PublicKey;
-    for (let deposit of farmer.userDeposit) {
-      if (deposit?.isYield == true) {
-        depositId = deposit.depositId;
+    let farmerInstanceId: anchor.web3.PublicKey;
+    for (let farmerInstance of farmer.instance) {
+      if (farmerInstance?.isYield == true) {
+        farmerInstanceId = farmerInstance.id;
       }
     }
     const harvestParams2: HarvestParams = {
       protocol: SupportedProtocols.Genopets,
       farmId,
       type: HarvestType.completeAsSGene,
-      farmerKey: depositId!,
+      farmerKey: farmerInstanceId!,
       mint,
     };
 
-    for (let deposit of farmer.userDeposit) {
-      const timestamp = Number(deposit?.lockUntil);
+    for (let farmerInstance of farmer.instance) {
+      const timestamp = Number(farmerInstance?.lockUntil);
       const currentTimestamp = Number(new Date()) / 1000;
       if (
-        deposit?.isYield == false &&
-        deposit.poolToken.equals(mint) &&
+        farmerInstance?.isYield == false &&
+        farmerInstance.poolToken.equals(mint) &&
         timestamp < currentTimestamp
       ) {
-        depositId = deposit.depositId;
+        farmerInstanceId = farmerInstance.id;
       }
     }
     const harvestParams3: HarvestParams = {
       protocol: SupportedProtocols.Genopets,
       farmId,
       type: HarvestType.completeAsGene,
-      farmerKey: depositId!,
+      farmerKey: farmerInstanceId!,
       mint,
     };
     const unstakeParams: UnstakeParams = {
       protocol: SupportedProtocols.Genopets,
       farmId,
       shareAmount: 1000, // dummy
-      farmerKey: depositId!,
+      farmerKey: farmerInstanceId!,
       mint,
     };
     const removeLiquidityParams: RemoveLiquidityParams = {
@@ -208,9 +204,7 @@ describe("Gateway", () => {
   });
 
   // it("Unstake all in Genopets", async () => {
-  //   const farmId = new anchor.web3.PublicKey(
-  //     "tEAbLeDznDdQ5jvdk1cdm2qUzoYmyc6nX5FChAyAB2U"
-  //   );
+  //   const farmId = genopets.getFarmId(mint);
 
   //   const farm = (await genopets.infos.getFarm(
   //     connection,
@@ -231,28 +225,28 @@ describe("Gateway", () => {
   //   const harvestParams1: HarvestParams = {
   //     protocol: SupportedProtocols.Genopets,
   //     farmId,
-  //     type: HarvestType.ClaimRewards,
+  //     type: HarvestType.initialize,
   //     mint,
   //   };
   //   await gateway.harvest(harvestParams1);
 
-  //   let depositId: anchor.web3.PublicKey;
+  //   let farmerInstanceId: anchor.web3.PublicKey;
   //   let counter = 0;
-  //   for (let deposit of farmer.userDeposit) {
-  //     const timestamp = Number(deposit?.lockUntil);
+  //   for (let farmerInstance of farmer.instance) {
+  //     const timestamp = Number(farmerInstance?.lockUntil);
   //     const currentTimestamp = Number(new Date()) / 1000;
   //     if (
-  //       deposit?.isYield == false &&
-  //       deposit.poolToken.equals(mint) &&
+  //       farmerInstance?.isYield == false &&
+  //       farmerInstance.poolToken.equals(mint) &&
   //       timestamp < currentTimestamp
   //     ) {
-  //       depositId = deposit.depositId;
+  //       farmerInstanceId = farmerInstance.id;
 
   //       const unstakeParams: UnstakeParams = {
   //         protocol: SupportedProtocols.Genopets,
   //         farmId,
   //         shareAmount: 1000, // dummy
-  //         farmerKey: depositId!,
+  //         farmerKey: farmerInstanceId!,
   //         mint,
   //       };
 
@@ -282,9 +276,7 @@ describe("Gateway", () => {
   // });
 
   // it("Harvest all in Genopets", async () => {
-  //   const farmId = new anchor.web3.PublicKey(
-  //     "tEAbLeDznDdQ5jvdk1cdm2qUzoYmyc6nX5FChAyAB2U"
-  //   );
+  //   const farmId = genopets.getFarmId(mint);
 
   //   const farm = (await genopets.infos.getFarm(
   //     connection,
@@ -302,17 +294,17 @@ describe("Gateway", () => {
 
   //   const gateway = new GatewayBuilder(provider);
 
-  //   let depositId: anchor.web3.PublicKey;
+  //   let farmerInstanceId: anchor.web3.PublicKey;
   //   let counter = 0;
-  //   for (let deposit of farmer.userDeposit) {
-  //     if (deposit?.isYield == true) {
-  //       depositId = deposit.depositId;
+  //   for (let farmerInstance of farmer.instance) {
+  //     if (farmerInstance?.isYield == true) {
+  //       farmerInstanceId = farmerInstance.id;
 
   //       const harvestParams2: HarvestParams = {
   //         protocol: SupportedProtocols.Genopets,
   //         farmId,
-  //         type: HarvestType.WithdrawAsSgene,
-  //         farmerKey: depositId!,
+  //         type: HarvestType.completeAsSGene,
+  //         farmerKey: farmerInstanceId!,
   //         mint,
   //       };
 
