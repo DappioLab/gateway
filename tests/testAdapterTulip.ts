@@ -113,7 +113,7 @@ describe("Gateway", () => {
     console.log("======");
   });
 
-  it("Unupply in Tulip", async () => {
+  it("Unsupply in Tulip", async () => {
     // const lendingMarket = new PublicKey(
     //   "D1cqtVThyebK9KXKGXrCEuiqaNf5L4UfM1vHgCqiJxym"
     // );
