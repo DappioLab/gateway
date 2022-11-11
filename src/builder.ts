@@ -14,6 +14,7 @@ import {
   nftFinance,
   katana,
   friktion,
+  lido,
 } from "@dappio-wonderland/navigator";
 import {
   ActionType,
@@ -63,6 +64,7 @@ import { ProtocolFrancium } from "./protocols/francium";
 import { ProtocolKatana } from "./protocols/katana";
 import { ProtocolTulip } from "./protocols/tulip";
 import { ProtocolFriktion } from "./protocols/friktion";
+import { ProtocolLido } from "./protocols/lido";
 
 export class GatewayBuilder {
   public params: GatewayParams;
@@ -1188,6 +1190,19 @@ export class GatewayBuilder {
         );
 
         break;
+      case SupportedProtocols.Lido:
+          this._metadata.vault = await lido.infos.getVault(
+            this._provider.connection,
+            depositParams.vaultId
+          );
+          protocol = new ProtocolLido(
+            this._provider.connection,
+            this._program,
+            await this.getGatewayStateKey(),
+            this.params
+          );
+  
+          break;
       default:
         throw new Error("Unsupported Protocol");
     }
