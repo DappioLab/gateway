@@ -59,3 +59,8 @@ export const FRANCIUM_ADAPTER_PROGRAM_ID = new PublicKey(
 export const FRIKTION_ADAPTER_PROGRAM_ID = new PublicKey(
   "ADPTzbsaBdXA3FqXoPHjaTjPfh9kadxxFKxonZihP1Ji"
 );
+
+// TODO: UPDATE THIS
+export const LIDO_ADAPTER_PROGRAM_ID = new PublicKey(
+  "ADPTzbsaBdXA3FqXoPHjaTjPfh9kadxxFKxonZihP1Ji"
+);
