@@ -1312,6 +1312,24 @@ export class GatewayBuilder {
 
         break;
 
+      case SupportedProtocols.Lido:
+          this._metadata.vault = await lido.infos.getVault(
+            this._provider.connection,
+            withdrawParams.vaultId
+          );
+  
+          protocol = new ProtocolLido(
+            this._provider.connection,
+            this._program,
+            await this.getGatewayStateKey(),
+            this.params
+          );
+
+          // TODO: Remove once Lido has withdraw support
+          throw new Error("Lido withdraw has not been implemented yet!");
+  
+          break;
+
       default:
         throw new Error("Unsupported Protocol");
     }
