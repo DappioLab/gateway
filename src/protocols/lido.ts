@@ -36,9 +36,9 @@ export class ProtocolLido implements IProtocolVault {
 
     // TODO: Maybe better to do in navigator?
     const bufferArray = [lido.LIDO_ADDRESS.toBuffer(), Buffer.from("reserve_account")];
-    const [reserveAccount] = await anchor.web3.PublicKey.findProgramAddress(bufferArray, lido.LIDO_PROGRAM_ID);
+    const [reserveAccount] = anchor.web3.PublicKey.findProgramAddressSync(bufferArray, lido.LIDO_PROGRAM_ID);
     const bufferArrayMint = [lido.LIDO_ADDRESS.toBuffer(), Buffer.from("mint_authority")];
-    const [mintAuthority] = await anchor.web3.PublicKey.findProgramAddress(bufferArrayMint, lido.LIDO_PROGRAM_ID);
+    const [mintAuthority] = anchor.web3.PublicKey.findProgramAddressSync(bufferArrayMint, lido.LIDO_PROGRAM_ID);
 
     const recipientStSolAddress = await getAssociatedTokenAddress(vault.shareMint, userKey);
 
