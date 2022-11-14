@@ -101,8 +101,7 @@ describe("Gateway", () => {
     await gateway.swap(swapParams);
     console.log(gateway.params.swapMinOutAmount.toNumber());
     // Work-around
-    addLiquidityParams.tokenInAmount =
-      gateway.params.swapMinOutAmount.toNumber();
+    addLiquidityParams.tokenInAmount = gateway.params.swapMinOutAmount.toNumber();
     await gateway.addLiquidity(addLiquidityParams);
     await gateway.stake(stakeParams);
 
@@ -147,28 +146,15 @@ describe("Gateway", () => {
 
     const pool = await raydium.infos.getPool(connection, poolId);
     const poolWrapper = new raydium.PoolInfoWrapper(pool as raydium.PoolInfo);
-    const farm = (await raydium.infos.getFarm(
-      connection,
-      farmId
-    )) as raydium.FarmInfo;
+    const farm = (await raydium.infos.getFarm(connection, farmId)) as raydium.FarmInfo;
 
     // Get share amount
-    const ledgerKey = await raydium.infos.getFarmerId(
-      farm,
-      provider.wallet.publicKey,
-      farm.version
-    );
-    const ledger = (await raydium.infos.getFarmer(
-      connection,
-      ledgerKey,
-      farm.version
-    )) as raydium.FarmerInfo;
+    const ledgerKey = await raydium.infos.getFarmerId(farm, provider.wallet.publicKey, farm.version);
+    const ledger = (await raydium.infos.getFarmer(connection, ledgerKey, farm.version)) as raydium.FarmerInfo;
     const shareAmount = ledger.amount as number;
     console.log(shareAmount);
 
-    const { tokenAAmount, tokenBAmount } = await poolWrapper.getTokenAmounts(
-      shareAmount
-    );
+    const { tokenAAmount, tokenBAmount } = await poolWrapper.getTokenAmounts(shareAmount);
 
     const harvestParams: HarvestParams = {
       protocol: SupportedProtocols.Raydium,
@@ -291,14 +277,9 @@ describe("Gateway", () => {
 
     // Get LP amount
     const pool = await raydium.infos.getPool(connection, poolId);
-    const userLpAta = await getAssociatedTokenAddress(
-      pool.lpMint,
-      provider.wallet.publicKey
-    );
+    const userLpAta = await getAssociatedTokenAddress(pool.lpMint, provider.wallet.publicKey);
     const userLpAtaAccount = await getAccount(connection, userLpAta);
-    const lpAmount = new anchor.BN(
-      userLpAtaAccount.amount.toString()
-    ).toNumber();
+    const lpAmount = new anchor.BN(userLpAtaAccount.amount.toString()).toNumber();
     console.log(lpAmount);
 
     // Stake
@@ -330,15 +311,8 @@ describe("Gateway", () => {
 
     // Get share amount
 
-    const farm = (await raydium.infos.getFarm(
-      connection,
-      farmId
-    )) as raydium.FarmInfo;
-    const ledgerKey = await raydium.infos.getFarmerId(
-      farm,
-      provider.wallet.publicKey,
-      farm.version
-    );
+    const farm = (await raydium.infos.getFarm(connection, farmId)) as raydium.FarmInfo;
+    const ledgerKey = await raydium.infos.getFarmerId(farm, provider.wallet.publicKey, farm.version);
     const ledger = await raydium.infos.getFarmer(connection, ledgerKey);
     const shareAmount = ledger.amount as number;
     console.log(shareAmount);
@@ -431,8 +405,7 @@ describe("Gateway", () => {
     await gateway.swap(swapParams2);
 
     // Work-around
-    addLiquidityParams.tokenInAmount =
-      gateway.params.swapMinOutAmount.toNumber();
+    addLiquidityParams.tokenInAmount = gateway.params.swapMinOutAmount.toNumber();
 
     await gateway.addLiquidity(addLiquidityParams);
     await gateway.stake(stakeParams);

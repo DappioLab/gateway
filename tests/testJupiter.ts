@@ -21,11 +21,7 @@ describe("Debug", () => {
 
   anchor.setProvider(provider);
 
-  const gatewayProgram = new anchor.Program(
-    GatewayIDL,
-    GATEWAY_PROGRAM_ID,
-    provider
-  );
+  const gatewayProgram = new anchor.Program(GatewayIDL, GATEWAY_PROGRAM_ID, provider);
 
   const amountIn = "1000";
   const poolDirection = PoolDirection.Obverse;
@@ -34,12 +30,8 @@ describe("Debug", () => {
   // ATA
   let userFromTokenAccount: PublicKey;
   let userToTokenAccount: PublicKey;
-  const userTokenAccountRAY = new PublicKey(
-    "6PTX9jdvYDmAJHjAYcesyA7bpWP2LN6sNtB8kDZxp3er"
-  );
-  const userTokenAccountSRM = new PublicKey(
-    "A8aJmZMVLeJ3ouMgRPtbXiyTth7EwpsEAEGxkX9tvLbL"
-  );
+  const userTokenAccountRAY = new PublicKey("6PTX9jdvYDmAJHjAYcesyA7bpWP2LN6sNtB8kDZxp3er");
+  const userTokenAccountSRM = new PublicKey("A8aJmZMVLeJ3ouMgRPtbXiyTth7EwpsEAEGxkX9tvLbL");
 
   switch (+poolDirection) {
     case PoolDirection.Obverse:
@@ -97,25 +89,16 @@ describe("Debug", () => {
       routeInfo: bestRoute,
       userPublicKey: provider.wallet.publicKey,
     });
-    const { setupTransaction, swapTransaction, cleanupTransaction } =
-      transactions;
+    const { setupTransaction, swapTransaction, cleanupTransaction } = transactions;
     console.log(setupTransaction?.instructions?.length);
     console.log(swapTransaction.instructions.length);
     console.log(cleanupTransaction?.instructions?.length);
 
-    for (let transaction of [
-      setupTransaction,
-      swapTransaction,
-      cleanupTransaction,
-    ].filter(Boolean)) {
+    for (let transaction of [setupTransaction, swapTransaction, cleanupTransaction].filter(Boolean)) {
       // Perform the swap
-      const txid = await provider.sendAndConfirm(
-        transaction as anchor.web3.Transaction,
-        [],
-        {
-          skipPreflight: true,
-        }
-      );
+      const txid = await provider.sendAndConfirm(transaction as anchor.web3.Transaction, [], {
+        skipPreflight: true,
+      });
       console.log(txid);
     }
   });

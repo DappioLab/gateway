@@ -1,14 +1,7 @@
 import * as anchor from "@project-serum/anchor";
 import { PublicKey, Connection } from "@solana/web3.js";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
-import {
-  GatewayBuilder,
-  SupportedProtocols,
-  SupplyParams,
-  UnsupplyParams,
-  BorrowParams,
-  RepayParams,
-} from "../src";
+import { GatewayBuilder, SupportedProtocols, SupplyParams, UnsupplyParams, BorrowParams, RepayParams } from "../src";
 import { solend } from "@dappio-wonderland/navigator";
 
 describe("Gateway", () => {
@@ -47,29 +40,18 @@ describe("Gateway", () => {
 
   it("Supply in Solend", async () => {
     // Main Pool
-    const lendingMarket = new PublicKey(
-      "4UpD2fh7xH3VP9QQaXtsS1YY3bxzWhtfpks7FatyKvdY"
-    );
+    const lendingMarket = new PublicKey("4UpD2fh7xH3VP9QQaXtsS1YY3bxzWhtfpks7FatyKvdY");
     // WSOL
-    const supplyTokenMint = new PublicKey(
-      "So11111111111111111111111111111111111111112"
-    );
+    const supplyTokenMint = new PublicKey("So11111111111111111111111111111111111111112");
 
     const marketMap = new Map<string, number>();
-    const allReserveInfo = (await solend.infos.getAllReserveWrappers(
-      connection
-    )) as solend.ReserveInfoWrapper[];
+    const allReserveInfo = (await solend.infos.getAllReserveWrappers(connection)) as solend.ReserveInfoWrapper[];
 
     let reserveId = PublicKey.default;
     for (let reserve of allReserveInfo) {
-      const existMarket = marketMap.get(
-        reserve.reserveInfo.lendingMarket.toString()
-      );
+      const existMarket = marketMap.get(reserve.reserveInfo.lendingMarket.toString());
       if (existMarket != undefined) {
-        marketMap.set(
-          reserve.reserveInfo.lendingMarket.toString(),
-          existMarket + 1
-        );
+        marketMap.set(reserve.reserveInfo.lendingMarket.toString(), existMarket + 1);
       } else {
         marketMap.set(reserve.reserveInfo.lendingMarket.toString(), 1);
       }
@@ -116,17 +98,11 @@ describe("Gateway", () => {
 
   it("Unupply in Solend", async () => {
     // Main pool
-    const lendingMarket = new PublicKey(
-      "4UpD2fh7xH3VP9QQaXtsS1YY3bxzWhtfpks7FatyKvdY"
-    );
+    const lendingMarket = new PublicKey("4UpD2fh7xH3VP9QQaXtsS1YY3bxzWhtfpks7FatyKvdY");
     // WSOL
-    const withdrawTokenMint = new PublicKey(
-      "So11111111111111111111111111111111111111112"
-    );
+    const withdrawTokenMint = new PublicKey("So11111111111111111111111111111111111111112");
 
-    const allReserveInfo = (await solend.infos.getAllReserveWrappers(
-      connection
-    )) as solend.ReserveInfoWrapper[];
+    const allReserveInfo = (await solend.infos.getAllReserveWrappers(connection)) as solend.ReserveInfoWrapper[];
     let reserveId = PublicKey.default;
     for (let reserve of allReserveInfo) {
       if (
@@ -171,17 +147,11 @@ describe("Gateway", () => {
 
   it("Borrow in Solend", async () => {
     // Main pool
-    const lendingMarket = new PublicKey(
-      "4UpD2fh7xH3VP9QQaXtsS1YY3bxzWhtfpks7FatyKvdY"
-    );
+    const lendingMarket = new PublicKey("4UpD2fh7xH3VP9QQaXtsS1YY3bxzWhtfpks7FatyKvdY");
     // WSOL
-    const withdrawTokenMint = new PublicKey(
-      "So11111111111111111111111111111111111111112"
-    );
+    const withdrawTokenMint = new PublicKey("So11111111111111111111111111111111111111112");
 
-    const allReserveInfo = (await solend.infos.getAllReserveWrappers(
-      connection
-    )) as solend.ReserveInfoWrapper[];
+    const allReserveInfo = (await solend.infos.getAllReserveWrappers(connection)) as solend.ReserveInfoWrapper[];
 
     let reserveId = PublicKey.default;
     for (let reserve of allReserveInfo) {
@@ -227,17 +197,11 @@ describe("Gateway", () => {
 
   it("Repay in Solend", async () => {
     // Main pool
-    const lendingMarket = new PublicKey(
-      "4UpD2fh7xH3VP9QQaXtsS1YY3bxzWhtfpks7FatyKvdY"
-    );
+    const lendingMarket = new PublicKey("4UpD2fh7xH3VP9QQaXtsS1YY3bxzWhtfpks7FatyKvdY");
     // WSOL
-    const withdrawTokenMint = new PublicKey(
-      "So11111111111111111111111111111111111111112"
-    );
+    const withdrawTokenMint = new PublicKey("So11111111111111111111111111111111111111112");
 
-    const allReserveInfo = (await solend.infos.getAllReserveWrappers(
-      connection
-    )) as solend.ReserveInfoWrapper[];
+    const allReserveInfo = (await solend.infos.getAllReserveWrappers(connection)) as solend.ReserveInfoWrapper[];
     let reserveId = PublicKey.default;
     for (let reserve of allReserveInfo) {
       if (

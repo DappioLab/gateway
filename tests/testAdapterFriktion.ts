@@ -2,12 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import { PublicKey, Connection } from "@solana/web3.js";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { getAccount } from "@solana/spl-token-v2";
-import {
-  GatewayBuilder,
-  SupportedProtocols,
-  DepositParams,
-  WithdrawParams,
-} from "../src";
+import { GatewayBuilder, SupportedProtocols, DepositParams, WithdrawParams } from "../src";
 import { friktion, utils } from "@dappio-wonderland/navigator";
 
 describe("Gateway", () => {
@@ -19,16 +14,12 @@ describe("Gateway", () => {
   const options = anchor.AnchorProvider.defaultOptions();
   const wallet = NodeWallet.local();
   const provider = new anchor.AnchorProvider(connection, wallet, options);
-  const depositMint = new PublicKey(
-    "CbPemKEEe7Y7YgBmYtFaZiECrVTP5sGrYzrrrviSewKY"
-  );
+  const depositMint = new PublicKey("CbPemKEEe7Y7YgBmYtFaZiECrVTP5sGrYzrrrviSewKY");
   const depositAmount = 200;
   anchor.setProvider(provider);
   it("Initiate deposit", async () => {
     const gateway = new GatewayBuilder(provider);
-    let friktionVaults = (await friktion.infos.getAllVaults(
-      connection
-    )) as friktion.VaultInfo[];
+    let friktionVaults = (await friktion.infos.getAllVaults(connection)) as friktion.VaultInfo[];
     for (let vault of friktionVaults) {
       if (vault.vaultId.equals(depositMint)) {
         let depositParams: DepositParams = {
@@ -50,12 +41,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        false
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -63,9 +49,7 @@ describe("Gateway", () => {
   });
   it("Cancel Deposit", async () => {
     const gateway = new GatewayBuilder(provider);
-    let friktionVaults = (await friktion.infos.getAllVaults(
-      connection
-    )) as friktion.VaultInfo[];
+    let friktionVaults = (await friktion.infos.getAllVaults(connection)) as friktion.VaultInfo[];
     for (let vault of friktionVaults) {
       if (vault.vaultId.equals(depositMint)) {
         let withdrawParams: WithdrawParams = {
@@ -87,12 +71,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        false
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -100,9 +79,7 @@ describe("Gateway", () => {
   });
   it("FinalizeDeposit", async () => {
     const gateway = new GatewayBuilder(provider);
-    let friktionVaults = (await friktion.infos.getAllVaults(
-      connection
-    )) as friktion.VaultInfo[];
+    let friktionVaults = (await friktion.infos.getAllVaults(connection)) as friktion.VaultInfo[];
     for (let vault of friktionVaults) {
       if (vault.vaultId.equals(depositMint)) {
         let withdrawParams: WithdrawParams = {
@@ -124,12 +101,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        true
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], true);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -137,9 +109,7 @@ describe("Gateway", () => {
   });
   it("Initiate Withdraw", async () => {
     const gateway = new GatewayBuilder(provider);
-    let friktionVaults = (await friktion.infos.getAllVaults(
-      connection
-    )) as friktion.VaultInfo[];
+    let friktionVaults = (await friktion.infos.getAllVaults(connection)) as friktion.VaultInfo[];
     for (let vault of friktionVaults) {
       if (vault.vaultId.equals(depositMint)) {
         let withdrawParams: WithdrawParams = {
@@ -161,12 +131,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        false
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -174,9 +139,7 @@ describe("Gateway", () => {
   });
   it("Complete Withdraw", async () => {
     const gateway = new GatewayBuilder(provider);
-    let friktionVaults = (await friktion.infos.getAllVaults(
-      connection
-    )) as friktion.VaultInfo[];
+    let friktionVaults = (await friktion.infos.getAllVaults(connection)) as friktion.VaultInfo[];
     for (let vault of friktionVaults) {
       if (vault.vaultId.equals(depositMint)) {
         let withdrawParams: WithdrawParams = {
@@ -198,12 +161,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        false
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -211,9 +169,7 @@ describe("Gateway", () => {
   });
   it("Cancel Withdraw", async () => {
     const gateway = new GatewayBuilder(provider);
-    let friktionVaults = (await friktion.infos.getAllVaults(
-      connection
-    )) as friktion.VaultInfo[];
+    let friktionVaults = (await friktion.infos.getAllVaults(connection)) as friktion.VaultInfo[];
     for (let vault of friktionVaults) {
       if (vault.vaultId.equals(depositMint)) {
         let withdrawParams: WithdrawParams = {
@@ -235,12 +191,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        false
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");

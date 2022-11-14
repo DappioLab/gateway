@@ -2,12 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import { Connection } from "@solana/web3.js";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { getAccount, getAssociatedTokenAddress } from "@solana/spl-token-v2";
-import {
-  GatewayBuilder,
-  SupportedProtocols,
-  AddLiquidityParams,
-  RemoveLiquidityParams,
-} from "../src";
+import { GatewayBuilder, SupportedProtocols, AddLiquidityParams, RemoveLiquidityParams } from "../src";
 import { lifinity } from "@dappio-wonderland/navigator";
 
 // TODO: Fix all tests
@@ -100,13 +95,8 @@ describe("Gateway", () => {
     const poolId = new anchor.web3.PublicKey(
       "FcxHANr1dguexPZ2PoPGBajgiednXFMYHGGx4YMgedkM" // RAY-USDC
     );
-    const pool = allpoolInfo.filter((poolInfo) =>
-      poolInfo.poolId.equals(poolId)
-    )[0];
-    const walletLpATA = await getAssociatedTokenAddress(
-      pool.lpMint,
-      wallet.publicKey
-    );
+    const pool = allpoolInfo.filter((poolInfo) => poolInfo.poolId.equals(poolId))[0];
+    const walletLpATA = await getAssociatedTokenAddress(pool.lpMint, wallet.publicKey);
     const walletLpATAInfo = await getAccount(connection, walletLpATA);
 
     const removeLpAmount = Number(walletLpATAInfo.amount);

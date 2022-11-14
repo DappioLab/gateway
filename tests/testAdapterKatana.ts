@@ -2,23 +2,15 @@ import * as anchor from "@project-serum/anchor";
 import { PublicKey, Connection } from "@solana/web3.js";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { getAccount, NATIVE_MINT } from "@solana/spl-token-v2";
-import {
-  GatewayBuilder,
-  SupportedProtocols,
-  DepositParams,
-  WithdrawParams,
-} from "../src";
+import { GatewayBuilder, SupportedProtocols, DepositParams, WithdrawParams } from "../src";
 import { katana, utils } from "@dappio-wonderland/navigator";
 
 describe("Gateway", () => {
-  const connection = new Connection(
-    "https://rpc-mainnet-fork.epochs.studio/notcache",
-    {
-      commitment: "confirmed",
-      confirmTransactionInitialTimeout: 180 * 1000,
-      wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
-    }
-  );
+  const connection = new Connection("https://rpc-mainnet-fork.epochs.studio/notcache", {
+    commitment: "confirmed",
+    confirmTransactionInitialTimeout: 180 * 1000,
+    wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
+  });
   const options = anchor.AnchorProvider.defaultOptions();
   const wallet = NodeWallet.local();
   const provider = new anchor.AnchorProvider(connection, wallet, options);
@@ -27,9 +19,7 @@ describe("Gateway", () => {
   anchor.setProvider(provider);
   it("deposit", async () => {
     const gateway = new GatewayBuilder(provider);
-    let katanaVaults = (await katana.infos.getAllVaults(
-      connection
-    )) as katana.VaultInfo[];
+    let katanaVaults = (await katana.infos.getAllVaults(connection)) as katana.VaultInfo[];
     for (let vault of katanaVaults) {
       if (vault.underlyingTokenMint.equals(NATIVE_MINT)) {
         let depositParams: DepositParams = {
@@ -51,12 +41,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        true
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], true);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -64,9 +49,7 @@ describe("Gateway", () => {
   });
   it("instant Withdraw", async () => {
     const gateway = new GatewayBuilder(provider);
-    let katanaVaults = (await katana.infos.getAllVaults(
-      connection
-    )) as katana.VaultInfo[];
+    let katanaVaults = (await katana.infos.getAllVaults(connection)) as katana.VaultInfo[];
     for (let vault of katanaVaults) {
       if (vault.underlyingTokenMint.equals(NATIVE_MINT)) {
         let withdrawParams: WithdrawParams = {
@@ -88,12 +71,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        false
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -101,9 +79,7 @@ describe("Gateway", () => {
   });
   it("Withdraw Share", async () => {
     const gateway = new GatewayBuilder(provider);
-    let katanaVaults = (await katana.infos.getAllVaults(
-      connection
-    )) as katana.VaultInfo[];
+    let katanaVaults = (await katana.infos.getAllVaults(connection)) as katana.VaultInfo[];
     for (let vault of katanaVaults) {
       if (vault.underlyingTokenMint.equals(NATIVE_MINT)) {
         let withdrawParams: WithdrawParams = {
@@ -125,12 +101,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        true
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], true);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -138,9 +109,7 @@ describe("Gateway", () => {
   });
   it("Initiate Withdraw", async () => {
     const gateway = new GatewayBuilder(provider);
-    let katanaVaults = (await katana.infos.getAllVaults(
-      connection
-    )) as katana.VaultInfo[];
+    let katanaVaults = (await katana.infos.getAllVaults(connection)) as katana.VaultInfo[];
     for (let vault of katanaVaults) {
       if (vault.underlyingTokenMint.equals(NATIVE_MINT)) {
         let withdrawParams: WithdrawParams = {
@@ -162,12 +131,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        true
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], true);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -175,9 +139,7 @@ describe("Gateway", () => {
   });
   it("Complete Withdraw", async () => {
     const gateway = new GatewayBuilder(provider);
-    let katanaVaults = (await katana.infos.getAllVaults(
-      connection
-    )) as katana.VaultInfo[];
+    let katanaVaults = (await katana.infos.getAllVaults(connection)) as katana.VaultInfo[];
     for (let vault of katanaVaults) {
       if (vault.underlyingTokenMint.equals(NATIVE_MINT)) {
         let withdrawParams: WithdrawParams = {
@@ -199,12 +161,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        true
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], true);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");

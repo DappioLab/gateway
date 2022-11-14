@@ -78,9 +78,7 @@ describe("Gateway", () => {
     // }
     // // FzbfXR7sopQL29Ubu312tkqWMxSre4dYSrFyYAjUYiC4
     // console.log("reserve id:", reserveId.toString());
-    const reserveId = new PublicKey(
-      "FzbfXR7sopQL29Ubu312tkqWMxSre4dYSrFyYAjUYiC4"
-    );
+    const reserveId = new PublicKey("FzbfXR7sopQL29Ubu312tkqWMxSre4dYSrFyYAjUYiC4");
 
     const gateway = new GatewayBuilder(provider);
     const supplyParams: SupplyParams = {
@@ -135,9 +133,7 @@ describe("Gateway", () => {
     //     break;
     //   }
     // }
-    const reserveId = new PublicKey(
-      "FzbfXR7sopQL29Ubu312tkqWMxSre4dYSrFyYAjUYiC4"
-    );
+    const reserveId = new PublicKey("FzbfXR7sopQL29Ubu312tkqWMxSre4dYSrFyYAjUYiC4");
 
     const gateway = new GatewayBuilder(provider);
     const unsupplyParams: UnsupplyParams = {
