@@ -1,24 +1,10 @@
 import * as anchor from "@project-serum/anchor";
-import {
-  TOKEN_PROGRAM_ID,
-  getAssociatedTokenAddress,
-} from "@solana/spl-token-v2";
-import {
-  DepositParams,
-  GatewayParams,
-  IProtocolVault,
-  PAYLOAD_SIZE,
-  WithdrawParams,
-} from "../types";
+import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token-v2";
+import { DepositParams, GatewayParams, IProtocolVault, PAYLOAD_SIZE, WithdrawParams } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { IVaultInfo, lido } from "@dappio-wonderland/navigator";
 import { struct, nu64, u8, u32 } from "buffer-layout";
-import {
-  getActivityIndex,
-  sigHash,
-  createATAWithoutCheckIx,
-  getGatewayAuthority,
-} from "../utils";
+import { getActivityIndex, sigHash, createATAWithoutCheckIx, getGatewayAuthority } from "../utils";
 import { LIDO_ADAPTER_PROGRAM_ID } from "../ids";
 
 export class ProtocolLido implements IProtocolVault {
@@ -28,9 +14,13 @@ export class ProtocolLido implements IProtocolVault {
     private _gatewayStateKey: anchor.web3.PublicKey,
     private _gatewayParams: GatewayParams
   ) {}
-  async deposit(params: DepositParams, vault: IVaultInfo, userKey: anchor.web3.PublicKey): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer; }> {
+  async deposit(
+    params: DepositParams,
+    vault: IVaultInfo,
+    userKey: anchor.web3.PublicKey
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    const inputLayout = struct([u8('instruction'), nu64('amount')]);
+    const inputLayout = struct([u8("instruction"), nu64("amount")]);
     let payload = Buffer.alloc(PAYLOAD_SIZE);
     inputLayout.encode(
       {
@@ -45,23 +35,15 @@ export class ProtocolLido implements IProtocolVault {
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
 
     // TODO: Maybe better to do in navigator?
-    const bufferArray = [
-      lido.LIDO_ADDRESS.toBuffer(),
-      Buffer.from('reserve_account'),
-    ];
+    const bufferArray = [lido.LIDO_ADDRESS.toBuffer(), Buffer.from("reserve_account")];
     const [reserveAccount] = await anchor.web3.PublicKey.findProgramAddress(bufferArray, lido.LIDO_PROGRAM_ID);
-    const bufferArrayMint = [
-      lido.LIDO_ADDRESS.toBuffer(),
-      Buffer.from('mint_authority'),
-    ];
+    const bufferArrayMint = [lido.LIDO_ADDRESS.toBuffer(), Buffer.from("mint_authority")];
     const [mintAuthority] = await anchor.web3.PublicKey.findProgramAddress(bufferArrayMint, lido.LIDO_PROGRAM_ID);
-  
+
     const recipientStSolAddress = await getAssociatedTokenAddress(vault.shareMint, userKey);
-    
+
     // TODO: Verify if this requires a check here
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, vault.shareMint)
-    );
+    preInstructions.push(await createATAWithoutCheckIx(userKey, vault.shareMint));
 
     const remainingAccounts = [
       { pubkey: lido.LIDO_ADDRESS, isSigner: false, isWritable: true }, // 0
@@ -85,7 +67,7 @@ export class ProtocolLido implements IProtocolVault {
       .preInstructions(preInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
-  
+
     return { txs: [txDeposit], input: payload };
   }
 }
