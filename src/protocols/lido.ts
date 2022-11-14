@@ -41,7 +41,6 @@ export class ProtocolLido implements IProtocolVault {
     );
 
     // Handle transaction here
-    const vaultInfo = vault as lido.VaultInfo;
 
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
 
@@ -59,6 +58,7 @@ export class ProtocolLido implements IProtocolVault {
   
     const recipientStSolAddress = await getAssociatedTokenAddress(vault.shareMint, userKey);
     
+    // TODO: Verify if this requires a check here
     preInstructions.push(
       await createATAWithoutCheckIx(userKey, vault.shareMint)
     );
