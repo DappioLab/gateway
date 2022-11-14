@@ -6,11 +6,7 @@ import {
   getAssociatedTokenAddress,
 } from "@solana/spl-token-v2";
 import { struct, u64, u8 } from "@project-serum/borsh";
-import {
-  getActivityIndex,
-  createATAWithoutCheckIx,
-  getGatewayAuthority,
-} from "../utils";
+import { getActivityIndex, createATAWithoutCheckIx, getGatewayAuthority } from "../utils";
 import { IReserveInfo, solend, utils } from "@dappio-wonderland/navigator";
 import {
   ActionType,
@@ -58,13 +54,8 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
-    const supplyTokenAddress = await getAssociatedTokenAddress(
-      supplyTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, supplyTokenMint)
-    );
+    const supplyTokenAddress = await getAssociatedTokenAddress(supplyTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, supplyTokenMint));
 
     const moneyMarketSupplyAmount = new anchor.BN(params.supplyAmount);
 
@@ -78,30 +69,17 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
         createSyncNativeInstruction(supplyTokenAddress)
       );
 
-      postInstructions.push(
-        createCloseAccountInstruction(supplyTokenAddress, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(supplyTokenAddress, userKey, userKey));
     }
 
-    const reserveTokenAddress = await getAssociatedTokenAddress(
-      reserveTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, reserveTokenMint)
-    );
+    const reserveTokenAddress = await getAssociatedTokenAddress(reserveTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, reserveTokenMint));
 
-    const obligation = await solend.infos.getObligationId(
-      reserve.lendingMarket,
-      userKey
-    );
+    const obligation = await solend.infos.getObligationId(reserve.lendingMarket, userKey);
     const obligationInfo = await this._connection.getAccountInfo(obligation);
 
     if (!obligationInfo || obligationInfo.data.length == 0) {
-      const createObligationIx = await this._createObligationAccountIx(
-        userKey,
-        reserve.lendingMarket
-      );
+      const createObligationIx = await this._createObligationAccountIx(userKey, reserve.lendingMarket);
       preInstructions = preInstructions.concat(createObligationIx);
     }
 
@@ -113,8 +91,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
     preInstructions.push(refreshReserveIx);
 
     const reservInfoWrapper = new solend.ReserveInfoWrapper(reserve);
-    const lendingMarketAuthority =
-      await reservInfoWrapper.getLendingMarketAuthority();
+    const lendingMarketAuthority = await reservInfoWrapper.getLendingMarketAuthority();
 
     const remainingAccounts = [
       { pubkey: supplyTokenAddress, isSigner: false, isWritable: true },
@@ -209,37 +186,21 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
 
     // Handle transaction here
     const reserve = reserveInfo as solend.ReserveInfo;
-    const obligationId = await solend.infos.getObligationId(
-      reserve.lendingMarket,
-      userKey
-    );
-    const obligationInfo = (await solend.infos.getObligation(
-      this._connection,
-      obligationId
-    )) as solend.ObligationInfo;
+    const obligationId = await solend.infos.getObligationId(reserve.lendingMarket, userKey);
+    const obligationInfo = (await solend.infos.getObligation(this._connection, obligationId)) as solend.ObligationInfo;
     const reserveTokenMint = reserve.collateral.reserveTokenMint;
     const withdrawTokenMint = reserve.liquidity.mintPubkey;
 
     let accountKeys: anchor.web3.PublicKey[] = [obligationId];
 
-    const depositReserves = obligationInfo.obligationCollaterals.map(
-      (reserve) => reserve.reserveId
-    );
+    const depositReserves = obligationInfo.obligationCollaterals.map((reserve) => reserve.reserveId);
     accountKeys = [...accountKeys, ...depositReserves];
 
-    const borrowedReserves = obligationInfo.obligationLoans.map(
-      (reserve) => reserve.reserveId
-    );
+    const borrowedReserves = obligationInfo.obligationLoans.map((reserve) => reserve.reserveId);
     accountKeys = [...accountKeys, ...borrowedReserves];
-    const accountInfos = await utils.getMultipleAccounts(
-      this._connection,
-      accountKeys
-    );
+    const accountInfos = await utils.getMultipleAccounts(this._connection, accountKeys);
 
-    const depositReserveData = accountInfos.slice(
-      1,
-      depositReserves.length + 1
-    );
+    const depositReserveData = accountInfos.slice(1, depositReserves.length + 1);
     const borrowedReserveData = accountInfos.slice(
       depositReserves.length + 1,
       depositReserves.length + borrowedReserves.length + 1
@@ -251,10 +212,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
 
     // refresh all user's obligations
     depositReserveData.forEach((reserveData) => {
-      let reserveInfo = solend.infos.parseReserve(
-        reserveData.account?.data,
-        reserveData.pubkey
-      ) as solend.ReserveInfo;
+      let reserveInfo = solend.infos.parseReserve(reserveData.account?.data, reserveData.pubkey) as solend.ReserveInfo;
 
       preInstructions.push(
         this._refreshReserveIx(
@@ -266,10 +224,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
     });
 
     borrowedReserveData.forEach((reserveData) => {
-      let reserveInfo = solend.infos.parseReserve(
-        reserveData.account?.data,
-        reserveData.pubkey
-      ) as solend.ReserveInfo;
+      let reserveInfo = solend.infos.parseReserve(reserveData.account?.data, reserveData.pubkey) as solend.ReserveInfo;
 
       preInstructions.push(
         this._refreshReserveIx(
@@ -282,42 +237,22 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
 
     const oblidationInfo = accountInfos[0].account;
     if (!oblidationInfo || oblidationInfo.data.length == 0) {
-      preInstructions = preInstructions.concat(
-        await this._createObligationAccountIx(userKey, reserve.lendingMarket)
-      );
+      preInstructions = preInstructions.concat(await this._createObligationAccountIx(userKey, reserve.lendingMarket));
     }
-    preInstructions.push(
-      this._refreshObligationIx(obligationId, depositReserves, borrowedReserves)
-    );
+    preInstructions.push(this._refreshObligationIx(obligationId, depositReserves, borrowedReserves));
 
-    const reserveTokenAddress = await getAssociatedTokenAddress(
-      reserveTokenMint,
-      userKey
-    );
-    txPrerequisite.add(
-      await createATAWithoutCheckIx(userKey, reserveTokenMint)
-    );
+    const reserveTokenAddress = await getAssociatedTokenAddress(reserveTokenMint, userKey);
+    txPrerequisite.add(await createATAWithoutCheckIx(userKey, reserveTokenMint));
 
-    const withdrawTokenAddress = await getAssociatedTokenAddress(
-      withdrawTokenMint,
-      userKey
-    );
-    txPrerequisite.add(
-      await createATAWithoutCheckIx(userKey, withdrawTokenMint)
-    );
+    const withdrawTokenAddress = await getAssociatedTokenAddress(withdrawTokenMint, userKey);
+    txPrerequisite.add(await createATAWithoutCheckIx(userKey, withdrawTokenMint));
 
-    if (
-      withdrawTokenMint.equals(NATIVE_SOL) ||
-      withdrawTokenMint.equals(WSOL)
-    ) {
-      postInstructions.push(
-        createCloseAccountInstruction(withdrawTokenAddress, userKey, userKey)
-      );
+    if (withdrawTokenMint.equals(NATIVE_SOL) || withdrawTokenMint.equals(WSOL)) {
+      postInstructions.push(createCloseAccountInstruction(withdrawTokenAddress, userKey, userKey));
     }
 
     const reservInfoWrapper = new solend.ReserveInfoWrapper(reserve);
-    const lendingMarketAuthority =
-      reservInfoWrapper.getLendingMarketAuthority();
+    const lendingMarketAuthority = reservInfoWrapper.getLendingMarketAuthority();
 
     const remainingAccounts = [
       {
@@ -394,37 +329,21 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
 
     // Handle transaction here
     const reserve = reserveInfo as solend.ReserveInfo;
-    const obligationId = await solend.infos.getObligationId(
-      reserve.lendingMarket,
-      userKey
-    );
-    const obligationInfo = (await solend.infos.getObligation(
-      this._connection,
-      obligationId
-    )) as solend.ObligationInfo;
+    const obligationId = await solend.infos.getObligationId(reserve.lendingMarket, userKey);
+    const obligationInfo = (await solend.infos.getObligation(this._connection, obligationId)) as solend.ObligationInfo;
 
     const borrowTokenMint = reserve.liquidity.mintPubkey;
 
     let accountKeys: anchor.web3.PublicKey[] = [obligationId];
 
-    const depositReserves = obligationInfo.obligationCollaterals.map(
-      (reserve) => reserve.reserveId
-    );
+    const depositReserves = obligationInfo.obligationCollaterals.map((reserve) => reserve.reserveId);
     accountKeys = [...accountKeys, ...depositReserves];
 
-    const borrowedReserves = obligationInfo.obligationLoans.map(
-      (reserve) => reserve.reserveId
-    );
+    const borrowedReserves = obligationInfo.obligationLoans.map((reserve) => reserve.reserveId);
     accountKeys = [...accountKeys, ...borrowedReserves];
-    const accountInfos = await utils.getMultipleAccounts(
-      this._connection,
-      accountKeys
-    );
+    const accountInfos = await utils.getMultipleAccounts(this._connection, accountKeys);
 
-    const depositReserveData = accountInfos.slice(
-      1,
-      depositReserves.length + 1
-    );
+    const depositReserveData = accountInfos.slice(1, depositReserves.length + 1);
     const borrowedReserveData = accountInfos.slice(
       depositReserves.length + 1,
       depositReserves.length + borrowedReserves.length + 1
@@ -436,10 +355,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
 
     // refresh all user's obligations
     depositReserveData.forEach((reserveData) => {
-      let reserveInfo = solend.infos.parseReserve(
-        reserveData.account?.data,
-        reserveData.pubkey
-      ) as solend.ReserveInfo;
+      let reserveInfo = solend.infos.parseReserve(reserveData.account?.data, reserveData.pubkey) as solend.ReserveInfo;
 
       preInstructions.push(
         this._refreshReserveIx(
@@ -451,10 +367,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
     });
 
     borrowedReserveData.forEach((reserveData) => {
-      let reserveInfo = solend.infos.parseReserve(
-        reserveData.account?.data,
-        reserveData.pubkey
-      ) as solend.ReserveInfo;
+      let reserveInfo = solend.infos.parseReserve(reserveData.account?.data, reserveData.pubkey) as solend.ReserveInfo;
 
       preInstructions.push(
         this._refreshReserveIx(
@@ -474,29 +387,19 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
 
     const oblidationInfo = accountInfos[0].account;
     if (!oblidationInfo || oblidationInfo.data.length == 0) {
-      preInstructions = preInstructions.concat(
-        await this._createObligationAccountIx(userKey, reserve.lendingMarket)
-      );
+      preInstructions = preInstructions.concat(await this._createObligationAccountIx(userKey, reserve.lendingMarket));
     }
-    preInstructions.push(
-      this._refreshObligationIx(obligationId, depositReserves, borrowedReserves)
-    );
+    preInstructions.push(this._refreshObligationIx(obligationId, depositReserves, borrowedReserves));
 
-    const borrowTokenAddress = await getAssociatedTokenAddress(
-      borrowTokenMint,
-      userKey
-    );
+    const borrowTokenAddress = await getAssociatedTokenAddress(borrowTokenMint, userKey);
     txPrerequisite.add(await createATAWithoutCheckIx(userKey, borrowTokenMint));
 
     if (borrowTokenMint.equals(NATIVE_SOL) || borrowTokenMint.equals(WSOL)) {
-      postInstructions.push(
-        createCloseAccountInstruction(borrowTokenAddress, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(borrowTokenAddress, userKey, userKey));
     }
 
     const reserveInfoWrapper = new solend.ReserveInfoWrapper(reserve);
-    const lendingMarketAuthority =
-      await reserveInfoWrapper.getLendingMarketAuthority();
+    const lendingMarketAuthority = await reserveInfoWrapper.getLendingMarketAuthority();
 
     const remainingAccounts = [
       {
@@ -561,38 +464,22 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
 
     // Handle transaction here
     const reserve = reserveInfo as solend.ReserveInfo;
-    const obligationId = await solend.infos.getObligationId(
-      reserve.lendingMarket,
-      userKey
-    );
+    const obligationId = await solend.infos.getObligationId(reserve.lendingMarket, userKey);
 
-    const obligationInfo = (await solend.infos.getObligation(
-      this._connection,
-      obligationId
-    )) as solend.ObligationInfo;
+    const obligationInfo = (await solend.infos.getObligation(this._connection, obligationId)) as solend.ObligationInfo;
 
     const repayTokenMint = reserve.liquidity.mintPubkey;
 
     let accountKeys: anchor.web3.PublicKey[] = [obligationId];
 
-    const depositReserves = obligationInfo.obligationCollaterals.map(
-      (reserve) => reserve.reserveId
-    );
+    const depositReserves = obligationInfo.obligationCollaterals.map((reserve) => reserve.reserveId);
     accountKeys = [...accountKeys, ...depositReserves];
 
-    const borrowedReserves = obligationInfo.obligationLoans.map(
-      (reserve) => reserve.reserveId
-    );
+    const borrowedReserves = obligationInfo.obligationLoans.map((reserve) => reserve.reserveId);
     accountKeys = [...accountKeys, ...borrowedReserves];
-    const accountInfos = await utils.getMultipleAccounts(
-      this._connection,
-      accountKeys
-    );
+    const accountInfos = await utils.getMultipleAccounts(this._connection, accountKeys);
 
-    const depositReserveData = accountInfos.slice(
-      1,
-      depositReserves.length + 1
-    );
+    const depositReserveData = accountInfos.slice(1, depositReserves.length + 1);
     const borrowedReserveData = accountInfos.slice(
       depositReserves.length + 1,
       depositReserves.length + borrowedReserves.length + 1
@@ -604,10 +491,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
 
     // refresh all user's obligations
     depositReserveData.forEach((reserveData) => {
-      let reserveInfo = solend.infos.parseReserve(
-        reserveData.account?.data,
-        reserveData.pubkey
-      ) as solend.ReserveInfo;
+      let reserveInfo = solend.infos.parseReserve(reserveData.account?.data, reserveData.pubkey) as solend.ReserveInfo;
 
       preInstructions.push(
         this._refreshReserveIx(
@@ -619,10 +503,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
     });
 
     borrowedReserveData.forEach((reserveData) => {
-      let reserveInfo = solend.infos.parseReserve(
-        reserveData.account?.data,
-        reserveData.pubkey
-      ) as solend.ReserveInfo;
+      let reserveInfo = solend.infos.parseReserve(reserveData.account?.data, reserveData.pubkey) as solend.ReserveInfo;
 
       preInstructions.push(
         this._refreshReserveIx(
@@ -635,18 +516,11 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
 
     const oblidationInfo = accountInfos[0].account;
     if (!oblidationInfo || oblidationInfo.data.length == 0) {
-      preInstructions = preInstructions.concat(
-        await this._createObligationAccountIx(userKey, reserve.lendingMarket)
-      );
+      preInstructions = preInstructions.concat(await this._createObligationAccountIx(userKey, reserve.lendingMarket));
     }
-    preInstructions.push(
-      this._refreshObligationIx(obligationId, depositReserves, borrowedReserves)
-    );
+    preInstructions.push(this._refreshObligationIx(obligationId, depositReserves, borrowedReserves));
 
-    const repayTokenAddress = await getAssociatedTokenAddress(
-      repayTokenMint,
-      userKey
-    );
+    const repayTokenAddress = await getAssociatedTokenAddress(repayTokenMint, userKey);
     txPrerequisite.add(await createATAWithoutCheckIx(userKey, repayTokenMint));
 
     const moneyMarketRepayAmount = new anchor.BN(params.repayAmount);
@@ -661,9 +535,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
         createSyncNativeInstruction(repayTokenAddress)
       );
 
-      postInstructions.push(
-        createCloseAccountInstruction(repayTokenAddress, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(repayTokenAddress, userKey, userKey));
     }
 
     const remainingAccounts = [
@@ -716,19 +588,15 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
   ): Promise<anchor.web3.TransactionInstruction[]> {
     const seed = lendingMarket.toString().slice(0, 32);
 
-    let createAccountFromSeedIx =
-      anchor.web3.SystemProgram.createAccountWithSeed({
-        fromPubkey: userKey,
-        seed: seed,
-        space: 1300,
-        newAccountPubkey: await solend.infos.getObligationId(
-          userKey,
-          lendingMarket
-        ),
-        basePubkey: userKey,
-        lamports: 9938880,
-        programId: solend.SOLEND_PROGRAM_ID,
-      });
+    let createAccountFromSeedIx = anchor.web3.SystemProgram.createAccountWithSeed({
+      fromPubkey: userKey,
+      seed: seed,
+      space: 1300,
+      newAccountPubkey: await solend.infos.getObligationId(userKey, lendingMarket),
+      basePubkey: userKey,
+      lamports: 9938880,
+      programId: solend.SOLEND_PROGRAM_ID,
+    });
     const dataLayout = struct([u8("instruction")]);
     const data = Buffer.alloc(dataLayout.span);
     dataLayout.encode({ instruction: LendingInstruction.InitObligation }, data);
@@ -805,10 +673,7 @@ export class ProtocolSolend implements IProtocolMoneyMarket {
     const dataLayout = struct([u8("instruction")]);
 
     const data = Buffer.alloc(dataLayout.span);
-    dataLayout.encode(
-      { instruction: LendingInstruction.RefreshObligation },
-      data
-    );
+    dataLayout.encode({ instruction: LendingInstruction.RefreshObligation }, data);
 
     const keys = [
       { pubkey: obligation, isSigner: false, isWritable: true },

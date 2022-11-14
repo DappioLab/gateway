@@ -6,14 +6,7 @@ import {
   createSyncNativeInstruction,
   getAssociatedTokenAddress,
 } from "@solana/spl-token-v2";
-import {
-  ActionType,
-  DepositParams,
-  GatewayParams,
-  IProtocolVault,
-  PAYLOAD_SIZE,
-  WithdrawParams,
-} from "../types";
+import { ActionType, DepositParams, GatewayParams, IProtocolVault, PAYLOAD_SIZE, WithdrawParams } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { IVaultInfo, friktion, utils } from "@dappio-wonderland/navigator";
 import { getActivityIndex, getGatewayAuthority } from "../utils";
@@ -44,28 +37,16 @@ export class ProtocolFriktion implements IProtocolVault {
     );
 
     // Handle transaction here
-    const indexSupply = this._gatewayParams.actionQueue.indexOf(
-      ActionType.InitiateDeposit
-    );
+    const indexSupply = this._gatewayParams.actionQueue.indexOf(ActionType.InitiateDeposit);
     const vaultDepositAmount = new anchor.BN(params.depositAmount);
     const vault = vaultInfo as friktion.VaultInfo;
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     let vaultWrapper = new friktion.VaultInfoWrapper(vault);
-    let shareTokenAta = await getAssociatedTokenAddress(
-      vault.vaultMint,
-      userKey
-    );
-    preInstructions.push(
-      await utils.createATAWithoutCheckIx(userKey, vault.vaultMint)
-    );
-    let underlyingAssetAta = await getAssociatedTokenAddress(
-      vault.underlyingAssetMint,
-      userKey
-    );
-    preInstructions.push(
-      await utils.createATAWithoutCheckIx(userKey, vault.underlyingAssetMint)
-    );
+    let shareTokenAta = await getAssociatedTokenAddress(vault.vaultMint, userKey);
+    preInstructions.push(await utils.createATAWithoutCheckIx(userKey, vault.vaultMint));
+    let underlyingAssetAta = await getAssociatedTokenAddress(vault.underlyingAssetMint, userKey);
+    preInstructions.push(await utils.createATAWithoutCheckIx(userKey, vault.underlyingAssetMint));
     if (vault.underlyingAssetMint.equals(NATIVE_MINT)) {
       preInstructions.push(
         anchor.web3.SystemProgram.transfer({
@@ -75,9 +56,7 @@ export class ProtocolFriktion implements IProtocolVault {
         })
       );
       preInstructions.push(createSyncNativeInstruction(underlyingAssetAta));
-      postInstructions.push(
-        createCloseAccountInstruction(underlyingAssetAta, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(underlyingAssetAta, userKey, userKey));
     }
 
     let userDepositorId = friktion.infos.getDepositorId(vault.vaultId, userKey);
@@ -167,25 +146,13 @@ export class ProtocolFriktion implements IProtocolVault {
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     let vaultWrapper = new friktion.VaultInfoWrapper(vault);
     let shareAta = await getAssociatedTokenAddress(vault.vaultMint, userKey);
-    preInstructions.push(
-      await utils.createATAWithoutCheckIx(userKey, vault.vaultMint)
-    );
-    let underlyingAta = await getAssociatedTokenAddress(
-      vault.underlyingAssetMint,
-      userKey
-    );
-    preInstructions.push(
-      await utils.createATAWithoutCheckIx(userKey, vault.underlyingAssetMint)
-    );
+    preInstructions.push(await utils.createATAWithoutCheckIx(userKey, vault.vaultMint));
+    let underlyingAta = await getAssociatedTokenAddress(vault.underlyingAssetMint, userKey);
+    preInstructions.push(await utils.createATAWithoutCheckIx(userKey, vault.underlyingAssetMint));
     let userDepositorId = friktion.infos.getDepositorId(vault.vaultId, userKey);
-    let userWithdrawerId = friktion.infos.getWithdrawerId(
-      vault.vaultId,
-      userKey
-    );
+    let userWithdrawerId = friktion.infos.getWithdrawerId(vault.vaultId, userKey);
     if (vault.underlyingAssetMint.equals(NATIVE_MINT)) {
-      postInstructions.push(
-        createCloseAccountInstruction(underlyingAta, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(underlyingAta, userKey, userKey));
     }
     let remainingAccounts = [
       { pubkey: userKey, isSigner: true, isWritable: true }, //0
@@ -285,21 +252,12 @@ export class ProtocolFriktion implements IProtocolVault {
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     let vaultWrapper = new friktion.VaultInfoWrapper(vault);
     let shareAta = await getAssociatedTokenAddress(vault.vaultMint, userKey);
-    preInstructions.push(
-      await utils.createATAWithoutCheckIx(userKey, vault.vaultMint)
-    );
-    let underlyingAta = await getAssociatedTokenAddress(
-      vault.underlyingAssetMint,
-      userKey
-    );
-    preInstructions.push(
-      await utils.createATAWithoutCheckIx(userKey, vault.underlyingAssetMint)
-    );
+    preInstructions.push(await utils.createATAWithoutCheckIx(userKey, vault.vaultMint));
+    let underlyingAta = await getAssociatedTokenAddress(vault.underlyingAssetMint, userKey);
+    preInstructions.push(await utils.createATAWithoutCheckIx(userKey, vault.underlyingAssetMint));
     let userDepositorId = friktion.infos.getDepositorId(vault.vaultId, userKey);
     if (vault.underlyingAssetMint.equals(NATIVE_MINT)) {
-      postInstructions.push(
-        createCloseAccountInstruction(underlyingAta, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(underlyingAta, userKey, userKey));
     }
     let remainingAccounts = [];
 
@@ -324,9 +282,7 @@ export class ProtocolFriktion implements IProtocolVault {
         isWritable: true,
       }, //5
       {
-        pubkey: vaultWrapper.getRoundVoltTokensAddress(
-          depositorInfo.roundNumber
-        ),
+        pubkey: vaultWrapper.getRoundVoltTokensAddress(depositorInfo.roundNumber),
         isSigner: false,
         isWritable: true,
       }, //6
@@ -376,22 +332,13 @@ export class ProtocolFriktion implements IProtocolVault {
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     let vaultWrapper = new friktion.VaultInfoWrapper(vault);
-    preInstructions.push(
-      await utils.createATAWithoutCheckIx(userKey, vault.vaultMint)
-    );
-    let underlyingAta = await getAssociatedTokenAddress(
-      vault.underlyingAssetMint,
-      userKey
-    );
-    preInstructions.push(
-      await utils.createATAWithoutCheckIx(userKey, vault.underlyingAssetMint)
-    );
+    preInstructions.push(await utils.createATAWithoutCheckIx(userKey, vault.vaultMint));
+    let underlyingAta = await getAssociatedTokenAddress(vault.underlyingAssetMint, userKey);
+    preInstructions.push(await utils.createATAWithoutCheckIx(userKey, vault.underlyingAssetMint));
     let userDepositorId = friktion.infos.getDepositorId(vault.vaultId, userKey);
 
     if (vault.underlyingAssetMint.equals(NATIVE_MINT)) {
-      postInstructions.push(
-        createCloseAccountInstruction(underlyingAta, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(underlyingAta, userKey, userKey));
     }
     let remainingAccounts = [
       { pubkey: userKey, isSigner: true, isWritable: true }, //0
@@ -465,25 +412,13 @@ export class ProtocolFriktion implements IProtocolVault {
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     let vaultWrapper = new friktion.VaultInfoWrapper(vault);
     let shareAta = await getAssociatedTokenAddress(vault.vaultMint, userKey);
-    preInstructions.push(
-      await utils.createATAWithoutCheckIx(userKey, vault.vaultMint)
-    );
-    let underlyingAta = await getAssociatedTokenAddress(
-      vault.underlyingAssetMint,
-      userKey
-    );
-    preInstructions.push(
-      await utils.createATAWithoutCheckIx(userKey, vault.underlyingAssetMint)
-    );
+    preInstructions.push(await utils.createATAWithoutCheckIx(userKey, vault.vaultMint));
+    let underlyingAta = await getAssociatedTokenAddress(vault.underlyingAssetMint, userKey);
+    preInstructions.push(await utils.createATAWithoutCheckIx(userKey, vault.underlyingAssetMint));
     let userDepositorId = friktion.infos.getDepositorId(vault.vaultId, userKey);
-    let userWithdrawerId = friktion.infos.getWithdrawerId(
-      vault.vaultId,
-      userKey
-    );
+    let userWithdrawerId = friktion.infos.getWithdrawerId(vault.vaultId, userKey);
     if (vault.underlyingAssetMint.equals(NATIVE_MINT)) {
-      postInstructions.push(
-        createCloseAccountInstruction(underlyingAta, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(underlyingAta, userKey, userKey));
     }
     let remainingAccounts = [];
     let withdrawInfo = (await friktion.infos.getWithdrawer(
@@ -513,9 +448,7 @@ export class ProtocolFriktion implements IProtocolVault {
       }, //6
       { pubkey: userWithdrawerId, isSigner: false, isWritable: true }, //7
       {
-        pubkey: vaultWrapper.getRoundUnderlyingTokensAddress(
-          withdrawInfo.roundNumber
-        ),
+        pubkey: vaultWrapper.getRoundUnderlyingTokensAddress(withdrawInfo.roundNumber),
       }, //8
       {
         pubkey: anchor.web3.SystemProgram.programId,
@@ -563,24 +496,12 @@ export class ProtocolFriktion implements IProtocolVault {
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     let vaultWrapper = new friktion.VaultInfoWrapper(vault);
     let shareAta = await getAssociatedTokenAddress(vault.vaultMint, userKey);
-    preInstructions.push(
-      await utils.createATAWithoutCheckIx(userKey, vault.vaultMint)
-    );
-    let underlyingAta = await getAssociatedTokenAddress(
-      vault.underlyingAssetMint,
-      userKey
-    );
-    preInstructions.push(
-      await utils.createATAWithoutCheckIx(userKey, vault.underlyingAssetMint)
-    );
-    let userWithdrawerId = friktion.infos.getWithdrawerId(
-      vault.vaultId,
-      userKey
-    );
+    preInstructions.push(await utils.createATAWithoutCheckIx(userKey, vault.vaultMint));
+    let underlyingAta = await getAssociatedTokenAddress(vault.underlyingAssetMint, userKey);
+    preInstructions.push(await utils.createATAWithoutCheckIx(userKey, vault.underlyingAssetMint));
+    let userWithdrawerId = friktion.infos.getWithdrawerId(vault.vaultId, userKey);
     if (vault.underlyingAssetMint.equals(NATIVE_MINT)) {
-      postInstructions.push(
-        createCloseAccountInstruction(underlyingAta, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(underlyingAta, userKey, userKey));
     }
     let remainingAccounts = [
       { pubkey: userKey, isSigner: true, isWritable: true }, //0

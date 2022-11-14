@@ -6,23 +6,11 @@ import {
   createSyncNativeInstruction,
   getAssociatedTokenAddress,
 } from "@solana/spl-token-v2";
-import {
-  ActionType,
-  DepositParams,
-  GatewayParams,
-  IProtocolVault,
-  PAYLOAD_SIZE,
-  WithdrawParams,
-} from "../types";
+import { ActionType, DepositParams, GatewayParams, IProtocolVault, PAYLOAD_SIZE, WithdrawParams } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { IVaultInfo, katana } from "@dappio-wonderland/navigator";
 import { struct, u64, u8 } from "@project-serum/borsh";
-import {
-  getActivityIndex,
-  sigHash,
-  createATAWithoutCheckIx,
-  getGatewayAuthority,
-} from "../utils";
+import { getActivityIndex, sigHash, createATAWithoutCheckIx, getGatewayAuthority } from "../utils";
 import { KATANA_ADAPTER_PROGRAM_ID } from "../ids";
 
 export class ProtocolKatana implements IProtocolVault {
@@ -55,26 +43,13 @@ export class ProtocolKatana implements IProtocolVault {
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     let vaultWrapper = new katana.VaultInfoWrapper(vault);
     let programId = vault.programId;
-    const depositorKey = katana.infos.getDepositorId(
-      vault.vaultId,
-      userKey,
-      programId
-    );
+    const depositorKey = katana.infos.getDepositorId(vault.vaultId, userKey, programId);
     const depositTokenMint = vault.underlyingTokenMint;
     const shareTokenMint = vault.shareMint;
-    const depositTokenAddress = await getAssociatedTokenAddress(
-      depositTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, depositTokenMint)
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, shareTokenMint)
-    );
-    const indexSupply = this._gatewayParams.actionQueue.indexOf(
-      ActionType.InitiateDeposit
-    );
+    const depositTokenAddress = await getAssociatedTokenAddress(depositTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, depositTokenMint));
+    preInstructions.push(await createATAWithoutCheckIx(userKey, shareTokenMint));
+    const indexSupply = this._gatewayParams.actionQueue.indexOf(ActionType.InitiateDeposit);
 
     const vaultDepositAmount = new anchor.BN(params.depositAmount);
     if (depositTokenMint.equals(NATIVE_MINT)) {
@@ -86,22 +61,10 @@ export class ProtocolKatana implements IProtocolVault {
         })
       );
       preInstructions.push(createSyncNativeInstruction(depositTokenAddress));
-      postInstructions.push(
-        createCloseAccountInstruction(depositTokenAddress, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(depositTokenAddress, userKey, userKey));
     }
-    if (
-      !(await katana.checkDepositorCreated(
-        userKey,
-        vault.vaultId,
-        this._connection,
-        vault.programId
-      ))
-    ) {
-      preInstructions = [
-        ...preInstructions,
-        ...(await this._initDepositorIx(vault, userKey)),
-      ];
+    if (!(await katana.checkDepositorCreated(userKey, vault.vaultId, this._connection, vault.programId))) {
+      preInstructions = [...preInstructions, ...(await this._initDepositorIx(vault, userKey))];
     }
     let remainingAccounts = [
       { pubkey: vault.vaultId, isSigner: false, isWritable: true }, //0
@@ -156,30 +119,14 @@ export class ProtocolKatana implements IProtocolVault {
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     let programId = vault.programId;
-    const depositorKey = katana.infos.getDepositorId(
-      vault.vaultId,
-      userKey,
-      programId
-    );
+    const depositorKey = katana.infos.getDepositorId(vault.vaultId, userKey, programId);
     let withdrawTokenMint = vault.underlyingTokenMint;
-    let depositATA = await getAssociatedTokenAddress(
-      withdrawTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, withdrawTokenMint)
-    );
-    let shareTokenATA = await getAssociatedTokenAddress(
-      vault.shareMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, vault.shareMint)
-    );
+    let depositATA = await getAssociatedTokenAddress(withdrawTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, withdrawTokenMint));
+    let shareTokenATA = await getAssociatedTokenAddress(vault.shareMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, vault.shareMint));
     if (withdrawTokenMint.equals(NATIVE_MINT)) {
-      postInstructions.push(
-        createCloseAccountInstruction(depositATA, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(depositATA, userKey, userKey));
     }
     let remainingAccounts = [
       { pubkey: vault.vaultId, isSigner: false, isWritable: true }, //0
@@ -239,30 +186,14 @@ export class ProtocolKatana implements IProtocolVault {
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     let vaultWrapper = new katana.VaultInfoWrapper(vault);
     let programId = vault.programId;
-    const depositorKey = katana.infos.getDepositorId(
-      vault.vaultId,
-      userKey,
-      programId
-    );
+    const depositorKey = katana.infos.getDepositorId(vault.vaultId, userKey, programId);
     let withdrawTokenMint = vault.underlyingTokenMint;
-    let depositATA = await getAssociatedTokenAddress(
-      withdrawTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, withdrawTokenMint)
-    );
-    let shareTokenATA = await getAssociatedTokenAddress(
-      vault.shareMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, vault.shareMint)
-    );
+    let depositATA = await getAssociatedTokenAddress(withdrawTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, withdrawTokenMint));
+    let shareTokenATA = await getAssociatedTokenAddress(vault.shareMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, vault.shareMint));
     if (withdrawTokenMint.equals(NATIVE_MINT)) {
-      postInstructions.push(
-        createCloseAccountInstruction(depositATA, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(depositATA, userKey, userKey));
     }
     let remainingAccounts = [
       { pubkey: vault.vaultId, isSigner: false, isWritable: true }, //0
@@ -331,26 +262,13 @@ export class ProtocolKatana implements IProtocolVault {
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     let programId = vault.programId;
-    const depositorKey = katana.infos.getDepositorId(
-      vault.vaultId,
-      userKey,
-      programId
-    );
+    const depositorKey = katana.infos.getDepositorId(vault.vaultId, userKey, programId);
     let withdrawTokenMint = vault.underlyingTokenMint;
-    let depositATA = await getAssociatedTokenAddress(
-      withdrawTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, withdrawTokenMint)
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, vault.shareMint)
-    );
+    let depositATA = await getAssociatedTokenAddress(withdrawTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, withdrawTokenMint));
+    preInstructions.push(await createATAWithoutCheckIx(userKey, vault.shareMint));
     if (withdrawTokenMint.equals(NATIVE_MINT)) {
-      postInstructions.push(
-        createCloseAccountInstruction(depositATA, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(depositATA, userKey, userKey));
     }
     let remainingAccounts = [
       { pubkey: vault.vaultId, isSigner: false, isWritable: true }, //0
@@ -405,26 +323,13 @@ export class ProtocolKatana implements IProtocolVault {
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     let vaultWrapper = new katana.VaultInfoWrapper(vault);
     let programId = vault.programId;
-    const depositorKey = katana.infos.getDepositorId(
-      vault.vaultId,
-      userKey,
-      programId
-    );
+    const depositorKey = katana.infos.getDepositorId(vault.vaultId, userKey, programId);
     let withdrawTokenMint = vault.underlyingTokenMint;
-    let depositATA = await getAssociatedTokenAddress(
-      withdrawTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, withdrawTokenMint)
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, vault.shareMint)
-    );
+    let depositATA = await getAssociatedTokenAddress(withdrawTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, withdrawTokenMint));
+    preInstructions.push(await createATAWithoutCheckIx(userKey, vault.shareMint));
     if (withdrawTokenMint.equals(NATIVE_MINT)) {
-      postInstructions.push(
-        createCloseAccountInstruction(depositATA, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(depositATA, userKey, userKey));
     }
     let remainingAccounts = [
       { pubkey: vault.vaultId, isSigner: false, isWritable: true }, //0
@@ -481,11 +386,7 @@ export class ProtocolKatana implements IProtocolVault {
     vault: katana.VaultInfo,
     userKey: anchor.web3.PublicKey
   ): Promise<anchor.web3.TransactionInstruction[]> {
-    let userVault = katana.infos.getDepositorIdWithBump(
-      vault.vaultId,
-      userKey,
-      vault.programId
-    );
+    let userVault = katana.infos.getDepositorIdWithBump(vault.vaultId, userKey, vault.programId);
     const dataLayout = struct([u8("bump")]);
     let data = Buffer.alloc(9);
     let datahex = userVault.bump.toString(16);

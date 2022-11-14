@@ -8,12 +8,7 @@ import {
   getAssociatedTokenAddress,
 } from "@solana/spl-token-v2";
 import { getActivityIndex, getGatewayAuthority } from "../utils";
-import {
-  IFarmInfo,
-  IPoolInfo,
-  orca,
-  utils,
-} from "@dappio-wonderland/navigator";
+import { IFarmInfo, IPoolInfo, orca, utils } from "@dappio-wonderland/navigator";
 import {
   ActionType,
   AddLiquidityParams,
@@ -64,14 +59,8 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
     )) as orca.PoolInfoWrapper;
 
     let authority = await poolInfoWrapper.getAuthority();
-    let aTokenATA = await getAssociatedTokenAddress(
-      poolInfo.tokenAMint,
-      userKey
-    );
-    let bTokenATA = await getAssociatedTokenAddress(
-      poolInfo.tokenBMint,
-      userKey
-    );
+    let aTokenATA = await getAssociatedTokenAddress(poolInfo.tokenAMint, userKey);
+    let bTokenATA = await getAssociatedTokenAddress(poolInfo.tokenBMint, userKey);
     let lpTokenATA = await getAssociatedTokenAddress(poolInfo.lpMint, userKey);
     let swapATA: anchor.web3.PublicKey;
     if (this._gatewayParams.poolDirection == PoolDirection.Obverse) {
@@ -97,9 +86,7 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       await utils.createATAWithoutCheckIx(userKey, poolInfo.tokenBMint),
       await utils.createATAWithoutCheckIx(userKey, poolInfo.lpMint),
     ];
-    const indexSupply = this._gatewayParams.actionQueue.indexOf(
-      ActionType.AddLiquidity
-    );
+    const indexSupply = this._gatewayParams.actionQueue.indexOf(ActionType.AddLiquidity);
     if (pool.tokenAMint.equals(NATIVE_MINT)) {
       createATAs.push(
         anchor.web3.SystemProgram.transfer({
@@ -109,9 +96,7 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
         })
       );
       createATAs.push(createSyncNativeInstruction(aTokenATA));
-      closeAccount.push(
-        createCloseAccountInstruction(aTokenATA, userKey, userKey)
-      );
+      closeAccount.push(createCloseAccountInstruction(aTokenATA, userKey, userKey));
     }
     if (pool.tokenBMint.equals(NATIVE_MINT)) {
       createATAs.push(
@@ -122,9 +107,7 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
         })
       );
       createATAs.push(createSyncNativeInstruction(bTokenATA));
-      closeAccount.push(
-        createCloseAccountInstruction(bTokenATA, userKey, userKey)
-      );
+      closeAccount.push(createCloseAccountInstruction(bTokenATA, userKey, userKey));
     }
 
     const txAddLiquidity = await this._gatewayProgram.methods
@@ -158,9 +141,7 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
     inputLayout.encode(
       {
         lpAmount: new anchor.BN(params.lpAmount),
-        action: params.singleToTokenMint
-          ? ActionType.RemoveLiquiditySingle
-          : ActionType.RemoveLiquidity,
+        action: params.singleToTokenMint ? ActionType.RemoveLiquiditySingle : ActionType.RemoveLiquidity,
       },
       payload
     );
@@ -171,21 +152,13 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       poolInfo.poolId
     )) as orca.PoolInfoWrapper;
     let authority = await poolInfoWrapper.getAuthority();
-    let aTokenATA = await getAssociatedTokenAddress(
-      poolInfo.tokenAMint,
-      userKey
-    );
-    let bTokenATA = await getAssociatedTokenAddress(
-      poolInfo.tokenBMint,
-      userKey
-    );
+    let aTokenATA = await getAssociatedTokenAddress(poolInfo.tokenAMint, userKey);
+    let bTokenATA = await getAssociatedTokenAddress(poolInfo.tokenBMint, userKey);
     let lpTokenATA = await getAssociatedTokenAddress(poolInfo.lpMint, userKey);
     let remainingAccounts = [];
     let closeAccount: anchor.web3.TransactionInstruction[] = [];
     if (singleToTokenMint) {
-      let destAccount = pool.tokenAMint.equals(singleToTokenMint)
-        ? aTokenATA
-        : bTokenATA;
+      let destAccount = pool.tokenAMint.equals(singleToTokenMint) ? aTokenATA : bTokenATA;
       remainingAccounts = [
         { pubkey: poolInfo.poolId, isSigner: false, isWritable: false },
         { pubkey: authority, isSigner: false, isWritable: false },
@@ -220,14 +193,10 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       await utils.createATAWithoutCheckIx(userKey, poolInfo.lpMint),
     ];
     if (pool.tokenAMint.equals(NATIVE_MINT)) {
-      closeAccount.push(
-        createCloseAccountInstruction(aTokenATA, userKey, userKey)
-      );
+      closeAccount.push(createCloseAccountInstruction(aTokenATA, userKey, userKey));
     }
     if (pool.tokenBMint.equals(NATIVE_MINT)) {
-      closeAccount.push(
-        createCloseAccountInstruction(bTokenATA, userKey, userKey)
-      );
+      closeAccount.push(createCloseAccountInstruction(bTokenATA, userKey, userKey));
     }
 
     const txRemoveLiquidity = await this._gatewayProgram.methods
@@ -269,19 +238,10 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       this._connection,
       farmInfo.farmId
     )) as orca.FarmInfoWrapper;
-    let rewardTokenVault = await getAccount(
-      this._connection,
-      farm.rewardTokenVault
-    );
+    let rewardTokenVault = await getAccount(this._connection, farm.rewardTokenVault);
     let baseATA = await getAssociatedTokenAddress(farm.baseTokenMint, userKey);
-    let farmTokenATA = await getAssociatedTokenAddress(
-      farm.farmTokenMint,
-      userKey
-    );
-    let rewardATA = await getAssociatedTokenAddress(
-      rewardTokenVault.mint,
-      userKey
-    );
+    let farmTokenATA = await getAssociatedTokenAddress(farm.farmTokenMint, userKey);
+    let rewardATA = await getAssociatedTokenAddress(rewardTokenVault.mint, userKey);
     let farmerId = await orca.infos.getFarmerId(farm, userKey);
     let createATAs = [
       await utils.createATAWithoutCheckIx(userKey, farm.farmTokenMint),
@@ -346,19 +306,10 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       this._connection,
       farmInfo.farmId
     )) as orca.FarmInfoWrapper;
-    let rewardTokenVault = await getAccount(
-      this._connection,
-      farm.rewardTokenVault
-    );
+    let rewardTokenVault = await getAccount(this._connection, farm.rewardTokenVault);
     let baseATA = await getAssociatedTokenAddress(farm.baseTokenMint, userKey);
-    let farmTokenATA = await getAssociatedTokenAddress(
-      farm.farmTokenMint,
-      userKey
-    );
-    let rewardATA = await getAssociatedTokenAddress(
-      rewardTokenVault.mint,
-      userKey
-    );
+    let farmTokenATA = await getAssociatedTokenAddress(farm.farmTokenMint, userKey);
+    let rewardATA = await getAssociatedTokenAddress(rewardTokenVault.mint, userKey);
     let farmerId = await orca.infos.getFarmerId(farm, userKey);
     let createATAs = [
       await utils.createATAWithoutCheckIx(userKey, farm.farmTokenMint),
@@ -415,19 +366,10 @@ export class ProtocolOrca implements IProtocolPool, IProtocolFarm {
       this._connection,
       farmInfo.farmId
     )) as orca.FarmInfoWrapper;
-    let rewardTokenVault = await getAccount(
-      this._connection,
-      farm.rewardTokenVault
-    );
+    let rewardTokenVault = await getAccount(this._connection, farm.rewardTokenVault);
     let baseATA = await getAssociatedTokenAddress(farm.baseTokenMint, userKey);
-    let farmTokenATA = await getAssociatedTokenAddress(
-      farm.farmTokenMint,
-      userKey
-    );
-    let rewardATA = await getAssociatedTokenAddress(
-      rewardTokenVault.mint,
-      userKey
-    );
+    let farmTokenATA = await getAssociatedTokenAddress(farm.farmTokenMint, userKey);
+    let rewardATA = await getAssociatedTokenAddress(rewardTokenVault.mint, userKey);
     let farmerId = await orca.infos.getFarmerId(farm, userKey);
     let createATAs = [
       await utils.createATAWithoutCheckIx(userKey, farm.farmTokenMint),

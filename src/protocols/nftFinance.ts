@@ -1,15 +1,6 @@
 import * as anchor from "@project-serum/anchor";
-import {
-  TOKEN_PROGRAM_ID,
-  AccountLayout,
-  getAssociatedTokenAddress,
-} from "@solana/spl-token-v2";
-import {
-  getActivityIndex,
-  sigHash,
-  createATAWithoutCheckIx,
-  getGatewayAuthority,
-} from "../utils";
+import { TOKEN_PROGRAM_ID, AccountLayout, getAssociatedTokenAddress } from "@solana/spl-token-v2";
+import { getActivityIndex, sigHash, createATAWithoutCheckIx, getGatewayAuthority } from "../utils";
 import { INFTFarmInfo, INFTPoolInfo } from "@dappio-wonderland/navigator";
 import {
   ClaimParams,
@@ -57,10 +48,7 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
 
     // Handle transaction here
     const pool = poolInfo as nftFinance.NFTPoolInfo;
-    const userNftAccountsInfo = await utils.getMultipleAccounts(
-      this._connection,
-      userNftAccounts
-    );
+    const userNftAccountsInfo = await utils.getMultipleAccounts(this._connection, userNftAccounts);
 
     const preInstructions: anchor.web3.TransactionInstruction[] = [];
     const createAtaIxArr: anchor.web3.TransactionInstruction[] = [];
@@ -68,51 +56,28 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
     const txAllLockNFT: anchor.web3.Transaction[] = [];
 
     const setComputeUnitLimitParams = { units: 600000 };
-    const setComputeUnitLimitIx =
-      anchor.web3.ComputeBudgetProgram.setComputeUnitLimit(
-        setComputeUnitLimitParams
-      );
+    const setComputeUnitLimitIx = anchor.web3.ComputeBudgetProgram.setComputeUnitLimit(setComputeUnitLimitParams);
     preInstructions.push(setComputeUnitLimitIx);
 
     // create user prove token ATA
-    const userProveTokenAccount = await getAssociatedTokenAddress(
-      pool.proveTokenMint,
-      userKey
-    );
-    const createProveTokenAtaIx = await createATAWithoutCheckIx(
-      userKey,
-      pool.proveTokenMint
-    );
+    const userProveTokenAccount = await getAssociatedTokenAddress(pool.proveTokenMint, userKey);
+    const createProveTokenAtaIx = await createATAWithoutCheckIx(userKey, pool.proveTokenMint);
     createAtaIxArr.push(createProveTokenAtaIx);
 
     for (let userNftAccountInfo of userNftAccountsInfo) {
       const userNftAccount = userNftAccountInfo.pubkey;
-      const nftMint = AccountLayout.decode(
-        userNftAccountInfo.account.data
-      ).mint;
+      const nftMint = AccountLayout.decode(userNftAccountInfo.account.data).mint;
 
       const nftVaultAccount = (
         await anchor.web3.PublicKey.findProgramAddress(
-          [
-            nftMint.toBuffer(),
-            pool.poolId.toBuffer(),
-            Buffer.from(NFT_VAULT_SEED),
-          ],
+          [nftMint.toBuffer(), pool.poolId.toBuffer(), Buffer.from(NFT_VAULT_SEED)],
           nftFinance.NFT_STAKING_PROGRAM_ID
         )
       )[0];
 
       // create nft vault ATA
-      let nftVaultAta = await getAssociatedTokenAddress(
-        nftMint,
-        nftVaultAccount,
-        true
-      );
-      const createAtaIx = await createATAWithoutCheckIx(
-        nftVaultAccount,
-        nftMint,
-        userKey
-      );
+      let nftVaultAta = await getAssociatedTokenAddress(nftMint, nftVaultAccount, true);
+      const createAtaIx = await createATAWithoutCheckIx(nftVaultAccount, nftMint, userKey);
       createAtaIxArr.push(createAtaIx);
 
       const remainingAccounts = [
@@ -186,18 +151,11 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
       preInstructions.push(createAtaIx);
 
       // create user prove token ATA
-      const userProveTokenAccount = await getAssociatedTokenAddress(
-        pool.proveTokenMint,
-        userKey
-      );
+      const userProveTokenAccount = await getAssociatedTokenAddress(pool.proveTokenMint, userKey);
 
       const nftVaultAccount = (
         await anchor.web3.PublicKey.findProgramAddress(
-          [
-            nftMint.toBuffer(),
-            pool.poolId.toBuffer(),
-            Buffer.from(NFT_VAULT_SEED),
-          ],
+          [nftMint.toBuffer(), pool.poolId.toBuffer(), Buffer.from(NFT_VAULT_SEED)],
           nftFinance.NFT_STAKING_PROGRAM_ID
         )
       )[0];
@@ -205,11 +163,7 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
       let userNftAccount = await getAssociatedTokenAddress(nftMint, userKey);
 
       // create nft vault ATA
-      let nftVaultAta = await getAssociatedTokenAddress(
-        nftMint,
-        nftVaultAccount,
-        true
-      );
+      let nftVaultAta = await getAssociatedTokenAddress(nftMint, nftVaultAccount, true);
 
       const remainingAccounts = [
         { pubkey: userKey, isSigner: true, isWritable: true }, // 0
@@ -274,44 +228,21 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
 
     const checkMinerExist = await this._connection.getAccountInfo(miner);
     if (checkMinerExist == null) {
-      const initializeMinerIx = await this._initializeMinerIx(
-        userKey,
-        farm.farmId
-      );
+      const initializeMinerIx = await this._initializeMinerIx(userKey, farm.farmId);
       preInstructions.push(initializeMinerIx);
     }
 
-    const userProveTokenAta = await getAssociatedTokenAddress(
-      farm.proveTokenMint,
-      userKey
-    );
-    const createProveTokenAtaIx = await createATAWithoutCheckIx(
-      miner,
-      farm.proveTokenMint,
-      userKey
-    );
+    const userProveTokenAta = await getAssociatedTokenAddress(farm.proveTokenMint, userKey);
+    const createProveTokenAtaIx = await createATAWithoutCheckIx(miner, farm.proveTokenMint, userKey);
     preInstructions.push(createProveTokenAtaIx);
 
-    const userFarmTokenAta = await getAssociatedTokenAddress(
-      farm.farmTokenMint,
-      userKey
-    );
-    const createFarmTokenAtaIx = await createATAWithoutCheckIx(
-      userKey,
-      farm.farmTokenMint
-    );
+    const userFarmTokenAta = await getAssociatedTokenAddress(farm.farmTokenMint, userKey);
+    const createFarmTokenAtaIx = await createATAWithoutCheckIx(userKey, farm.farmTokenMint);
     preInstructions.push(createFarmTokenAtaIx);
 
-    const minerVault = await getAssociatedTokenAddress(
-      farm.proveTokenMint,
-      miner,
-      true
-    );
+    const minerVault = await getAssociatedTokenAddress(farm.proveTokenMint, miner, true);
 
-    const _updateUnclaimedAmountIx = await this._updateUnclaimedAmountIx(
-      userKey,
-      farm.farmId
-    );
+    const _updateUnclaimedAmountIx = await this._updateUnclaimedAmountIx(userKey, farm.farmId);
     preInstructions.push(_updateUnclaimedAmountIx);
 
     const remainingAccounts = [
@@ -370,30 +301,14 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
       )
     )[0];
 
-    const userProveTokenAta = await getAssociatedTokenAddress(
-      farm.proveTokenMint,
-      userKey
-    );
-    const createProveTokenAtaIx = await createATAWithoutCheckIx(
-      userKey,
-      farm.proveTokenMint
-    );
+    const userProveTokenAta = await getAssociatedTokenAddress(farm.proveTokenMint, userKey);
+    const createProveTokenAtaIx = await createATAWithoutCheckIx(userKey, farm.proveTokenMint);
     preInstructions.push(createProveTokenAtaIx);
 
-    const userFarmTokenAta = await getAssociatedTokenAddress(
-      farm.farmTokenMint,
-      userKey
-    );
-    const minerVault = await getAssociatedTokenAddress(
-      farm.proveTokenMint,
-      miner,
-      true
-    );
+    const userFarmTokenAta = await getAssociatedTokenAddress(farm.farmTokenMint, userKey);
+    const minerVault = await getAssociatedTokenAddress(farm.proveTokenMint, miner, true);
 
-    const _updateUnclaimedAmountIx = await this._updateUnclaimedAmountIx(
-      userKey,
-      farm.farmId
-    );
+    const _updateUnclaimedAmountIx = await this._updateUnclaimedAmountIx(userKey, farm.farmId);
     preInstructions.push(_updateUnclaimedAmountIx);
 
     const remainingAccounts = [
@@ -452,20 +367,11 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
       )
     )[0];
 
-    const userRewardTokenAta = await getAssociatedTokenAddress(
-      farm.rewardTokenMint,
-      userKey
-    );
-    const createRewardTokenAtaIx = await createATAWithoutCheckIx(
-      userKey,
-      farm.rewardTokenMint
-    );
+    const userRewardTokenAta = await getAssociatedTokenAddress(farm.rewardTokenMint, userKey);
+    const createRewardTokenAtaIx = await createATAWithoutCheckIx(userKey, farm.rewardTokenMint);
     preInstructions.push(createRewardTokenAtaIx);
 
-    const _updateUnclaimedAmountIx = await this._updateUnclaimedAmountIx(
-      userKey,
-      farm.farmId
-    );
+    const _updateUnclaimedAmountIx = await this._updateUnclaimedAmountIx(userKey, farm.farmId);
     preInstructions.push(_updateUnclaimedAmountIx);
 
     const remainingAccounts = [
@@ -495,10 +401,7 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
     return { txs: [txClaim], input: payload };
   }
 
-  async _initializeMinerIx(
-    userKey: anchor.web3.PublicKey,
-    farmInfoKey: anchor.web3.PublicKey
-  ) {
+  async _initializeMinerIx(userKey: anchor.web3.PublicKey, farmInfoKey: anchor.web3.PublicKey) {
     const discriminator = sigHash("global", "initialize_miner");
     const data = Buffer.from(discriminator, "hex");
 
@@ -531,10 +434,7 @@ export class ProtocolNftFinance implements IProtocolNFTPool, IProtocolNFTFarm {
     });
   }
 
-  private async _updateUnclaimedAmountIx(
-    userKey: anchor.web3.PublicKey,
-    farmInfoKey: anchor.web3.PublicKey
-  ) {
+  private async _updateUnclaimedAmountIx(userKey: anchor.web3.PublicKey, farmInfoKey: anchor.web3.PublicKey) {
     const discriminator = sigHash("global", "update_unclaimed_amount");
     const data = Buffer.from(discriminator, "hex");
 

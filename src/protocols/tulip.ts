@@ -6,12 +6,7 @@ import {
   getAssociatedTokenAddress,
 } from "@solana/spl-token-v2";
 import { struct, array, u8, u64 } from "@project-serum/borsh";
-import {
-  getActivityIndex,
-  sigHash,
-  createATAWithoutCheckIx,
-  getGatewayAuthority,
-} from "../utils";
+import { getActivityIndex, sigHash, createATAWithoutCheckIx, getGatewayAuthority } from "../utils";
 import { IReserveInfo, IVaultInfo, tulip } from "@dappio-wonderland/navigator";
 import {
   ActionType,
@@ -61,13 +56,8 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
-    const supplyTokenAddress = await getAssociatedTokenAddress(
-      supplyTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, supplyTokenMint)
-    );
+    const supplyTokenAddress = await getAssociatedTokenAddress(supplyTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, supplyTokenMint));
 
     const moneyMarketSupplyAmount = new anchor.BN(params.supplyAmount);
 
@@ -81,27 +71,16 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
         createSyncNativeInstruction(supplyTokenAddress)
       );
 
-      postInstructions.push(
-        createCloseAccountInstruction(supplyTokenAddress, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(supplyTokenAddress, userKey, userKey));
     }
 
-    const reserveTokenAddress = await getAssociatedTokenAddress(
-      reserveTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, reserveTokenMint)
-    );
+    const reserveTokenAddress = await getAssociatedTokenAddress(reserveTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, reserveTokenMint));
 
-    const refreshReserveIx = this._refreshReserveIx(
-      reserve.reserveId,
-      reserve.liquidity.oraclePubkey
-    );
+    const refreshReserveIx = this._refreshReserveIx(reserve.reserveId, reserve.liquidity.oraclePubkey);
     preInstructions.push(refreshReserveIx);
 
-    const lendingMarketAuthority =
-      await reserveWrapper.getLendingMarketAuthority(reserve.lendingMarket);
+    const lendingMarketAuthority = await reserveWrapper.getLendingMarketAuthority(reserve.lendingMarket);
 
     const remainingAccounts = [
       { pubkey: supplyTokenAddress, isSigner: false, isWritable: true },
@@ -178,38 +157,19 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       moneyMarketUnsupplyAmount
     );
 
-    const reserveTokenAddress = await getAssociatedTokenAddress(
-      reserveTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, reserveTokenMint)
-    );
+    const reserveTokenAddress = await getAssociatedTokenAddress(reserveTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, reserveTokenMint));
 
-    const withdrawTokenAddress = await getAssociatedTokenAddress(
-      withdrawTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, withdrawTokenMint)
-    );
-    if (
-      withdrawTokenMint.equals(NATIVE_SOL) ||
-      withdrawTokenMint.equals(WSOL)
-    ) {
-      postInstructions.push(
-        createCloseAccountInstruction(withdrawTokenAddress, userKey, userKey)
-      );
+    const withdrawTokenAddress = await getAssociatedTokenAddress(withdrawTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, withdrawTokenMint));
+    if (withdrawTokenMint.equals(NATIVE_SOL) || withdrawTokenMint.equals(WSOL)) {
+      postInstructions.push(createCloseAccountInstruction(withdrawTokenAddress, userKey, userKey));
     }
 
-    const refreshReserveIx = this._refreshReserveIx(
-      reserve.reserveId,
-      reserve.liquidity.oraclePubkey
-    );
+    const refreshReserveIx = this._refreshReserveIx(reserve.reserveId, reserve.liquidity.oraclePubkey);
     preInstructions.push(refreshReserveIx);
 
-    const lendingMarketAuthority =
-      await reserveWrapper.getLendingMarketAuthority(reserve.lendingMarket);
+    const lendingMarketAuthority = await reserveWrapper.getLendingMarketAuthority(reserve.lendingMarket);
 
     const remainingAccounts = [
       {
@@ -301,40 +261,22 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
 
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
 
-    const [depositTrackingAccount, _trackingNonce] =
-      vaultInfoWrapper.deriveTrackingAddress(userKey);
+    const [depositTrackingAccount, _trackingNonce] = vaultInfoWrapper.deriveTrackingAddress(userKey);
     const [depositTrackingPda, _depositTrackingPdaNonce] =
       vaultInfoWrapper.deriveTrackingPdaAddress(depositTrackingAccount);
 
-    const depositTrackingHoldAccount = await getAssociatedTokenAddress(
-      vaultInfo.shareMint,
-      depositTrackingPda,
-      true
-    );
-    const createAtaIx1 = await createATAWithoutCheckIx(
-      depositTrackingPda,
-      vaultInfo.shareMint,
-      userKey
-    );
+    const depositTrackingHoldAccount = await getAssociatedTokenAddress(vaultInfo.shareMint, depositTrackingPda, true);
+    const createAtaIx1 = await createATAWithoutCheckIx(depositTrackingPda, vaultInfo.shareMint, userKey);
     preInstructions.push(createAtaIx1);
 
-    const depositTrackingAccountInfo = await this._connection.getAccountInfo(
-      depositTrackingAccount
-    );
+    const depositTrackingAccountInfo = await this._connection.getAccountInfo(depositTrackingAccount);
     if (!depositTrackingAccountInfo) {
-      const newRegisterDepositTrackingAccountIx =
-        await this._newRegisterDepositTrackingAccountIx(vaultInfo, userKey);
+      const newRegisterDepositTrackingAccountIx = await this._newRegisterDepositTrackingAccountIx(vaultInfo, userKey);
       preInstructions.push(newRegisterDepositTrackingAccountIx);
     }
 
-    const depositingUnderlyingAccount = await getAssociatedTokenAddress(
-      vaultInfo.base.underlyingMint,
-      userKey
-    );
-    const createAtaIx2 = await createATAWithoutCheckIx(
-      userKey,
-      vaultInfo.base.underlyingMint
-    );
+    const depositingUnderlyingAccount = await getAssociatedTokenAddress(vaultInfo.base.underlyingMint, userKey);
+    const createAtaIx2 = await createATAWithoutCheckIx(userKey, vaultInfo.base.underlyingMint);
     preInstructions.push(createAtaIx2);
 
     const remainingAccounts = [
@@ -407,35 +349,18 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
 
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
 
-    const [depositTrackingAccount, _trackingNonce] =
-      vaultInfoWrapper.deriveTrackingAddress(userKey);
+    const [depositTrackingAccount, _trackingNonce] = vaultInfoWrapper.deriveTrackingAddress(userKey);
     const [depositTrackingPda, _depositTrackingPdaNonce] =
       vaultInfoWrapper.deriveTrackingPdaAddress(depositTrackingAccount);
 
-    const depositTrackingHoldAccount = await getAssociatedTokenAddress(
-      vaultInfo.shareMint,
-      depositTrackingPda,
-      true
-    );
+    const depositTrackingHoldAccount = await getAssociatedTokenAddress(vaultInfo.shareMint, depositTrackingPda, true);
 
-    const userSharesAccount = await getAssociatedTokenAddress(
-      vaultInfo.shareMint,
-      userKey
-    );
-    const createAtaIx1 = await createATAWithoutCheckIx(
-      userKey,
-      vaultInfo.shareMint
-    );
+    const userSharesAccount = await getAssociatedTokenAddress(vaultInfo.shareMint, userKey);
+    const createAtaIx1 = await createATAWithoutCheckIx(userKey, vaultInfo.shareMint);
     preInstructions.push(createAtaIx1);
 
-    const userLpAccount = await getAssociatedTokenAddress(
-      vaultInfo.lpMint,
-      userKey
-    );
-    const createAtaIx2 = await createATAWithoutCheckIx(
-      userKey,
-      vaultInfo.lpMint
-    );
+    const userLpAccount = await getAssociatedTokenAddress(vaultInfo.lpMint, userKey);
+    const createAtaIx2 = await createATAWithoutCheckIx(userKey, vaultInfo.lpMint);
     preInstructions.push(createAtaIx2);
 
     const remainingAccounts = [
@@ -608,19 +533,13 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
     data = Buffer.concat([instruction, data]);
     const vaultInfoWrapper = new tulip.VaultInfoWrapper(vault);
 
-    const [depositTrackingAccount, _trackingNonce] =
-      vaultInfoWrapper.deriveTrackingAddress(userKey);
+    const [depositTrackingAccount, _trackingNonce] = vaultInfoWrapper.deriveTrackingAddress(userKey);
     const [depositTrackingPda, _depositTrackingPdaNonce] =
       vaultInfoWrapper.deriveTrackingPdaAddress(depositTrackingAccount);
 
-    const [depositTrackingQueueAccount, _queueNonce] =
-      vaultInfoWrapper.deriveTrackingQueueAddress(depositTrackingPda);
+    const [depositTrackingQueueAccount, _queueNonce] = vaultInfoWrapper.deriveTrackingQueueAddress(depositTrackingPda);
 
-    const depositTrackingHoldAccount = await getAssociatedTokenAddress(
-      vault.shareMint,
-      depositTrackingPda,
-      true
-    );
+    const depositTrackingHoldAccount = await getAssociatedTokenAddress(vault.shareMint, depositTrackingPda, true);
 
     const keys = [
       { pubkey: userKey, isSigner: true, isWritable: true }, // 0

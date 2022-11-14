@@ -17,10 +17,7 @@ export class ProtocolJupiter implements IProtocolSwap {
   private _bestRoute: RouteInfo;
   private _transactions: anchor.web3.Transaction[] = [];
 
-  constructor(
-    private _connection: anchor.web3.Connection,
-    private _params: ProtocolJupiterParams
-  ) {}
+  constructor(private _connection: anchor.web3.Connection, private _params: ProtocolJupiterParams) {}
 
   async build(): Promise<void> {
     this._jupiter = await Jupiter.load({
@@ -45,13 +42,9 @@ export class ProtocolJupiter implements IProtocolSwap {
       routeInfo: this._bestRoute,
       userPublicKey: this._params.userKey,
     });
-    const { setupTransaction, swapTransaction, cleanupTransaction } =
-      transactions;
+    const { setupTransaction, swapTransaction, cleanupTransaction } = transactions;
 
-    const userWSOLAta = await getAssociatedTokenAddress(
-      WSOL,
-      this._params.userKey
-    );
+    const userWSOLAta = await getAssociatedTokenAddress(WSOL, this._params.userKey);
 
     // Remove WSOL create instructions
     // if (setupTransaction) {
@@ -94,11 +87,7 @@ export class ProtocolJupiter implements IProtocolSwap {
     //   );
     // }
 
-    for (let transaction of [
-      setupTransaction,
-      swapTransaction,
-      cleanupTransaction,
-    ]
+    for (let transaction of [setupTransaction, swapTransaction, cleanupTransaction]
       .filter(Boolean)
       .filter((tx) => tx.instructions.length > 0)) {
       this._transactions.push(transaction);
