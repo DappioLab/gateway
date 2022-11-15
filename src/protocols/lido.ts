@@ -149,10 +149,10 @@ export class ProtocolLido implements IProtocolVault {
         { pubkey: validatorStakeAccount, isSigner: false, isWritable: true }, // 6
         { pubkey: receivingAccount.publicKey, isSigner: true, isWritable: true }, // 7
         { pubkey: stakeAuthority, isSigner: false, isWritable: false }, // 8
-        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // 10
-        { pubkey: anchor.web3.SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false }, // 11
-        { pubkey: anchor.web3.SystemProgram.programId, isSigner: false, isWritable: false }, // 12
-        { pubkey: anchor.web3.StakeProgram.programId, isSigner: false, isWritable: false }, // 13
+        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // 9
+        { pubkey: anchor.web3.SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false }, // 10
+        { pubkey: anchor.web3.SystemProgram.programId, isSigner: false, isWritable: false }, // 11
+        { pubkey: anchor.web3.StakeProgram.programId, isSigner: false, isWritable: false }, // 12
       ];
     }
 
