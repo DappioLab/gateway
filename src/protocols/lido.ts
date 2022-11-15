@@ -156,13 +156,6 @@ export class ProtocolLido implements IProtocolVault {
       ];
     }
 
-    // Create transaction for post-unstaking withdrawal of funds
-    // TODO: Maybe add signers?
-    const txDeactivate = anchor.web3.StakeProgram.deactivate({
-      authorizedPubkey: userKey,
-      stakePubkey: receivingAccount.publicKey,
-    });
-
     // Handle transaction here
     const txWithdraw = await this._gatewayProgram.methods
       .withdraw()
@@ -174,7 +167,6 @@ export class ProtocolLido implements IProtocolVault {
         gatewayAuthority: getGatewayAuthority(),
       })
       .remainingAccounts(remainingAccounts)
-      .postInstructions(txDeactivate.instructions)
       .transaction();
 
     return { txs: [txWithdraw], input: payload };
