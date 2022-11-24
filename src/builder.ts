@@ -14,6 +14,7 @@ import {
   nftFinance,
   katana,
   friktion,
+  genopets,
 } from "@dappio-wonderland/navigator";
 import {
   ActionType,
@@ -63,6 +64,7 @@ import { ProtocolFrancium } from "./protocols/francium";
 import { ProtocolKatana } from "./protocols/katana";
 import { ProtocolTulip } from "./protocols/tulip";
 import { ProtocolFriktion } from "./protocols/friktion";
+import { ProtocolGenopets } from "./protocols/genopets";
 
 export class GatewayBuilder {
   public params: GatewayParams;
@@ -109,6 +111,8 @@ export class GatewayBuilder {
       // Extra Metadata
       poolDirection: PoolDirection.Obverse,
       swapMinOutAmount: new anchor.BN(0),
+      lockDuration: 0,
+      harvestType: 0,
     };
 
     this._metadata = {
@@ -438,6 +442,20 @@ export class GatewayBuilder {
         );
 
         break;
+      case SupportedProtocols.Genopets:
+        this._metadata.farm = await genopets.infos.getFarm(
+          this._provider.connection,
+          stakeParams.farmId
+        );
+
+        protocol = new ProtocolGenopets(
+          this._provider.connection,
+          this._program,
+          await this.getGatewayStateKey(),
+          this.params
+        );
+
+        break;
       default:
         throw new Error("Unsupported Protocol");
     }
@@ -540,6 +558,20 @@ export class GatewayBuilder {
         );
 
         break;
+      case SupportedProtocols.Genopets:
+        this._metadata.farm = await genopets.infos.getFarm(
+          this._provider.connection,
+          unstakeParams.farmId
+        );
+
+        protocol = new ProtocolGenopets(
+          this._provider.connection,
+          this._program,
+          await this.getGatewayStateKey(),
+          this.params
+        );
+
+        break;
       default:
         throw new Error("Unsupported Protocol");
     }
@@ -627,6 +659,20 @@ export class GatewayBuilder {
           await this.getGatewayStateKey(),
           this.params
         );
+        break;
+      case SupportedProtocols.Genopets:
+        this._metadata.farm = await genopets.infos.getFarm(
+          this._provider.connection,
+          harvestParams.farmId
+        );
+
+        protocol = new ProtocolGenopets(
+          this._provider.connection,
+          this._program,
+          await this.getGatewayStateKey(),
+          this.params
+        );
+
         break;
       default:
         throw new Error("Unsupported Protocol");
