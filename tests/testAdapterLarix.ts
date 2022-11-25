@@ -37,14 +37,11 @@ describe("Gateway", () => {
   //   commitment: "confirmed",
   //   confirmTransactionInitialTimeout: 180 * 1000,
   // });
-  const connection = new Connection(
-    "https://rpc-mainnet-fork.epochs.studio/notcache",
-    {
-      commitment: "confirmed",
-      confirmTransactionInitialTimeout: 180 * 1000,
-      wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
-    }
-  );
+  const connection = new Connection("https://rpc-mainnet-fork.epochs.studio/notcache", {
+    commitment: "confirmed",
+    confirmTransactionInitialTimeout: 180 * 1000,
+    wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
+  });
   const options = anchor.AnchorProvider.defaultOptions();
   const wallet = NodeWallet.local();
   const provider = new anchor.AnchorProvider(connection, wallet, options);
@@ -55,14 +52,8 @@ describe("Gateway", () => {
 
   it("claim", async () => {
     const gateway = new GatewayBuilder(provider);
-    let obligationKey = await larix.infos.getObligationId!(
-      larix.LARIX_MARKET_ID_MAIN_POOL,
-      wallet.publicKey
-    );
-    const obligationInfo = await larix.infos.getObligation!(
-      connection,
-      obligationKey
-    );
+    let obligationKey = await larix.infos.getObligationId!(larix.LARIX_MARKET_ID_MAIN_POOL, wallet.publicKey);
+    const obligationInfo = await larix.infos.getObligation!(connection, obligationKey);
     let claimParam: ClaimCollateralRewardParams = {
       protocol: SupportedProtocols.Larix,
       obligationKey: obligationInfo.obligationId,
@@ -82,12 +73,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        false
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -96,9 +82,7 @@ describe("Gateway", () => {
 
   it("harvest", async () => {
     const gateway = new GatewayBuilder(provider);
-    const reserveWrappers = (await larix.infos.getAllReserveWrappers(
-      connection
-    )) as larix.ReserveInfoWrapper[];
+    const reserveWrappers = (await larix.infos.getAllReserveWrappers(connection)) as larix.ReserveInfoWrapper[];
 
     for (let wrapper of reserveWrappers) {
       if (wrapper.supplyTokenMint().equals(NATIVE_MINT)) {
@@ -131,12 +115,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        false
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -144,9 +123,7 @@ describe("Gateway", () => {
   });
   it("supply SPL", async () => {
     const gateway = new GatewayBuilder(provider);
-    const reserveWrappers = (await larix.infos.getAllReserveWrappers(
-      connection
-    )) as larix.ReserveInfoWrapper[];
+    const reserveWrappers = (await larix.infos.getAllReserveWrappers(connection)) as larix.ReserveInfoWrapper[];
     for (let wrapper of reserveWrappers) {
       if (wrapper.supplyTokenMint().equals(NATIVE_MINT)) {
         let supplyPram: SupplyParams = {
@@ -176,12 +153,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        false
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -189,9 +161,7 @@ describe("Gateway", () => {
   });
   it("supply and stake", async () => {
     const gateway = new GatewayBuilder(provider);
-    const reserveWrappers = (await larix.infos.getAllReserveWrappers(
-      connection
-    )) as larix.ReserveInfoWrapper[];
+    const reserveWrappers = (await larix.infos.getAllReserveWrappers(connection)) as larix.ReserveInfoWrapper[];
     for (let wrapper of reserveWrappers) {
       if (wrapper.supplyTokenMint().equals(NATIVE_MINT)) {
         let supplyPram: SupplyParams = {
@@ -219,12 +189,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        false
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -233,9 +198,7 @@ describe("Gateway", () => {
 
   it("unsupply SPL", async () => {
     const gateway = new GatewayBuilder(provider);
-    const reserveWrappers = (await larix.infos.getAllReserveWrappers(
-      connection
-    )) as larix.ReserveInfoWrapper[];
+    const reserveWrappers = (await larix.infos.getAllReserveWrappers(connection)) as larix.ReserveInfoWrapper[];
     for (let wrapper of reserveWrappers) {
       if (wrapper.supplyTokenMint().equals(NATIVE_MINT)) {
         let supplyPram: UnsupplyParams = {
@@ -268,12 +231,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        false
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -281,9 +239,7 @@ describe("Gateway", () => {
   });
   it("unstake and unsupply", async () => {
     const gateway = new GatewayBuilder(provider);
-    const reserveWrappers = (await larix.infos.getAllReserveWrappers(
-      connection
-    )) as larix.ReserveInfoWrapper[];
+    const reserveWrappers = (await larix.infos.getAllReserveWrappers(connection)) as larix.ReserveInfoWrapper[];
 
     for (let wrapper of reserveWrappers) {
       if (wrapper.supplyTokenMint().equals(NATIVE_MINT)) {
@@ -316,12 +272,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        false
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -329,9 +280,7 @@ describe("Gateway", () => {
   });
   it("supply, collateralize", async () => {
     const gateway = new GatewayBuilder(provider);
-    const reserveWrappers = (await larix.infos.getAllReserveWrappers(
-      connection
-    )) as larix.ReserveInfoWrapper[];
+    const reserveWrappers = (await larix.infos.getAllReserveWrappers(connection)) as larix.ReserveInfoWrapper[];
 
     for (let wrapper of reserveWrappers) {
       if (wrapper.supplyTokenMint().equals(NATIVE_MINT)) {
@@ -359,12 +308,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        false
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -373,17 +317,13 @@ describe("Gateway", () => {
 
   it("borrow", async () => {
     const gateway = new GatewayBuilder(provider);
-    const reserveWrappers = (await larix.infos.getAllReserveWrappers(
-      connection
-    )) as larix.ReserveInfoWrapper[];
+    const reserveWrappers = (await larix.infos.getAllReserveWrappers(connection)) as larix.ReserveInfoWrapper[];
 
     for (let wrapper of reserveWrappers) {
       if (wrapper.supplyTokenMint().equals(NATIVE_MINT)) {
         let borrowPram: BorrowParams = {
           protocol: SupportedProtocols.Larix,
-          reserveId: new PublicKey(
-            "2RcrbkGNcfy9mbarLCCRYdW3hxph7pSbP38x35MR2Bjt"
-          ),
+          reserveId: new PublicKey("2RcrbkGNcfy9mbarLCCRYdW3hxph7pSbP38x35MR2Bjt"),
           borrowAmount: 5,
         };
         await gateway.borrow(borrowPram);
@@ -400,12 +340,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        false
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -414,17 +349,13 @@ describe("Gateway", () => {
 
   it("repay", async () => {
     const gateway = new GatewayBuilder(provider);
-    const reserveWrappers = (await larix.infos.getAllReserveWrappers(
-      connection
-    )) as larix.ReserveInfoWrapper[];
+    const reserveWrappers = (await larix.infos.getAllReserveWrappers(connection)) as larix.ReserveInfoWrapper[];
 
     for (let wrapper of reserveWrappers) {
       if (wrapper.supplyTokenMint().equals(NATIVE_MINT)) {
         let repayPram: RepayParams = {
           protocol: SupportedProtocols.Larix,
-          reserveId: new PublicKey(
-            "2RcrbkGNcfy9mbarLCCRYdW3hxph7pSbP38x35MR2Bjt"
-          ),
+          reserveId: new PublicKey("2RcrbkGNcfy9mbarLCCRYdW3hxph7pSbP38x35MR2Bjt"),
           repayAmount: 5,
         };
         await gateway.repay(repayPram);
@@ -445,12 +376,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        false
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -458,9 +384,7 @@ describe("Gateway", () => {
   });
   it("uncollateralize, unsupply", async () => {
     const gateway = new GatewayBuilder(provider);
-    const reserveWrappers = (await larix.infos.getAllReserveWrappers(
-      connection
-    )) as larix.ReserveInfoWrapper[];
+    const reserveWrappers = (await larix.infos.getAllReserveWrappers(connection)) as larix.ReserveInfoWrapper[];
     for (let wrapper of reserveWrappers) {
       if (wrapper.supplyTokenMint().equals(NATIVE_MINT)) {
         let supplyPram: UnsupplyParams = {
@@ -499,12 +423,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        false
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");

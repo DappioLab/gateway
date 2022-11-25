@@ -6,18 +6,8 @@ import {
   createSyncNativeInstruction,
   getAssociatedTokenAddress,
 } from "@solana/spl-token-v2";
-import {
-  getActivityIndex,
-  createATAWithoutCheckIx,
-  getAnchorInsByIdl,
-  getGatewayAuthority,
-} from "../utils";
-import {
-  IFarmInfo,
-  IReserveInfo,
-  larix,
-  utils,
-} from "@dappio-wonderland/navigator";
+import { getActivityIndex, createATAWithoutCheckIx, getAnchorInsByIdl, getGatewayAuthority } from "../utils";
+import { IFarmInfo, IReserveInfo, larix, utils } from "@dappio-wonderland/navigator";
 import {
   ActionType,
   BorrowParams,
@@ -70,21 +60,11 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
     const supplyTokenMint = reserve.liquidity.mintPubkey;
     const reserveTokenMint = reserve.collateral.reserveTokenMint;
 
-    const supplyTokenAddress = await getAssociatedTokenAddress(
-      supplyTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, supplyTokenMint)
-    );
+    const supplyTokenAddress = await getAssociatedTokenAddress(supplyTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, supplyTokenMint));
 
-    const reserveTokenAddress = await getAssociatedTokenAddress(
-      reserveTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, reserveTokenMint)
-    );
+    const reserveTokenAddress = await getAssociatedTokenAddress(reserveTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, reserveTokenMint));
 
     const moneyMarketSupplyAmount = new anchor.BN(params.supplyAmount);
 
@@ -97,9 +77,7 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
         })
       );
       preInstructions.push(createSyncNativeInstruction(supplyTokenAddress));
-      postInstructions.push(
-        createCloseAccountInstruction(supplyTokenAddress, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(supplyTokenAddress, userKey, userKey));
     }
 
     let remainingAccounts = [
@@ -159,41 +137,22 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
     const supplyTokenMint = reserve.liquidity.mintPubkey;
     const reserveTokenMint = reserve.collateral.reserveTokenMint;
 
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, supplyTokenMint)
-    );
+    preInstructions.push(await createATAWithoutCheckIx(userKey, supplyTokenMint));
 
-    const reserveTokenAddress = await getAssociatedTokenAddress(
-      reserveTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, reserveTokenMint)
-    );
+    const reserveTokenAddress = await getAssociatedTokenAddress(reserveTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, reserveTokenMint));
 
-    obligationId ||= await larix.infos.getObligationId(
-      larix.LARIX_MARKET_ID_MAIN_POOL,
-      userKey
-    );
+    obligationId ||= await larix.infos.getObligationId(larix.LARIX_MARKET_ID_MAIN_POOL, userKey);
 
-    const isObligationCreated = await larix.checkObligationCreated(
-      this._connection,
-      userKey
-    );
+    const isObligationCreated = await larix.checkObligationCreated(this._connection, userKey);
     let obligationInfo: larix.ObligationInfo;
 
     if (isObligationCreated) {
-      obligationInfo = (await larix.infos.getObligation(
-        this._connection,
-        obligationId
-      )) as larix.ObligationInfo;
+      obligationInfo = (await larix.infos.getObligation(this._connection, obligationId)) as larix.ObligationInfo;
       let refreshObligation = await this._refreshObligationIxs(obligationInfo);
       preInstructions = [...preInstructions, ...refreshObligation];
     } else {
-      let createObligationIxs = await this._initObligationIxs(
-        obligationId,
-        userKey
-      );
+      let createObligationIxs = await this._initObligationIxs(obligationId, userKey);
       preInstructions = [...preInstructions, ...createObligationIxs];
     }
 
@@ -283,26 +242,14 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
     const liquidityTokenMint = reserve.liquidity.mintPubkey;
     const reserveTokenMint = reserve.collateral.reserveTokenMint;
 
-    const liquidityTokenAddress = await getAssociatedTokenAddress(
-      liquidityTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, liquidityTokenMint)
-    );
+    const liquidityTokenAddress = await getAssociatedTokenAddress(liquidityTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, liquidityTokenMint));
 
-    const reserveTokenAddress = await getAssociatedTokenAddress(
-      reserveTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, reserveTokenMint)
-    );
+    const reserveTokenAddress = await getAssociatedTokenAddress(reserveTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, reserveTokenMint));
 
     if (liquidityTokenMint.equals(NATIVE_MINT)) {
-      postInstructions.push(
-        createCloseAccountInstruction(liquidityTokenAddress, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(liquidityTokenAddress, userKey, userKey));
     }
 
     let remainingAccounts = [
@@ -368,25 +315,12 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
     const liquidityTokenMint = reserve.liquidity.mintPubkey;
     const reserveTokenMint = reserve.collateral.reserveTokenMint;
 
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, liquidityTokenMint)
-    );
+    preInstructions.push(await createATAWithoutCheckIx(userKey, liquidityTokenMint));
 
-    const reserveTokenAddress = await getAssociatedTokenAddress(
-      reserveTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, reserveTokenMint)
-    );
-    obligationId ||= await larix.infos.getObligationId(
-      larix.LARIX_MARKET_ID_MAIN_POOL,
-      userKey
-    );
-    let obligationInfo = (await larix.infos.getObligation(
-      this._connection,
-      obligationId
-    )) as larix.ObligationInfo;
+    const reserveTokenAddress = await getAssociatedTokenAddress(reserveTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, reserveTokenMint));
+    obligationId ||= await larix.infos.getObligationId(larix.LARIX_MARKET_ID_MAIN_POOL, userKey);
+    let obligationInfo = (await larix.infos.getObligation(this._connection, obligationId)) as larix.ObligationInfo;
     let refreshObligation = await this._refreshObligationIxs(obligationInfo);
     preInstructions = [...preInstructions, ...refreshObligation];
 
@@ -462,20 +396,11 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     let remainingAccounts = [] as anchor.web3.AccountMeta[];
     const liquidityTokenMint = reserve.liquidity.mintPubkey;
-    const liquidityTokenAddress = await getAssociatedTokenAddress(
-      liquidityTokenMint,
-      userKey
-    );
+    const liquidityTokenAddress = await getAssociatedTokenAddress(liquidityTokenMint, userKey);
 
     preTx.add(await createATAWithoutCheckIx(userKey, liquidityTokenMint));
-    obligationId ||= await larix.infos.getObligationId(
-      larix.LARIX_MARKET_ID_MAIN_POOL,
-      userKey
-    );
-    let obligationInfo = (await larix.infos.getObligation(
-      this._connection,
-      obligationId
-    )) as larix.ObligationInfo;
+    obligationId ||= await larix.infos.getObligationId(larix.LARIX_MARKET_ID_MAIN_POOL, userKey);
+    let obligationInfo = (await larix.infos.getObligation(this._connection, obligationId)) as larix.ObligationInfo;
     let refreshObligation = await this._refreshObligationIxs(obligationInfo);
     preInstructions = [...preInstructions, ...refreshObligation];
 
@@ -530,9 +455,7 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
     ];
 
     if (liquidityTokenMint.equals(NATIVE_MINT)) {
-      postInstructions.push(
-        createCloseAccountInstruction(liquidityTokenAddress, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(liquidityTokenAddress, userKey, userKey));
     }
 
     const borrowTx = await this._gatewayProgram.methods
@@ -576,20 +499,11 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     let remainingAccounts = [] as anchor.web3.AccountMeta[];
     const liquidityTokenMint = reserve.liquidity.mintPubkey;
-    const liquidityTokenAddress = await getAssociatedTokenAddress(
-      liquidityTokenMint,
-      userKey
-    );
+    const liquidityTokenAddress = await getAssociatedTokenAddress(liquidityTokenMint, userKey);
     preTx.add(await createATAWithoutCheckIx(userKey, liquidityTokenMint));
 
-    obligationId ||= await larix.infos.getObligationId(
-      larix.LARIX_MARKET_ID_MAIN_POOL,
-      userKey
-    );
-    let obligationInfo = (await larix.infos.getObligation(
-      this._connection,
-      obligationId
-    )) as larix.ObligationInfo;
+    obligationId ||= await larix.infos.getObligationId(larix.LARIX_MARKET_ID_MAIN_POOL, userKey);
+    let obligationInfo = (await larix.infos.getObligation(this._connection, obligationId)) as larix.ObligationInfo;
     let refreshObligation = await this._refreshObligationIxs(obligationInfo);
     preInstructions = [...preInstructions, ...refreshObligation];
     let refreshReservesIx = await this._refreshReservesIx([
@@ -630,17 +544,14 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
         isWritable: false,
       }, //6
     ];
-    const indexSupply = this._gatewayParams.actionQueue.indexOf(
-      ActionType.Repay
-    );
+    const indexSupply = this._gatewayParams.actionQueue.indexOf(ActionType.Repay);
 
     let repayAmount = new anchor.BN(params.repayAmount);
 
     if (liquidityTokenMint.equals(NATIVE_MINT)) {
       let wSOLAmount = repayAmount;
       if (wSOLAmount.toNumber() === Number.MAX_SAFE_INTEGER) {
-        let solBalance = (await this._connection.getAccountInfo(userKey))
-          .lamports;
+        let solBalance = (await this._connection.getAccountInfo(userKey)).lamports;
         let feeReserveLamports = 0.01 * 10 ** 9;
         wSOLAmount = new anchor.BN(solBalance - feeReserveLamports);
       }
@@ -656,9 +567,7 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       );
       preInstructions.push(createSyncNativeInstruction(liquidityTokenAddress));
 
-      postInstructions.push(
-        createCloseAccountInstruction(liquidityTokenAddress, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(liquidityTokenAddress, userKey, userKey));
     }
     const repayTx = await this._gatewayProgram.methods
       .repay()
@@ -692,21 +601,13 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
-    obligationId ||= await larix.infos.getObligationId(
-      larix.LARIX_MARKET_ID_MAIN_POOL,
-      userKey
-    );
-    let obligationInfo = (await larix.infos.getObligation(
-      this._connection,
-      obligationId
-    )) as larix.ObligationInfo;
+    obligationId ||= await larix.infos.getObligationId(larix.LARIX_MARKET_ID_MAIN_POOL, userKey);
+    let obligationInfo = (await larix.infos.getObligation(this._connection, obligationId)) as larix.ObligationInfo;
     let refreshObligation = await this._refreshObligationIxs(obligationInfo);
     preInstructions = [...preInstructions, ...refreshObligation];
 
     let rewardATA = await getAssociatedTokenAddress(larix.LARIX_MINT, userKey);
-    preInstructions.push(
-      await utils.createATAWithoutCheckIx(userKey, larix.LARIX_MINT)
-    );
+    preInstructions.push(await utils.createATAWithoutCheckIx(userKey, larix.LARIX_MINT));
 
     let remainingAccounts = [
       {
@@ -780,10 +681,7 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     const reserveTokenMint = farm.reserveTokenMint;
-    const reserveTokenAddress = await getAssociatedTokenAddress(
-      reserveTokenMint,
-      userKey
-    );
+    const reserveTokenAddress = await getAssociatedTokenAddress(reserveTokenMint, userKey);
 
     if (!(await larix.checkFarmerCreated(this._connection, userKey))) {
       let createFarmerIx = await this._initFarmerIxs(farmerId, userKey);
@@ -855,13 +753,8 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     const reserveTokenMint = farm.reserveTokenMint;
-    const reserveTokenAddress = await getAssociatedTokenAddress(
-      reserveTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, reserveTokenMint)
-    );
+    const reserveTokenAddress = await getAssociatedTokenAddress(reserveTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, reserveTokenMint));
     farmerId ||= await larix.infos.getFarmerId(farmInfo, userKey);
     let remainingAccounts = [
       {
@@ -932,20 +825,12 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     let rewardATA = await getAssociatedTokenAddress(larix.LARIX_MINT, userKey);
-    preInstructions.push(
-      await utils.createATAWithoutCheckIx(userKey, larix.LARIX_MINT)
-    );
+    preInstructions.push(await utils.createATAWithoutCheckIx(userKey, larix.LARIX_MINT));
     farmerId ||= await larix.infos.getFarmerId(farm, userKey);
-    let farmerInfo = (await larix.infos.getFarmer(
-      this._connection,
-      farmerId
-    )) as larix.FarmerInfo;
+    let farmerInfo = (await larix.infos.getFarmer(this._connection, farmerId)) as larix.FarmerInfo;
     let allReserves = await larix.infos.getAllReserveWrappers(this._connection);
     let reservesMap = new Map(
-      allReserves.map((r) => [
-        r.reserveInfo.reserveId.toString(),
-        r as larix.ReserveInfoWrapper,
-      ])
+      allReserves.map((r) => [r.reserveInfo.reserveId.toString(), r as larix.ReserveInfoWrapper])
     );
     let refreshMeta = [];
     let remainingAccounts = [
@@ -973,9 +858,7 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
     ];
     for (let farmingReserve of farmerInfo.indexs) {
-      let reserveInfo = reservesMap.get(
-        farmingReserve.reserveId.toString()
-      )! as larix.ReserveInfoWrapper;
+      let reserveInfo = reservesMap.get(farmingReserve.reserveId.toString())! as larix.ReserveInfoWrapper;
       remainingAccounts.push({
         pubkey: farmingReserve.reserveId,
         isSigner: false,
@@ -1025,8 +908,7 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       seed: larix.LARIX_MAIN_POOL_FARMER_SEED,
       space: 642,
     };
-    let createAccountIx =
-      anchor.web3.SystemProgram.createAccountWithSeed(config);
+    let createAccountIx = anchor.web3.SystemProgram.createAccountWithSeed(config);
 
     const dataLayout = struct([u8("instruction")]);
 
@@ -1063,8 +945,7 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
       space: 1092,
     };
 
-    let createAccountIx =
-      anchor.web3.SystemProgram.createAccountWithSeed(config);
+    let createAccountIx = anchor.web3.SystemProgram.createAccountWithSeed(config);
 
     const dataLayout = struct([u8("instruction")]);
     const data = Buffer.alloc(dataLayout.span);
@@ -1109,9 +990,7 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
 
     obligationInfo.obligationCollaterals.forEach((collateral, index) => {
       let reserve = collateral.reserveId;
-      let reserveInfo = reservesMap[
-        collateral.reserveId.toString()
-      ] as larix.ReserveInfoWrapper;
+      let reserveInfo = reservesMap[collateral.reserveId.toString()] as larix.ReserveInfoWrapper;
       accounts.push({
         pubkey: reserve,
         isSigner: false,
@@ -1131,9 +1010,7 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
 
     obligationInfo.obligationLoans.forEach((loan, index) => {
       let reserve = loan.reserveId;
-      let reserveInfo = reservesMap[
-        loan.reserveId.toString()
-      ] as larix.ReserveInfoWrapper;
+      let reserveInfo = reservesMap[loan.reserveId.toString()] as larix.ReserveInfoWrapper;
       accounts.push({
         pubkey: reserve,
         isSigner: false,
@@ -1182,9 +1059,7 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
     return ixs;
   }
 
-  private _refreshReservesIx(
-    reserveKeys: anchor.web3.AccountMeta[]
-  ): anchor.web3.TransactionInstruction {
+  private _refreshReservesIx(reserveKeys: anchor.web3.AccountMeta[]): anchor.web3.TransactionInstruction {
     let refreshReservesData = Buffer.from("18", "hex");
     let ix = new anchor.web3.TransactionInstruction({
       keys: reserveKeys,
@@ -1194,9 +1069,7 @@ export class ProtocolLarix implements IProtocolMoneyMarket, IProtocolFarm {
     return ix;
   }
 
-  private _refreshOracleBridgeIx(
-    oracleBridgeInfo: larix.OracleBridgeInfo
-  ): anchor.web3.TransactionInstruction {
+  private _refreshOracleBridgeIx(oracleBridgeInfo: larix.OracleBridgeInfo): anchor.web3.TransactionInstruction {
     let refreshData = getAnchorInsByIdl("refresh");
     let keys = [
       {

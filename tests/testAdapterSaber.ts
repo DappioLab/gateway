@@ -53,9 +53,7 @@ describe("Gateway", () => {
       protocol: SupportedProtocols.Saber,
       poolId,
       tokenInAmount: zapInAmount,
-      tokenMint: new anchor.web3.PublicKey(
-        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-      ),
+      tokenMint: new anchor.web3.PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"),
     };
     const stakeParams: StakeParams = {
       protocol: SupportedProtocols.Saber,
@@ -254,9 +252,7 @@ describe("Gateway", () => {
       protocol: SupportedProtocols.Saber,
       poolId,
       tokenInAmount: zapInAmount,
-      tokenMint: new anchor.web3.PublicKey(
-        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-      ),
+      tokenMint: new anchor.web3.PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"),
     };
 
     await gateway1.addLiquidity(addLiquidityParams);
@@ -281,14 +277,9 @@ describe("Gateway", () => {
 
     // Get LP amount
     const pool = await saber.infos.getPool(connection, poolId);
-    const userLpAta = await getAssociatedTokenAddress(
-      pool.lpMint,
-      provider.wallet.publicKey
-    );
+    const userLpAta = await getAssociatedTokenAddress(pool.lpMint, provider.wallet.publicKey);
     const userLpAtaAccount = await getAccount(connection, userLpAta);
-    const lpAmount = new anchor.BN(
-      userLpAtaAccount.amount.toString()
-    ).toNumber();
+    const lpAmount = new anchor.BN(userLpAtaAccount.amount.toString()).toNumber();
     console.log(lpAmount);
 
     // Stake

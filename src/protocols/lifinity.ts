@@ -5,11 +5,7 @@ import {
   createCloseAccountInstruction,
   getAssociatedTokenAddress,
 } from "@solana/spl-token-v2";
-import {
-  getActivityIndex,
-  createATAWithoutCheckIx,
-  getGatewayAuthority,
-} from "../utils";
+import { getActivityIndex, createATAWithoutCheckIx, getGatewayAuthority } from "../utils";
 import { IPoolInfo, lifinity } from "@dappio-wonderland/navigator";
 import {
   ActionType,
@@ -51,30 +47,17 @@ export class ProtocolLifinity implements IProtocolPool {
     );
     // Handle transaction here
     const pool = poolInfo as lifinity.PoolInfo;
-    const userTokenAAccountKey = await getAssociatedTokenAddress(
-      pool.tokenAMint,
-      userKey
-    );
-    const userTokenBAccountKey = await getAssociatedTokenAddress(
-      pool.tokenBMint,
-      userKey
-    );
-    const userLPAccountKey = await getAssociatedTokenAddress(
-      pool.lpMint,
-      userKey
-    );
+    const userTokenAAccountKey = await getAssociatedTokenAddress(pool.tokenAMint, userKey);
+    const userTokenBAccountKey = await getAssociatedTokenAddress(pool.tokenBMint, userKey);
+    const userLPAccountKey = await getAssociatedTokenAddress(pool.lpMint, userKey);
 
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
-    const indexSupply = this._gatewayParams.actionQueue.indexOf(
-      ActionType.AddLiquidity
-    );
+    const indexSupply = this._gatewayParams.actionQueue.indexOf(ActionType.AddLiquidity);
     const addLiquidityAmount = params.tokenInAmount;
 
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, pool.tokenAMint)
-    );
+    preInstructions.push(await createATAWithoutCheckIx(userKey, pool.tokenAMint));
 
     if (pool.tokenAMint.equals(NATIVE_SOL) || pool.tokenAMint.equals(WSOL)) {
       preInstructions.push(
@@ -85,14 +68,10 @@ export class ProtocolLifinity implements IProtocolPool {
         }),
         createSyncNativeInstruction(userTokenAAccountKey)
       );
-      postInstructions.push(
-        createCloseAccountInstruction(userTokenAAccountKey, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(userTokenAAccountKey, userKey, userKey));
     }
 
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, pool.tokenBMint)
-    );
+    preInstructions.push(await createATAWithoutCheckIx(userKey, pool.tokenBMint));
 
     if (pool.tokenBMint.equals(NATIVE_SOL) || pool.tokenBMint.equals(WSOL)) {
       preInstructions.push(
@@ -103,17 +82,12 @@ export class ProtocolLifinity implements IProtocolPool {
         }),
         createSyncNativeInstruction(userTokenBAccountKey)
       );
-      postInstructions.push(
-        createCloseAccountInstruction(userTokenBAccountKey, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(userTokenBAccountKey, userKey, userKey));
     }
 
     preInstructions.push(await createATAWithoutCheckIx(userKey, pool.lpMint));
 
-    const authority = findProgramAddressSync(
-      [pool.poolId.toBuffer()],
-      lifinity.LIFINITY_PROGRAM_ID
-    )[0];
+    const authority = findProgramAddressSync([pool.poolId.toBuffer()], lifinity.LIFINITY_PROGRAM_ID)[0];
 
     const remainingAccounts = [
       { pubkey: pool.poolId, isSigner: false, isWritable: true }, // 0
@@ -166,46 +140,26 @@ export class ProtocolLifinity implements IProtocolPool {
     );
     // Handle transaction here
     const pool = poolInfo as lifinity.PoolInfo;
-    const userTokenAAccountKey = await getAssociatedTokenAddress(
-      pool.tokenAMint,
-      userKey
-    );
-    const userTokenBAccountKey = await getAssociatedTokenAddress(
-      pool.tokenBMint,
-      userKey
-    );
-    const userLPAccountKey = await getAssociatedTokenAddress(
-      pool.lpMint,
-      userKey
-    );
+    const userTokenAAccountKey = await getAssociatedTokenAddress(pool.tokenAMint, userKey);
+    const userTokenBAccountKey = await getAssociatedTokenAddress(pool.tokenBMint, userKey);
+    const userLPAccountKey = await getAssociatedTokenAddress(pool.lpMint, userKey);
 
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, pool.tokenAMint)
-    );
+    preInstructions.push(await createATAWithoutCheckIx(userKey, pool.tokenAMint));
 
     if (pool.tokenAMint.equals(NATIVE_SOL) || pool.tokenAMint.equals(WSOL)) {
-      postInstructions.push(
-        createCloseAccountInstruction(userTokenAAccountKey, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(userTokenAAccountKey, userKey, userKey));
     }
 
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, pool.tokenBMint)
-    );
+    preInstructions.push(await createATAWithoutCheckIx(userKey, pool.tokenBMint));
 
     if (pool.tokenBMint.equals(NATIVE_SOL) || pool.tokenBMint.equals(WSOL)) {
-      postInstructions.push(
-        createCloseAccountInstruction(userTokenBAccountKey, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(userTokenBAccountKey, userKey, userKey));
     }
 
-    const authority = findProgramAddressSync(
-      [pool.poolId.toBuffer()],
-      lifinity.LIFINITY_PROGRAM_ID
-    )[0];
+    const authority = findProgramAddressSync([pool.poolId.toBuffer()], lifinity.LIFINITY_PROGRAM_ID)[0];
 
     const remainingAccounts = [
       { pubkey: pool.poolId, isSigner: false, isWritable: true }, // 0

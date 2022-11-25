@@ -47,13 +47,9 @@ describe("Gateway", () => {
   it("supply + stake", async () => {
     const gateway = new GatewayBuilder(provider);
     let allFranciumLending: francium.ReserveInfoWrapper[] = [];
-    let allFranciumReward = (await francium.infos.getAllFarms(
-      connection
-    )) as francium.FarmInfo[];
+    let allFranciumReward = (await francium.infos.getAllFarms(connection)) as francium.FarmInfo[];
     let allFranciumUserReward: francium.FarmerInfo[];
-    allFranciumLending = (await francium.infos.getAllReserveWrappers(
-      connection
-    )) as francium.ReserveInfoWrapper[];
+    allFranciumLending = (await francium.infos.getAllReserveWrappers(connection)) as francium.ReserveInfoWrapper[];
 
     for (let reserves of allFranciumLending) {
       if (reserves.supplyTokenMint().equals(NATIVE_MINT)) {
@@ -87,12 +83,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        true
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], true);
       console.log("https://mf.wei1769.com/tx/" + sig2);
     }
     console.log("Txs are executed");
@@ -102,22 +93,14 @@ describe("Gateway", () => {
   it("unstake + unsupply", async () => {
     const gateway = new GatewayBuilder(provider);
     let allFranciumLending: francium.ReserveInfoWrapper[] = [];
-    let allFranciumReward = (await francium.infos.getAllFarms(
-      connection
-    )) as francium.FarmInfo[];
+    let allFranciumReward = (await francium.infos.getAllFarms(connection)) as francium.FarmInfo[];
     let allFranciumUserReward: francium.FarmerInfo[];
-    allFranciumLending = (await francium.infos.getAllReserveWrappers(
-      connection
-    )) as francium.ReserveInfoWrapper[];
+    allFranciumLending = (await francium.infos.getAllReserveWrappers(connection)) as francium.ReserveInfoWrapper[];
 
     for (let reserves of allFranciumLending) {
       if (reserves.supplyTokenMint().equals(NATIVE_MINT)) {
         for (let farm of allFranciumReward) {
-          let farmInfo = farm.stakedTokenMint.equals(
-            reserves.reserveTokenMint()
-          )
-            ? farm
-            : undefined;
+          let farmInfo = farm.stakedTokenMint.equals(reserves.reserveTokenMint()) ? farm : undefined;
           if (farmInfo) {
             let unstakePram: UnstakeParams = {
               protocol: SupportedProtocols.Francium,
@@ -150,12 +133,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(
-        tx,
-        connection,
-        [wallet.payer],
-        true
-      );
+      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], true);
       console.log("https://mf.wei1769.com/tx/" + sig2);
     }
     console.log("Txs are executed");

@@ -51,9 +51,7 @@ describe("Gateway", () => {
 
   it("Lock NFT + Stake Proof", async () => {
     const fullInfos = await nftFinance.getFullInfo(connection);
-    targetInfo = (
-      await nftFinance.getFullInfosByMints(connection, [nftMint], fullInfos)
-    )[0] as {
+    targetInfo = (await nftFinance.getFullInfosByMints(connection, [nftMint], fullInfos))[0] as {
       rarityInfo: nftFinance.NFTRarityInfo;
       poolInfo: nftFinance.NFTPoolInfo;
       farmInfo: nftFinance.NFTFarmInfo;
@@ -102,9 +100,7 @@ describe("Gateway", () => {
 
   it("Unstake Proof + Unlock NFT + Claim", async () => {
     const fullInfos = await nftFinance.getFullInfo(connection);
-    targetInfo = (
-      await nftFinance.getFullInfosByMints(connection, [nftMint], fullInfos)
-    )[0] as {
+    targetInfo = (await nftFinance.getFullInfosByMints(connection, [nftMint], fullInfos))[0] as {
       rarityInfo: nftFinance.NFTRarityInfo;
       poolInfo: nftFinance.NFTPoolInfo;
       farmInfo: nftFinance.NFTFarmInfo;

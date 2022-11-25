@@ -6,16 +6,8 @@ import {
   createSyncNativeInstruction,
   getAssociatedTokenAddress,
 } from "@solana/spl-token-v2";
-import {
-  createATAWithoutCheckIx,
-  getActivityIndex,
-  getGatewayAuthority,
-} from "../utils";
-import {
-  IReserveInfo,
-  francium,
-  IFarmInfo,
-} from "@dappio-wonderland/navigator";
+import { createATAWithoutCheckIx, getActivityIndex, getGatewayAuthority } from "../utils";
+import { IReserveInfo, francium, IFarmInfo } from "@dappio-wonderland/navigator";
 import {
   ActionType,
   GatewayParams,
@@ -63,21 +55,13 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
     const supplyTokenMint = reserve.tokenMint;
     const reserveTokenMint = reserve.shareMint;
 
-    const supplyTokenAddress = await getAssociatedTokenAddress(
-      supplyTokenMint,
-      userKey
-    );
+    const supplyTokenAddress = await getAssociatedTokenAddress(supplyTokenMint, userKey);
     preTx.add(await createATAWithoutCheckIx(userKey, supplyTokenMint));
 
-    const reserveTokenAddress = await getAssociatedTokenAddress(
-      reserveTokenMint,
-      userKey
-    );
+    const reserveTokenAddress = await getAssociatedTokenAddress(reserveTokenMint, userKey);
     preTx.add(await createATAWithoutCheckIx(userKey, reserveTokenMint));
 
-    const indexSupply = this._gatewayParams.actionQueue.indexOf(
-      ActionType.Supply
-    );
+    const indexSupply = this._gatewayParams.actionQueue.indexOf(ActionType.Supply);
 
     const moneyMarketSupplyAmount = new anchor.BN(params.supplyAmount);
 
@@ -90,9 +74,7 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
         })
       );
       preInstructions.push(createSyncNativeInstruction(supplyTokenAddress));
-      postInstructions.push(
-        createCloseAccountInstruction(supplyTokenAddress, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(supplyTokenAddress, userKey, userKey));
     }
     preInstructions.push(this._refreshReservesIx(reserve));
     let remainingAccounts = [
@@ -159,22 +141,14 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
     const liquidityTokenMint = reserve.tokenMint;
     const reserveTokenMint = reserve.shareMint;
 
-    const liquidityTokenAddress = await getAssociatedTokenAddress(
-      liquidityTokenMint,
-      userKey
-    );
+    const liquidityTokenAddress = await getAssociatedTokenAddress(liquidityTokenMint, userKey);
     preTx.add(await createATAWithoutCheckIx(userKey, liquidityTokenMint));
 
-    const reserveTokenAddress = await getAssociatedTokenAddress(
-      reserveTokenMint,
-      userKey
-    );
+    const reserveTokenAddress = await getAssociatedTokenAddress(reserveTokenMint, userKey);
     preTx.add(await createATAWithoutCheckIx(userKey, reserveTokenMint));
 
     if (liquidityTokenMint.equals(NATIVE_MINT)) {
-      postInstructions.push(
-        createCloseAccountInstruction(liquidityTokenAddress, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(liquidityTokenAddress, userKey, userKey));
     }
     preInstructions.push(this._refreshReservesIx(reserve));
     let remainingAccounts = [
@@ -240,32 +214,17 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     const reserveTokenMint = farm.stakedTokenMint;
 
-    const reserveTokenAddress = await getAssociatedTokenAddress(
-      reserveTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, reserveTokenMint)
-    );
+    const reserveTokenAddress = await getAssociatedTokenAddress(reserveTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, reserveTokenMint));
 
     if (!(await francium.checkFarmerCreated(userKey, farm, this._connection))) {
       preInstructions.push(await this._initUserRewardIx(userKey, farm));
     }
 
-    const rewardATA = await getAssociatedTokenAddress(
-      farm.rewardsTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, farm.rewardsTokenMint)
-    );
-    const rewardBATA = await getAssociatedTokenAddress(
-      farm.rewardsTokenMintB,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, farm.rewardsTokenMintB)
-    );
+    const rewardATA = await getAssociatedTokenAddress(farm.rewardsTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, farm.rewardsTokenMint));
+    const rewardBATA = await getAssociatedTokenAddress(farm.rewardsTokenMintB, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, farm.rewardsTokenMintB));
     const userRewardPDA = await francium.infos.getFarmerId(farm, userKey);
     let remainingAccounts = [
       { pubkey: userKey, isSigner: true, isWritable: true }, //0
@@ -350,28 +309,13 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
     const reserveTokenMint = farm.stakedTokenMint;
 
-    const reserveTokenAddress = await getAssociatedTokenAddress(
-      reserveTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, reserveTokenMint)
-    );
+    const reserveTokenAddress = await getAssociatedTokenAddress(reserveTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, reserveTokenMint));
 
-    const rewardATA = await getAssociatedTokenAddress(
-      farm.rewardsTokenMint,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, farm.rewardsTokenMint)
-    );
-    const rewardBATA = await getAssociatedTokenAddress(
-      farm.rewardsTokenMintB,
-      userKey
-    );
-    preInstructions.push(
-      await createATAWithoutCheckIx(userKey, farm.rewardsTokenMintB)
-    );
+    const rewardATA = await getAssociatedTokenAddress(farm.rewardsTokenMint, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, farm.rewardsTokenMint));
+    const rewardBATA = await getAssociatedTokenAddress(farm.rewardsTokenMintB, userKey);
+    preInstructions.push(await createATAWithoutCheckIx(userKey, farm.rewardsTokenMintB));
     const userRewardPDA = await francium.infos.getFarmerId(farm, userKey);
     let remainingAccounts = [
       { pubkey: userKey, isSigner: true, isWritable: true }, //0
@@ -458,18 +402,9 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
 
     const data = Buffer.alloc(dataLayout.span);
     dataLayout.encode({ instruction: 1 }, data);
-    const stakeATA = await getAssociatedTokenAddress(
-      rewardInfo.stakedTokenMint,
-      wallet
-    );
-    const rewardATA = await getAssociatedTokenAddress(
-      rewardInfo.rewardsTokenMint,
-      wallet
-    );
-    const rewardBATA = await getAssociatedTokenAddress(
-      rewardInfo.rewardsTokenMintB,
-      wallet
-    );
+    const stakeATA = await getAssociatedTokenAddress(rewardInfo.stakedTokenMint, wallet);
+    const rewardATA = await getAssociatedTokenAddress(rewardInfo.rewardsTokenMint, wallet);
+    const rewardBATA = await getAssociatedTokenAddress(rewardInfo.rewardsTokenMintB, wallet);
     const userRewardPDA = await francium.infos.getFarmerId(rewardInfo, wallet);
     const keys = [
       { pubkey: wallet, isSigner: true, isWritable: true },
@@ -497,9 +432,7 @@ export class ProtocolFrancium implements IProtocolMoneyMarket, IProtocolFarm {
     return initMinerIx;
   }
 
-  private _refreshReservesIx(
-    reserveInfo: francium.ReserveInfo
-  ): anchor.web3.TransactionInstruction {
+  private _refreshReservesIx(reserveInfo: francium.ReserveInfo): anchor.web3.TransactionInstruction {
     let refreshReservesData = Buffer.from("0c", "hex");
     let keys = [
       { pubkey: reserveInfo.market, isSigner: false, isWritable: true },

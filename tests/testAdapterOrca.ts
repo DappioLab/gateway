@@ -99,25 +99,15 @@ describe("Gateway", () => {
   // });
 
   it("remove", async () => {
-    const orcaPools = (await orca.infos.getAllPools(
-      connection
-    )) as orca.PoolInfo[];
-    const orcaFarms = (await orca.infos.getAllFarms(
-      connection
-    )) as orca.FarmInfo[];
-    orcaPools.sort((a, b) =>
-      Number((a.lpSupply as bigint) - (b.lpSupply as bigint))
-    );
+    const orcaPools = (await orca.infos.getAllPools(connection)) as orca.PoolInfo[];
+    const orcaFarms = (await orca.infos.getAllFarms(connection)) as orca.FarmInfo[];
+    orcaPools.sort((a, b) => Number((a.lpSupply as bigint) - (b.lpSupply as bigint)));
     for (let pool of orcaPools) {
       for (let farm of orcaFarms) {
-        if (
-          pool.tokenBMint.equals(NATIVE_MINT) &&
-          farm.baseTokenMint.equals(pool.lpMint)
-        ) {
+        if (pool.tokenBMint.equals(NATIVE_MINT) && farm.baseTokenMint.equals(pool.lpMint)) {
           if (
             farm.emissionsPerSecondNumerator.toNumber() == 0 ||
-            farm.farmId.toString() ==
-              "HPVZ1eUVLbeyCmnTdhH8RBqKrsJ3N7o5EJsBCsyBuv5R"
+            farm.farmId.toString() == "HPVZ1eUVLbeyCmnTdhH8RBqKrsJ3N7o5EJsBCsyBuv5R"
           ) {
             continue;
           }
@@ -153,9 +143,7 @@ describe("Gateway", () => {
           console.log("Txs are sent...");
           for (let tx of txs) {
             tx.feePayer = wallet.publicKey;
-            tx.recentBlockhash = (
-              await connection.getLatestBlockhash()
-            ).blockhash;
+            tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
             let simulation = await connection.simulateTransaction(tx);
             console.log(simulation);
             console.log("\n", tx.serializeMessage().toString("base64"), "\n");

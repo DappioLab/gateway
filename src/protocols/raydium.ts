@@ -7,17 +7,8 @@ import {
   getAssociatedTokenAddress,
 } from "@solana/spl-token-v2";
 import { struct, u64, u8 } from "@project-serum/borsh";
-import {
-  createATAWithoutCheckIx,
-  getActivityIndex,
-  getGatewayAuthority,
-} from "../utils";
-import {
-  IFarmInfo,
-  IPoolInfo,
-  raydium,
-  utils,
-} from "@dappio-wonderland/navigator";
+import { createATAWithoutCheckIx, getActivityIndex, getGatewayAuthority } from "../utils";
+import { IFarmInfo, IPoolInfo, raydium, utils } from "@dappio-wonderland/navigator";
 import {
   AddLiquidityParams,
   GatewayParams,
@@ -62,36 +53,18 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     // Handle transaction here
     const pool = poolInfo as raydium.PoolInfo;
     const poolWrapper = new raydium.PoolInfoWrapper(pool);
-    const userTokenAAccountKey = await getAssociatedTokenAddress(
-      pool.tokenAMint,
-      userKey
-    );
-    const userTokenBAccountKey = await getAssociatedTokenAddress(
-      pool.tokenBMint,
-      userKey
-    );
-    const userLPAccountKey = await getAssociatedTokenAddress(
-      pool.lpMint,
-      userKey
-    );
+    const userTokenAAccountKey = await getAssociatedTokenAddress(pool.tokenAMint, userKey);
+    const userTokenBAccountKey = await getAssociatedTokenAddress(pool.tokenBMint, userKey);
+    const userLPAccountKey = await getAssociatedTokenAddress(pool.lpMint, userKey);
 
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
-    const createUserTokenAAccountIx = await createATAWithoutCheckIx(
-      userKey,
-      pool.tokenAMint
-    );
+    const createUserTokenAAccountIx = await createATAWithoutCheckIx(userKey, pool.tokenAMint);
     preInstructions.push(createUserTokenAAccountIx);
-    const createUserTokenBAccountIx = await createATAWithoutCheckIx(
-      userKey,
-      pool.tokenBMint
-    );
+    const createUserTokenBAccountIx = await createATAWithoutCheckIx(userKey, pool.tokenBMint);
     preInstructions.push(createUserTokenBAccountIx);
-    const createUserLpAccountIx = await createATAWithoutCheckIx(
-      userKey,
-      pool.lpMint
-    );
+    const createUserLpAccountIx = await createATAWithoutCheckIx(userKey, pool.lpMint);
     preInstructions.push(createUserLpAccountIx);
 
     let amount = BigInt(params.tokenInAmount);
@@ -111,10 +84,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     }
 
     if (isWSOL) {
-      const userTokenAccountKey = await getAssociatedTokenAddress(
-        WSOL,
-        userKey
-      );
+      const userTokenAccountKey = await getAssociatedTokenAddress(WSOL, userKey);
       preInstructions.push(
         anchor.web3.SystemProgram.transfer({
           fromPubkey: userKey,
@@ -124,9 +94,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
         createSyncNativeInstruction(userTokenAccountKey)
       );
 
-      postInstructions.push(
-        createCloseAccountInstruction(userTokenAccountKey, userKey, userKey)
-      );
+      postInstructions.push(createCloseAccountInstruction(userTokenAccountKey, userKey, userKey));
     }
 
     const remainingAccounts = [
@@ -151,10 +119,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       .accounts({
         gatewayState: this._gatewayStateKey,
         adapterProgramId: RAYDIUM_ADAPTER_PROGRAM_ID,
-        baseProgramId:
-          pool.version == 4
-            ? raydium.POOL_PROGRAM_ID_V4
-            : raydium.POOL_PROGRAM_ID_V5,
+        baseProgramId: pool.version == 4 ? raydium.POOL_PROGRAM_ID_V4 : raydium.POOL_PROGRAM_ID_V5,
         activityIndex: await getActivityIndex(userKey),
         gatewayAuthority: getGatewayAuthority(),
       })
@@ -184,35 +149,21 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
 
     // Handle transaction here
     const pool = poolInfo as raydium.PoolInfo;
-    const userTokenAAccountKey = await getAssociatedTokenAddress(
-      pool.tokenAMint,
-      userKey
-    );
-    const userTokenBAccountKey = await getAssociatedTokenAddress(
-      pool.tokenBMint,
-      userKey
-    );
-    const userLPAccountKey = await getAssociatedTokenAddress(
-      pool.lpMint,
-      userKey
-    );
-    const userTokenAccountInfos = await utils.getMultipleAccounts(
-      this._connection,
-      [userTokenAAccountKey, userTokenBAccountKey]
-    );
+    const userTokenAAccountKey = await getAssociatedTokenAddress(pool.tokenAMint, userKey);
+    const userTokenBAccountKey = await getAssociatedTokenAddress(pool.tokenBMint, userKey);
+    const userLPAccountKey = await getAssociatedTokenAddress(pool.lpMint, userKey);
+    const userTokenAccountInfos = await utils.getMultipleAccounts(this._connection, [
+      userTokenAAccountKey,
+      userTokenBAccountKey,
+    ]);
 
-    const poolWithMarketInfo = raydium.poolsWithMarketInfo.find(
-      (p) => pool.poolId.toString() == p.id
-    );
+    const poolWithMarketInfo = raydium.poolsWithMarketInfo.find((p) => pool.poolId.toString() == p.id);
 
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
     let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
     const setComputeUnitLimitParams = { units: 600000 };
-    const setComputeUnitLimitIx =
-      anchor.web3.ComputeBudgetProgram.setComputeUnitLimit(
-        setComputeUnitLimitParams
-      );
+    const setComputeUnitLimitIx = anchor.web3.ComputeBudgetProgram.setComputeUnitLimit(setComputeUnitLimitParams);
     preInstructions.push(setComputeUnitLimitIx);
 
     const userTokenAAccountInfo = userTokenAccountInfos[0].account;
@@ -238,13 +189,8 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     }
 
     if (pool.tokenAMint.equals(WSOL) || pool.tokenBMint.equals(WSOL)) {
-      const userTokenAccountKey = await getAssociatedTokenAddress(
-        WSOL,
-        userKey
-      );
-      postInstructions.push(
-        createCloseAccountInstruction(userTokenAccountKey, userKey, userKey)
-      );
+      const userTokenAccountKey = await getAssociatedTokenAddress(WSOL, userKey);
+      postInstructions.push(createCloseAccountInstruction(userTokenAccountKey, userKey, userKey));
     }
 
     const remainingAccounts = [
@@ -305,10 +251,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       .accounts({
         gatewayState: this._gatewayStateKey,
         adapterProgramId: RAYDIUM_ADAPTER_PROGRAM_ID,
-        baseProgramId:
-          pool.version == 4
-            ? raydium.POOL_PROGRAM_ID_V4
-            : raydium.POOL_PROGRAM_ID_V5,
+        baseProgramId: pool.version == 4 ? raydium.POOL_PROGRAM_ID_V4 : raydium.POOL_PROGRAM_ID_V5,
         activityIndex: await getActivityIndex(userKey),
         gatewayAuthority: getGatewayAuthority(),
       })
@@ -339,22 +282,14 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     // Handle transaction here
     const farm = farmInfo as raydium.FarmInfo;
     const farmAuthority = await this._getFarmAuthority(farm);
-    const farmWithMints = raydium.farmsWithMints.find(
-      (f) => farm.farmId.toString() == f.id
-    );
+    const farmWithMints = raydium.farmsWithMints.find((f) => farm.farmId.toString() == f.id);
 
     let preInstructions: anchor.web3.TransactionInstruction[] = [];
 
-    const ledgerKey = await raydium.infos.getFarmerId(
-      farm,
-      userKey,
-      farm.version
-    );
+    const ledgerKey = await raydium.infos.getFarmerId(farm, userKey, farm.version);
     const ledgerAccountInfo = await this._connection.getAccountInfo(ledgerKey);
     if (!ledgerAccountInfo) {
-      preInstructions.push(
-        this._getCreateLedgerInstruction({ farm, userKey, ledgerKey })
-      );
+      preInstructions.push(this._getCreateLedgerInstruction({ farm, userKey, ledgerKey }));
     }
 
     const userLpTokenAccount = await getAssociatedTokenAddress(
@@ -374,10 +309,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
         isWritable: true,
       },
       {
-        pubkey: await getAssociatedTokenAddress(
-          new anchor.web3.PublicKey(farmWithMints.rewardMints[0]),
-          userKey
-        ),
+        pubkey: await getAssociatedTokenAddress(new anchor.web3.PublicKey(farmWithMints.rewardMints[0]), userKey),
         isSigner: false,
         isWritable: true,
       },
@@ -396,10 +328,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
 
     if (farm.version == 5) {
       remainingAccounts.push({
-        pubkey: await getAssociatedTokenAddress(
-          new anchor.web3.PublicKey(farmWithMints.rewardMints[1]),
-          userKey
-        ),
+        pubkey: await getAssociatedTokenAddress(new anchor.web3.PublicKey(farmWithMints.rewardMints[1]), userKey),
         isSigner: false,
         isWritable: true,
       });
@@ -415,10 +344,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       .accounts({
         gatewayState: this._gatewayStateKey,
         adapterProgramId: RAYDIUM_ADAPTER_PROGRAM_ID,
-        baseProgramId:
-          farm.version == 3
-            ? raydium.FARM_PROGRAM_ID_V3
-            : raydium.FARM_PROGRAM_ID_V5,
+        baseProgramId: farm.version == 3 ? raydium.FARM_PROGRAM_ID_V3 : raydium.FARM_PROGRAM_ID_V5,
         activityIndex: await getActivityIndex(userKey),
         gatewayAuthority: getGatewayAuthority(),
       })
@@ -451,14 +377,8 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     let preInstructions: anchor.web3.TransactionInstruction[] = [];
 
     const farmAuthority = await this._getFarmAuthority(farm);
-    const farmWithMints = raydium.farmsWithMints.find(
-      (f) => farm.farmId.toString() == f.id
-    );
-    const ledgerKey = await raydium.infos.getFarmerId(
-      farm,
-      userKey,
-      farm.version
-    );
+    const farmWithMints = raydium.farmsWithMints.find((f) => farm.farmId.toString() == f.id);
+    const ledgerKey = await raydium.infos.getFarmerId(farm, userKey, farm.version);
     const userLpTokenAccount = await getAssociatedTokenAddress(
       new anchor.web3.PublicKey(farmWithMints.lpMint),
       userKey
@@ -482,10 +402,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
         isWritable: true,
       },
       {
-        pubkey: await getAssociatedTokenAddress(
-          new anchor.web3.PublicKey(farmWithMints.rewardMints[0]),
-          userKey
-        ),
+        pubkey: await getAssociatedTokenAddress(new anchor.web3.PublicKey(farmWithMints.rewardMints[0]), userKey),
         isSigner: false,
         isWritable: true,
       },
@@ -504,10 +421,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
 
     if (farm.version == 5) {
       remainingAccounts.push({
-        pubkey: await getAssociatedTokenAddress(
-          new anchor.web3.PublicKey(farmWithMints.rewardMints[1]),
-          userKey
-        ),
+        pubkey: await getAssociatedTokenAddress(new anchor.web3.PublicKey(farmWithMints.rewardMints[1]), userKey),
         isSigner: false,
         isWritable: true,
       });
@@ -523,10 +437,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       .accounts({
         gatewayState: this._gatewayStateKey,
         adapterProgramId: RAYDIUM_ADAPTER_PROGRAM_ID,
-        baseProgramId:
-          farm.version == 3
-            ? raydium.FARM_PROGRAM_ID_V3
-            : raydium.FARM_PROGRAM_ID_V5,
+        baseProgramId: farm.version == 3 ? raydium.FARM_PROGRAM_ID_V3 : raydium.FARM_PROGRAM_ID_V5,
         activityIndex: await getActivityIndex(userKey),
         gatewayAuthority: getGatewayAuthority(),
       })
@@ -558,14 +469,8 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     let preInstructions: anchor.web3.TransactionInstruction[] = [];
 
     const farmAuthority = await this._getFarmAuthority(farm);
-    const farmWithMints = raydium.farmsWithMints.find(
-      (f) => farm.farmId.toString() == f.id
-    );
-    const ledgerKey = await raydium.infos.getFarmerId(
-      farm,
-      userKey,
-      farm.version
-    );
+    const farmWithMints = raydium.farmsWithMints.find((f) => farm.farmId.toString() == f.id);
+    const ledgerKey = await raydium.infos.getFarmerId(farm, userKey, farm.version);
     const userLpTokenAccount = await getAssociatedTokenAddress(
       new anchor.web3.PublicKey(farmWithMints.lpMint),
       userKey
@@ -618,10 +523,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
 
     if (farm.version == 5) {
       remainingAccounts.push({
-        pubkey: await getAssociatedTokenAddress(
-          new anchor.web3.PublicKey(farmWithMints.rewardMints[1]),
-          userKey
-        ),
+        pubkey: await getAssociatedTokenAddress(new anchor.web3.PublicKey(farmWithMints.rewardMints[1]), userKey),
         isSigner: false,
         isWritable: true,
       });
@@ -643,10 +545,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
       .accounts({
         gatewayState: this._gatewayStateKey,
         adapterProgramId: RAYDIUM_ADAPTER_PROGRAM_ID,
-        baseProgramId:
-          farm.version == 3
-            ? raydium.FARM_PROGRAM_ID_V3
-            : raydium.FARM_PROGRAM_ID_V5,
+        baseProgramId: farm.version == 3 ? raydium.FARM_PROGRAM_ID_V3 : raydium.FARM_PROGRAM_ID_V5,
         activityIndex: await getActivityIndex(userKey),
         gatewayAuthority: getGatewayAuthority(),
       })
@@ -657,19 +556,11 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     return { txs: [txHarvest], input: payload };
   }
 
-  private async _getFarmAuthority(
-    farm: raydium.FarmInfo
-  ): Promise<anchor.web3.PublicKey> {
+  private async _getFarmAuthority(farm: raydium.FarmInfo): Promise<anchor.web3.PublicKey> {
     const [key, _] =
       farm.version > 3
-        ? await anchor.web3.PublicKey.findProgramAddress(
-            [farm.farmId.toBuffer()],
-            raydium.FARM_PROGRAM_ID_V5
-          )
-        : await anchor.web3.PublicKey.findProgramAddress(
-            [farm.farmId.toBuffer()],
-            raydium.FARM_PROGRAM_ID_V3
-          );
+        ? await anchor.web3.PublicKey.findProgramAddress([farm.farmId.toBuffer()], raydium.FARM_PROGRAM_ID_V5)
+        : await anchor.web3.PublicKey.findProgramAddress([farm.farmId.toBuffer()], raydium.FARM_PROGRAM_ID_V3);
     return key;
   }
 
@@ -688,10 +579,7 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     }
 
     const instruction = farm.version === 3 ? 9 : 10;
-    const programId =
-      farm.version === 3
-        ? raydium.FARM_PROGRAM_ID_V3
-        : raydium.FARM_PROGRAM_ID_V5;
+    const programId = farm.version === 3 ? raydium.FARM_PROGRAM_ID_V3 : raydium.FARM_PROGRAM_ID_V5;
 
     const LAYOUT = struct([u8("instruction")]);
     const data = Buffer.alloc(LAYOUT.span);
