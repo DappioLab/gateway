@@ -31,6 +31,7 @@ import {
   IProtocolNFTFarm,
   IProtocolNFTPool,
   IProtocolPool,
+  IProtocolSwap,
   IProtocolVault,
   LockNFTParams,
   PoolDirection,
@@ -105,6 +106,7 @@ export class GatewayBuilder {
       // Extra Metadata
       poolDirection: PoolDirection.Obverse,
       swapMinOutAmount: new anchor.BN(0),
+      swapConfig: [],
       farmType: [],
     };
 
@@ -133,13 +135,16 @@ export class GatewayBuilder {
 
     this._adjustParams();
 
+    let protocol: IProtocolSwap;
+
     // TODO: Move the logic into protocols
     switch (swapParams.protocol) {
       case SupportedProtocols.Jupiter:
-        const protocol = new ProtocolJupiter(
+        protocol = new ProtocolJupiter(
           this._provider.connection,
           this._program,
           await this.getGatewayStateKey(),
+          this.params,
           {
             ...swapParams,
             userKey: this._provider.wallet.publicKey,
@@ -160,6 +165,15 @@ export class GatewayBuilder {
       default:
         throw new Error("Unsupported Protocol");
     }
+
+    const { txs, input } = await protocol.swap();
+
+    // Push input payload
+    (this.params.payloadQueue as Uint8Array[]).push(input);
+    // TODO: Extract the logic of index dispatch to a config file
+    this.params.inputIndexQueue.push(0);
+
+    this._transactions = [...this._transactions, ...txs];
 
     return this;
   }
