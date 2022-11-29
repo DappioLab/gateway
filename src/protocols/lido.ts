@@ -121,7 +121,7 @@ export class ProtocolLido implements IProtocolVault {
     // Set up accounts
     let remainingAccounts: anchor.web3.AccountMeta[];
 
-    if (vaultInfo.lidoVersion.toNumber() == 2) {
+    if (new anchor.BN(vaultInfo.lidoVersion).toNumber() == 2) {
       remainingAccounts = [
         { pubkey: lido.LIDO_ADDRESS, isSigner: false, isWritable: true }, // 1
         { pubkey: userKey, isSigner: true, isWritable: false }, // 2
