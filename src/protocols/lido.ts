@@ -20,11 +20,10 @@ export class ProtocolLido implements IProtocolVault {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    const inputLayout = struct([u8("instruction"), nu64("amount")]);
+    const inputLayout = struct([nu64("amount")]);
     let payload = Buffer.alloc(PAYLOAD_SIZE);
     inputLayout.encode(
       {
-        instruction: 1,
         amount: new anchor.BN(params.depositAmount),
       },
       payload
@@ -34,7 +33,7 @@ export class ProtocolLido implements IProtocolVault {
 
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
 
-    // TODO: Maybe better to do in navigator?
+    // Maybe better to do in navigator?
     const bufferArray = [lido.LIDO_ADDRESS.toBuffer(), Buffer.from("reserve_account")];
     const [reserveAccount] = anchor.web3.PublicKey.findProgramAddressSync(bufferArray, lido.LIDO_PROGRAM_ID);
     const bufferArrayMint = [lido.LIDO_ADDRESS.toBuffer(), Buffer.from("mint_authority")];
@@ -42,7 +41,7 @@ export class ProtocolLido implements IProtocolVault {
 
     const recipientStSolAddress = await getAssociatedTokenAddress(vault.shareMint, userKey);
 
-    // TODO: Verify if this requires a check here
+    // TVerify if this requires a check here
     preInstructions.push(await createATAWithoutCheckIx(userKey, vault.shareMint));
 
     const remainingAccounts = [
@@ -77,22 +76,21 @@ export class ProtocolLido implements IProtocolVault {
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     // Handle payload input here
-    const inputLayout = struct([u8("instruction"), nu64("amount"), u32("validatorIndex")]);
+    const inputLayout = struct([nu64("amount"), u32("validatorIndex")]);
     let payload = Buffer.alloc(PAYLOAD_SIZE);
 
     const vaultInfo = vault as lido.VaultInfo;
     const vaultInfoWrapper = new lido.VaultInfoWrapper(vaultInfo);
 
     const heaviestValidator = vaultInfoWrapper.getHeaviestValidator();
-    // TODO: Not required in case of v1, so perhaps this should only be calculated in case of v2?
+
+    // Not required in case of v1
     const heaviestValidatorIndex = vaultInfo.validators.entries.findIndex((value) =>
       value.pubkey.equals(heaviestValidator.pubkey)
     );
 
     inputLayout.encode(
       {
-        // The instuction is 23 if using lido v2, 2 for v1
-        instruction: vaultInfo.lidoVersion.toNumber() == 2 ? 23 : 2,
         amount: new anchor.BN(params.withdrawAmount),
         // Set validator index. Only used in v2
         validatorIndex: heaviestValidatorIndex,
