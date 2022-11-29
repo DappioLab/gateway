@@ -1324,9 +1324,6 @@ export class GatewayBuilder {
             await this.getGatewayStateKey(),
             this.params
           );
-
-          // TODO: Remove once Lido has withdraw support
-          throw new Error("Lido withdraw has not been implemented yet!");
   
           break;
 
