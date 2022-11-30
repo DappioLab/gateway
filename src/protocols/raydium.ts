@@ -268,19 +268,19 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    const farm = farmInfo as raydium.FarmInfo;
     // Handle payload input here
     const inputLayout = struct([u64("lpAmount"), u8("version")]);
     let payload = Buffer.alloc(PAYLOAD_SIZE);
     inputLayout.encode(
       {
         lpAmount: new anchor.BN(params.lpAmount),
-        version: params.version || 1,
+        version: params.version || farm.version || 3,
       },
       payload
     );
 
     // Handle transaction here
-    const farm = farmInfo as raydium.FarmInfo;
     const farmAuthority = await this._getFarmAuthority(farm);
     const farmWithMints = raydium.farmsWithMints.find((f) => farm.farmId.toString() == f.id);
 
@@ -327,8 +327,11 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     ];
 
     if (farm.version == 5) {
+      const rewardTokenMintB = new anchor.web3.PublicKey(farmWithMints.rewardMints[1]);
+      const userRewardTokenAccount = await getAssociatedTokenAddress(rewardTokenMintB, userKey);
+      preInstructions.push(await createATAWithoutCheckIx(userKey, rewardTokenMintB));
       remainingAccounts.push({
-        pubkey: await getAssociatedTokenAddress(new anchor.web3.PublicKey(farmWithMints.rewardMints[1]), userKey),
+        pubkey: userRewardTokenAccount,
         isSigner: false,
         isWritable: true,
       });
@@ -360,20 +363,19 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    const farm = farmInfo as raydium.FarmInfo;
     // Handle payload input here
     const inputLayout = struct([u64("shareAmount"), u8("version")]);
     let payload = Buffer.alloc(PAYLOAD_SIZE);
     inputLayout.encode(
       {
         shareAmount: new anchor.BN(params.shareAmount),
-        version: params.version || 1,
+        version: params.version || farm.version || 3,
       },
       payload
     );
 
     // Handle transaction here
-    const farm = farmInfo as raydium.FarmInfo;
-
     let preInstructions: anchor.web3.TransactionInstruction[] = [];
 
     const farmAuthority = await this._getFarmAuthority(farm);
@@ -420,8 +422,11 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     ];
 
     if (farm.version == 5) {
+      const rewardTokenMintB = new anchor.web3.PublicKey(farmWithMints.rewardMints[1]);
+      const userRewardTokenAccount = await getAssociatedTokenAddress(rewardTokenMintB, userKey);
+      preInstructions.push(await createATAWithoutCheckIx(userKey, rewardTokenMintB));
       remainingAccounts.push({
-        pubkey: await getAssociatedTokenAddress(new anchor.web3.PublicKey(farmWithMints.rewardMints[1]), userKey),
+        pubkey: userRewardTokenAccount,
         isSigner: false,
         isWritable: true,
       });
@@ -453,19 +458,18 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     farmInfo: IFarmInfo,
     userKey: anchor.web3.PublicKey
   ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+    const farm = farmInfo as raydium.FarmInfo;
     // Handle payload input here
     const inputLayout = struct([u8("version")]);
     let payload = Buffer.alloc(PAYLOAD_SIZE);
     inputLayout.encode(
       {
-        version: params.version || 1,
+        version: params.version || farm.version || 3,
       },
       payload
     );
 
     // Handle transaction here
-    const farm = farmInfo as raydium.FarmInfo;
-
     let preInstructions: anchor.web3.TransactionInstruction[] = [];
 
     const farmAuthority = await this._getFarmAuthority(farm);
@@ -522,8 +526,11 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     ];
 
     if (farm.version == 5) {
+      const rewardTokenMintB = new anchor.web3.PublicKey(farmWithMints.rewardMints[1]);
+      const userRewardTokenAccount = await getAssociatedTokenAddress(rewardTokenMintB, userKey);
+      preInstructions.push(await createATAWithoutCheckIx(userKey, rewardTokenMintB));
       remainingAccounts.push({
-        pubkey: await getAssociatedTokenAddress(new anchor.web3.PublicKey(farmWithMints.rewardMints[1]), userKey),
+        pubkey: userRewardTokenAccount,
         isSigner: false,
         isWritable: true,
       });
@@ -532,12 +539,6 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
         isSigner: false,
         isWritable: true,
       });
-
-      const createUserRewardTokenBAccountIx = await createATAWithoutCheckIx(
-        userKey,
-        new anchor.web3.PublicKey(farmWithMints.rewardMints[1])
-      );
-      preInstructions.push(createUserRewardTokenBAccountIx);
     }
 
     const txHarvest = await this._gatewayProgram.methods
