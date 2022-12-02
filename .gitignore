@@ -1,6 +1,6 @@
 .anchor
 .DS_Store
-public/doc
+public/docs
 **/*.rs.bk
 node_modules
 dist

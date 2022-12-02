@@ -32,8 +32,7 @@
     "@solana/spl-token": "^0.1.8"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc",
-    "typedocGen": "typedoc src/index.ts --out public/docs",
+    "build": "rm -rf dist && tsc && typedoc src/index.ts --out docs",
     "typedocServe": "node typedocServe.js",
     "testJupiter": "ANCHOR_WALLET=~/.config/solana/gateway.json ts-mocha -p ./tsconfig.json -t 1000000 tests/testJupiter.ts",
     "testAdapterRaydium": "ANCHOR_WALLET=~/.config/solana/gateway.json ts-mocha -p ./tsconfig.json -t 1000000 tests/testAdapterRaydium.ts",
