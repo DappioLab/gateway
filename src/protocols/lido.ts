@@ -84,7 +84,6 @@ export class ProtocolLido implements IProtocolVault {
 
     const heaviestValidator = vaultInfoWrapper.getHeaviestValidator();
 
-    // Not required in case of v1
     const heaviestValidatorIndex = vaultInfo.validators.entries.findIndex((value) =>
       value.pubkey.equals(heaviestValidator.pubkey)
     );
@@ -92,7 +91,7 @@ export class ProtocolLido implements IProtocolVault {
     inputLayout.encode(
       {
         amount: new anchor.BN(params.withdrawAmount),
-        // Set validator index. Only used in v2
+        // Set validator index.
         validatorIndex: heaviestValidatorIndex,
       },
       payload
@@ -119,40 +118,21 @@ export class ProtocolLido implements IProtocolVault {
     );
 
     // Set up accounts
-    let remainingAccounts: anchor.web3.AccountMeta[];
-
-    if (new anchor.BN(vaultInfo.lidoVersion).toNumber() == 2) {
-      remainingAccounts = [
-        { pubkey: lido.LIDO_ADDRESS, isSigner: false, isWritable: true }, // 1
-        { pubkey: userKey, isSigner: true, isWritable: false }, // 2
-        { pubkey: senderStSolAddress, isSigner: false, isWritable: true }, // 3
-        { pubkey: vault.shareMint, isSigner: false, isWritable: true }, // 4
-        { pubkey: heaviestValidator.pubkey, isSigner: false, isWritable: false }, // 5
-        { pubkey: validatorStakeAccount, isSigner: false, isWritable: true }, // 6
-        { pubkey: receivingAccount.publicKey, isSigner: true, isWritable: true }, // 7
-        { pubkey: stakeAuthority, isSigner: false, isWritable: false }, // 8
-        { pubkey: vaultInfo.validatorList, isSigner: false, isWritable: true }, // 9
-        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // 10
-        { pubkey: anchor.web3.SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false }, // 11
-        { pubkey: anchor.web3.SystemProgram.programId, isSigner: false, isWritable: false }, // 12
-        { pubkey: anchor.web3.StakeProgram.programId, isSigner: false, isWritable: false }, // 13
-      ];
-    } else {
-      remainingAccounts = [
-        { pubkey: lido.LIDO_ADDRESS, isSigner: false, isWritable: true }, // 1
-        { pubkey: userKey, isSigner: true, isWritable: false }, // 2
-        { pubkey: senderStSolAddress, isSigner: false, isWritable: true }, // 3
-        { pubkey: vault.shareMint, isSigner: false, isWritable: true }, // 4
-        { pubkey: heaviestValidator.pubkey, isSigner: false, isWritable: false }, // 5
-        { pubkey: validatorStakeAccount, isSigner: false, isWritable: true }, // 6
-        { pubkey: receivingAccount.publicKey, isSigner: true, isWritable: true }, // 7
-        { pubkey: stakeAuthority, isSigner: false, isWritable: false }, // 8
-        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // 9
-        { pubkey: anchor.web3.SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false }, // 10
-        { pubkey: anchor.web3.SystemProgram.programId, isSigner: false, isWritable: false }, // 11
-        { pubkey: anchor.web3.StakeProgram.programId, isSigner: false, isWritable: false }, // 12
-      ];
-    }
+    const remainingAccounts = [
+      { pubkey: lido.LIDO_ADDRESS, isSigner: false, isWritable: true }, // 1
+      { pubkey: userKey, isSigner: true, isWritable: false }, // 2
+      { pubkey: senderStSolAddress, isSigner: false, isWritable: true }, // 3
+      { pubkey: vault.shareMint, isSigner: false, isWritable: true }, // 4
+      { pubkey: heaviestValidator.pubkey, isSigner: false, isWritable: false }, // 5
+      { pubkey: validatorStakeAccount, isSigner: false, isWritable: true }, // 6
+      { pubkey: receivingAccount.publicKey, isSigner: true, isWritable: true }, // 7
+      { pubkey: stakeAuthority, isSigner: false, isWritable: false }, // 8
+      { pubkey: vaultInfo.validatorList, isSigner: false, isWritable: true }, // 9
+      { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // 10
+      { pubkey: anchor.web3.SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false }, // 11
+      { pubkey: anchor.web3.SystemProgram.programId, isSigner: false, isWritable: false }, // 12
+      { pubkey: anchor.web3.StakeProgram.programId, isSigner: false, isWritable: false }, // 13
+    ];
 
     // Handle transaction here
     const txWithdraw = await this._gatewayProgram.methods
