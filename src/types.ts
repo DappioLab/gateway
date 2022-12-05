@@ -349,6 +349,7 @@ export interface DepositParams {
   protocol: SupportedProtocols;
   vaultId: anchor.web3.PublicKey;
   depositAmount: number;
+  tokenBAmount?: number;
   version?: number;
 }
 
