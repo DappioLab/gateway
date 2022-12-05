@@ -248,6 +248,9 @@ export interface SwapParams {
   toTokenMint: anchor.web3.PublicKey;
   amount: number;
   slippage: number;
+
+  // Jupiter Market Url
+  jupiterMarketUrl?: string;
 }
 
 export interface AddLiquidityParams {
