@@ -1,15 +1,11 @@
 import * as anchor from "@project-serum/anchor";
 import { Jupiter, RouteInfo } from "@jup-ag/core";
-import { IProtocolSwap } from "../types";
+import { IProtocolSwap, SwapParams } from "../types";
 import { WSOL } from "../ids";
 import { getAssociatedTokenAddress } from "@solana/spl-token-v2";
 
-interface ProtocolJupiterParams {
+interface ProtocolJupiterParams extends SwapParams {
   userKey: anchor.web3.PublicKey;
-  fromTokenMint: anchor.web3.PublicKey;
-  toTokenMint: anchor.web3.PublicKey;
-  amount: number;
-  slippage: number;
 }
 
 export class ProtocolJupiter implements IProtocolSwap {
@@ -23,6 +19,7 @@ export class ProtocolJupiter implements IProtocolSwap {
     this._jupiter = await Jupiter.load({
       connection: this._connection,
       cluster: "mainnet-beta",
+      marketUrl: this._params.jupiterMarketUrl,
     });
     const routes = await this._jupiter.computeRoutes({
       inputMint: this._params.fromTokenMint,

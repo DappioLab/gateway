@@ -376,6 +376,7 @@ describe("Gateway", () => {
       ),
       amount: zapInAmount,
       slippage: 3,
+      jupiterMarketUrl: "https://rpc-mainnet-fork.epochs.studio/jup/market.json",
     };
 
     await gateway.swap(swapParams);

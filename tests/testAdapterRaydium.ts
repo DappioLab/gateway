@@ -15,14 +15,14 @@ import {
 import { raydium } from "@dappio-wonderland/navigator";
 
 describe("Gateway", () => {
-  // const connection = new Connection("https://rpc-mainnet-fork.epochs.studio", {
-  //   commitment: "confirmed",
-  //   wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
-  // });
-  const connection = new Connection("https://solana-api.projectserum.com", {
+  const connection = new Connection("https://rpc-mainnet-fork.epochs.studio", {
     commitment: "confirmed",
-    confirmTransactionInitialTimeout: 180 * 1000,
+    wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
   });
+  // const connection = new Connection("https://solana-api.projectserum.com", {
+  //   commitment: "confirmed",
+  //   confirmTransactionInitialTimeout: 180 * 1000,
+  // });
   // const connection = new Connection("https://solana-api.tt-prod.net", {
   //   commitment: "confirmed",
   //   confirmTransactionInitialTimeout: 180 * 1000,
@@ -85,6 +85,7 @@ describe("Gateway", () => {
       ),
       amount: zapInAmount / 2, // Swap half of the fromToken to proceed zapIn
       slippage: 1,
+      jupiterMarketUrl: "https://rpc-mainnet-fork.epochs.studio/jup/market.json",
     };
     const addLiquidityParams: AddLiquidityParams = {
       protocol: SupportedProtocols.Raydium,
@@ -189,6 +190,7 @@ describe("Gateway", () => {
       ),
       amount: tokenAAmount, // swap coin to pc
       slippage: 3,
+      jupiterMarketUrl: "https://rpc-mainnet-fork.epochs.studio/jup/market.json",
     };
 
     const gateway = new GatewayBuilder(provider);
@@ -246,6 +248,7 @@ describe("Gateway", () => {
       ),
       amount: zapInAmount / 2, // Swap half of the fromToken to proceed zapIn
       slippage: 3,
+      jupiterMarketUrl: "https://rpc-mainnet-fork.epochs.studio/jup/market.json",
     };
     const addLiquidityParams: AddLiquidityParams = {
       protocol: SupportedProtocols.Raydium,
@@ -365,10 +368,12 @@ describe("Gateway", () => {
     const addLiquidityParams: AddLiquidityParams = {
       protocol: SupportedProtocols.Raydium,
       poolId,
+      version: 4,
     };
     const stakeParams: StakeParams = {
       protocol: SupportedProtocols.Raydium,
       farmId,
+      version: 5,
     };
 
     const swapParams1: SwapParams = {
@@ -382,6 +387,7 @@ describe("Gateway", () => {
       ),
       amount: zapInAmount / 2,
       slippage: 3,
+      jupiterMarketUrl: "https://rpc-mainnet-fork.epochs.studio/jup/market.json",
     };
 
     await gateway.swap(swapParams1);
@@ -400,6 +406,7 @@ describe("Gateway", () => {
       ),
       amount: swapMinOutAmount / 2, // Swap half of the fromToken to proceed zapIn
       slippage: 3,
+      jupiterMarketUrl: "https://rpc-mainnet-fork.epochs.studio/jup/market.json",
     };
 
     await gateway.swap(swapParams2);
