@@ -1,6 +1,6 @@
 {
   "name": "@dappio-wonderland/gateway",
-  "version": "0.2.20",
+  "version": "0.2.21",
   "description": "Dappio Gateway: The Framework that Empowers the Composability of Solana Programs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
