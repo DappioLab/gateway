@@ -1,5 +1,5 @@
 import * as anchor from "@project-serum/anchor";
-import { PublicKey, Connection } from "@solana/web3.js";
+import { PublicKey, Connection, sendAndConfirmRawTransaction } from "@solana/web3.js";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import {
   GatewayBuilder,
@@ -168,14 +168,16 @@ describe("Gateway", () => {
 
   it("Deposit in Tulip Vault", async () => {
     const vaultId = new PublicKey(
-      // "6tkFEgE6zry2gGC4yqLrTghdqtqadyT5H3H2AJd4w5rz" // RAY-USDC
-      "GSAqLGG3AHABTnNSzsorjbqTSbhTmtkFN2dBPxua3RGR" // RAY-SRM
+      // "6tkFEgE6zry2gGC4yqLrTghdqtqadyT5H3H2AJd4w5rz" // RAY-USDC (Raydium)
+      // "GSAqLGG3AHABTnNSzsorjbqTSbhTmtkFN2dBPxua3RGR" // RAY-SRM (Raydium)
+      "7nbcWTUnvELLmLjJtMRrbg9qH9zabZ9VowJSfwB2j8y7" // ORCA-USDC (Orca)
     );
 
     const depositParams: DepositParams = {
       protocol: SupportedProtocols.Tulip,
       vaultId: vaultId,
-      depositAmount: depositAmount,
+      depositAmount: 10,
+      tokenBAmount: depositAmount,
     };
 
     const gateway = new GatewayBuilder(provider);
@@ -194,7 +196,7 @@ describe("Gateway", () => {
       // tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
       // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
       const sig = await provider.sendAndConfirm(tx, [], {
-        skipPreflight: false,
+        skipPreflight: true,
         commitment: "confirmed",
       } as unknown as anchor.web3.ConfirmOptions);
       console.log(sig);
@@ -206,13 +208,14 @@ describe("Gateway", () => {
   it("Withdraw in Tulip Vault, need to wait 900 slot (~15 mins) after deposit", async () => {
     const vaultId = new PublicKey(
       // "6tkFEgE6zry2gGC4yqLrTghdqtqadyT5H3H2AJd4w5rz" // RAY-USDC
-      "GSAqLGG3AHABTnNSzsorjbqTSbhTmtkFN2dBPxua3RGR" // RAY-SRM
+      // "GSAqLGG3AHABTnNSzsorjbqTSbhTmtkFN2dBPxua3RGR" // RAY-SRM
+      "7nbcWTUnvELLmLjJtMRrbg9qH9zabZ9VowJSfwB2j8y7" // ORCA-USDC (Orca)
     );
 
     const withdrawParams: WithdrawParams = {
       protocol: SupportedProtocols.Tulip,
       vaultId: vaultId,
-      withdrawAmount: withdrawAmount,
+      withdrawAmount: 10,
     };
 
     const gateway = new GatewayBuilder(provider);
@@ -226,12 +229,21 @@ describe("Gateway", () => {
 
     console.log("======");
     console.log("Txs are sent...");
+    const recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
     for (let tx of txs) {
+      // const message = anchor.web3.MessageV0.compile({
+      //   payerKey: wallet.publicKey,
+      //   instructions: tx.instructions,
+      //   recentBlockhash: recentBlockhash,
+      // });
+      // const versionedTx = new anchor.web3.VersionedTransaction(message);
+      // versionedTx.sign([wallet.payer]);
+      // const sig = await sendAndConfirmRawTransaction(connection, Buffer.from(versionedTx.serialize()));
       // tx.feePayer = wallet.publicKey;
       // tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
       // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
       const sig = await provider.sendAndConfirm(tx, [], {
-        skipPreflight: false,
+        skipPreflight: true,
         commitment: "confirmed",
       } as unknown as anchor.web3.ConfirmOptions);
       console.log(sig);
