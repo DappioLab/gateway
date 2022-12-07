@@ -111,6 +111,7 @@ export class GatewayBuilder {
       // Extra Metadata
       poolDirection: PoolDirection.Obverse,
       swapMinOutAmount: new anchor.BN(0),
+      validatorIndex: 0,
     };
 
     this._metadata = {
@@ -1317,6 +1318,7 @@ export class GatewayBuilder {
             this._provider.connection,
             withdrawParams.vaultId
           );
+          this.params.validatorIndex = withdrawParams.validatorIndex;
   
           protocol = new ProtocolLido(
             this._provider.connection,

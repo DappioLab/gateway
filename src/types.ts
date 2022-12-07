@@ -355,6 +355,7 @@ export interface WithdrawParams {
   vaultId: anchor.web3.PublicKey;
   withdrawAmount: number;
   version?: number;
+  validatorIndex?: number;
 }
 
 export interface LockNFTParams {
@@ -459,6 +460,10 @@ export type GatewayParams = TypeDef<
         {
           name: "poolDirection";
           type: "u8";
+        },
+        {
+          name: "validatorIndex";
+          type: "u32";
         }
       ];
     };
