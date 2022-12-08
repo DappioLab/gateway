@@ -1,5 +1,10 @@
 import * as anchor from "@project-serum/anchor";
-import { PublicKey, Connection, sendAndConfirmRawTransaction } from "@solana/web3.js";
+import {
+  PublicKey,
+  Connection,
+  sendAndConfirmRawTransaction,
+  BlockheightBasedTransactionConfirmationStrategy,
+} from "@solana/web3.js";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import {
   GatewayBuilder,
@@ -171,6 +176,7 @@ describe("Gateway", () => {
       // "6tkFEgE6zry2gGC4yqLrTghdqtqadyT5H3H2AJd4w5rz" // RAY-USDC (Raydium)
       // "GSAqLGG3AHABTnNSzsorjbqTSbhTmtkFN2dBPxua3RGR" // RAY-SRM (Raydium)
       "7nbcWTUnvELLmLjJtMRrbg9qH9zabZ9VowJSfwB2j8y7" // ORCA-USDC (Orca)
+      // "CjwvvwuacJAJm8w54VcNDgpbnyde6k65mvdRpEFK2Dqm" // ATLAS-USDC (Orca)
     );
 
     const depositParams: DepositParams = {
@@ -215,7 +221,7 @@ describe("Gateway", () => {
     const withdrawParams: WithdrawParams = {
       protocol: SupportedProtocols.Tulip,
       vaultId: vaultId,
-      withdrawAmount: 10,
+      withdrawAmount: 2,
     };
 
     const gateway = new GatewayBuilder(provider);
@@ -227,25 +233,52 @@ describe("Gateway", () => {
 
     const txs = gateway.transactions();
 
+    // get account lookup table
+    const lookupTableAddress1 = new PublicKey("AyoMG9RELWHbtqcrLNiXwbeRptwD5vCtUk89VgBHE4wj");
+    const lookupTableAddress2 = new PublicKey("CLQRVRUiRWSXLg1EFNZPc3NiwrXhptQMUaHTsbZYjWAd");
+
+    // get the table from the cluster
+    const lookupTableAccount1 = await connection.getAddressLookupTable(lookupTableAddress1).then((res) => res.value);
+    const lookupTableAccount2 = await connection.getAddressLookupTable(lookupTableAddress2).then((res) => res.value);
+
     console.log("======");
     console.log("Txs are sent...");
-    const recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+    const latestBlockhash = await connection.getLatestBlockhash();
     for (let tx of txs) {
-      // const message = anchor.web3.MessageV0.compile({
-      //   payerKey: wallet.publicKey,
-      //   instructions: tx.instructions,
-      //   recentBlockhash: recentBlockhash,
-      // });
-      // const versionedTx = new anchor.web3.VersionedTransaction(message);
-      // versionedTx.sign([wallet.payer]);
-      // const sig = await sendAndConfirmRawTransaction(connection, Buffer.from(versionedTx.serialize()));
+      // tx.recentBlockhash = recentBlockhash;
+      // tx.feePayer = wallet.publicKey;
+      // tx.sign(wallet.payer);
+      // console.log(tx.serialize().length);
+      const message = anchor.web3.MessageV0.compile({
+        payerKey: wallet.publicKey,
+        instructions: tx.instructions,
+        recentBlockhash: latestBlockhash.blockhash,
+        addressLookupTableAccounts: [lookupTableAccount1!, lookupTableAccount2!],
+      });
+      const versionedTx = new anchor.web3.VersionedTransaction(message);
+      versionedTx.sign([wallet.payer]);
+      console.log(versionedTx.serialize().length);
+      // const confirmStrategy: BlockheightBasedTransactionConfirmationStrategy = {
+      //   blockhash: latestBlockhash.blockhash,
+      //   lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+      //   signature: versionedTx.signatures[0],
+      // };
+      const sig = await sendAndConfirmRawTransaction(
+        connection,
+        Buffer.from(versionedTx.serialize()),
+        //confirmStrategy,
+        {
+          skipPreflight: true,
+          commitment: "confirmed",
+        } as unknown as anchor.web3.ConfirmOptions
+      );
       // tx.feePayer = wallet.publicKey;
       // tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
       // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
-      const sig = await provider.sendAndConfirm(tx, [], {
-        skipPreflight: true,
-        commitment: "confirmed",
-      } as unknown as anchor.web3.ConfirmOptions);
+      // const sig = await provider.sendAndConfirm(tx, [], {
+      //   skipPreflight: true,
+      //   commitment: "confirmed",
+      // } as unknown as anchor.web3.ConfirmOptions);
       console.log(sig);
     }
     console.log("Txs are executed");
