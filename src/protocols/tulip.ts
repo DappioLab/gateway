@@ -371,12 +371,13 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
 
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
 
-    const [depositTrackingAccount, _trackingNonce] = vaultInfoWrapper.deriveTrackingAddress(userKey);
-    const [depositTrackingPda, _depositTrackingPdaNonce] =
-      vaultInfoWrapper.deriveTrackingPdaAddress(depositTrackingAccount);
-
+    const depositTrackingAccount = vaultInfoWrapper.deriveTrackingAddress(userKey)[0];
+    const depositTrackingPda = vaultInfoWrapper.deriveTrackingPdaAddress(depositTrackingAccount)[0];
     const depositTrackingHoldAccount = await getAssociatedTokenAddress(vaultInfo.shareMint, depositTrackingPda, true);
-
+    const ephemeralTrackingAccount = anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("ephemeraltracking"), vaultInfo.vaultId.toBuffer(), userKey.toBuffer()],
+      tulip.TULIP_VAULT_V2_PROGRAM_ID
+    )[0];
     const userSharesAccount = await getAssociatedTokenAddress(vaultInfo.shareMint, userKey);
     const createAtaIx1 = await createATAWithoutCheckIx(userKey, vaultInfo.shareMint);
     preInstructions.push(createAtaIx1);
@@ -501,288 +502,288 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
         break;
       case tulip.VaultType.Orca:
         const orcaVault = vaultInfo as tulip.OrcaVaultInfo;
-        // const userTokenAAccount = await getAssociatedTokenAddress(orcaVault.farmData.tokenAMint, userKey);
-        // preInstructions.push(await createATAWithoutCheckIx(userKey, orcaVault.farmData.tokenAMint));
-        // const userTokenBAccount = await getAssociatedTokenAddress(orcaVault.farmData.tokenBMint, userKey);
-        // preInstructions.push(await createATAWithoutCheckIx(userKey, orcaVault.farmData.tokenBMint));
-        preInstructions.push(
-          await this._withdrawTrackingAccountIx(orcaVault, userKey, new anchor.BN(params.withdrawAmount))
-        );
+        const userTokenAAccount = await getAssociatedTokenAddress(orcaVault.farmData.tokenAMint, userKey);
+        preInstructions.push(await createATAWithoutCheckIx(userKey, orcaVault.farmData.tokenAMint));
+        const userTokenBAccount = await getAssociatedTokenAddress(orcaVault.farmData.tokenBMint, userKey);
+        preInstructions.push(await createATAWithoutCheckIx(userKey, orcaVault.farmData.tokenBMint));
+        // preInstructions.push(
+        //   await this._withdrawTrackingAccountIx(orcaVault, userKey, new anchor.BN(params.withdrawAmount))
+        // );
 
         remainingAccounts.push(
-          // { pubkey: depositTrackingAccount, isSigner: false, isWritable: true }, // 0
-          // { pubkey: depositTrackingPda, isSigner: false, isWritable: true }, // 1
-          // {
-          //   pubkey: depositTrackingHoldAccount,
-          //   isSigner: false,
-          //   isWritable: true,
-          // }, // 2
-          // { pubkey: anchor.web3.SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false }, // 3
-          // { pubkey: userTokenAAccount, isSigner: false, isWritable: true }, // 4
-          // { pubkey: userTokenBAccount, isSigner: false, isWritable: true }, // 5
-          // { pubkey: orcaVault.farmData.poolSwapTokenA.address, isSigner: false, isWritable: true }, // 6
-          // { pubkey: orcaVault.farmData.poolSwapTokenB.address, isSigner: false, isWritable: true }, // 7
+          { pubkey: depositTrackingAccount, isSigner: false, isWritable: true }, // 0
+          { pubkey: depositTrackingPda, isSigner: false, isWritable: true }, // 1
+          {
+            pubkey: depositTrackingHoldAccount,
+            isSigner: false,
+            isWritable: true,
+          }, // 2
+          { pubkey: anchor.web3.SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false }, // 3
+          { pubkey: userTokenAAccount, isSigner: false, isWritable: true }, // 4
+          { pubkey: userTokenBAccount, isSigner: false, isWritable: true }, // 5
           {
             pubkey: userKey,
             isSigner: true,
             isWritable: true,
-          }, // 0
+          }, // 6
           {
             pubkey: vaultInfo.vaultId,
             isSigner: false,
             isWritable: true,
-          }, // 1
+          }, // 7
           {
             pubkey: vaultInfo.base.pda,
             isSigner: false,
             isWritable: true,
-          }, // 2
+          }, // 8
           {
             pubkey: userSharesAccount,
             isSigner: false,
             isWritable: true,
-          }, // 3
+          }, // 9
           {
-            pubkey: userLpAccount,
+            pubkey: orcaVault.base.underlyingWithdrawQueue,
             isSigner: false,
             isWritable: true,
-          }, // 4
+          }, // 10
           {
             pubkey: orcaVault.farmData.vaultFarmTokenAccount,
             isSigner: false,
             isWritable: true,
-          }, // 5
+          }, // 11
           {
             pubkey: orcaVault.farmData.vaultRewardTokenAccount,
             isSigner: false,
             isWritable: true,
-          }, // 6
+          }, // 12
           {
             pubkey: orcaVault.farmData.vaultSwapTokenAccount,
             isSigner: false,
             isWritable: true,
-          }, // 7
+          }, // 13
           {
             pubkey: orcaVault.farmData.globalRewardTokenVault,
             isSigner: false,
             isWritable: true,
-          }, // 8
+          }, // 14
           {
             pubkey: orcaVault.farmData.globalBaseTokenVault,
             isSigner: false,
             isWritable: true,
-          }, // 9
+          }, // 15
           {
             pubkey: orcaVault.farmData.poolSwapTokenA.address,
             isSigner: false,
             isWritable: true,
-          }, // 10
+          }, // 16
           {
             pubkey: orcaVault.farmData.poolSwapTokenB.address,
             isSigner: false,
             isWritable: true,
-          }, // 11
+          }, // 17
           {
             pubkey: orcaVault.farmData.globalFarm,
             isSigner: false,
             isWritable: true,
-          }, // 12
+          }, // 18
           {
             pubkey: orcaVault.farmData.userFarmAddr,
             isSigner: false,
             isWritable: true,
-          }, // 13
+          }, // 19
           {
             pubkey: orcaVault.farmData.convertAuthority,
             isSigner: false,
             isWritable: false,
-          }, // 14
+          }, // 20
           {
             pubkey: orcaVault.farmData.poolSwapAccount,
             isSigner: false,
             isWritable: true,
-          }, // 15
+          }, // 21
           {
             pubkey: orcaVault.farmData.poolSwapAuthority,
             isSigner: false,
             isWritable: false,
-          }, // 16
+          }, // 22
           {
             pubkey: orcaVault.farmData.swapPoolMint.address,
             isSigner: false,
             isWritable: true,
-          }, // 17
+          }, // 23
           {
             pubkey: orcaVault.farmData.farmTokenMint,
             isSigner: false,
             isWritable: true,
-          }, // 18
+          }, // 24
           {
             pubkey: orcaVault.shareMint,
             isSigner: false,
             isWritable: true,
-          }, // 19
+          }, // 25
           {
             pubkey: orcaVault.farmData.swapPoolFeeTokenAccount,
             isSigner: false,
             isWritable: true,
-          }, // 20
-          { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // 21
-          { pubkey: orca.ORCA_POOL_PROGRAM_ID, isSigner: false, isWritable: false }, // 22
+          }, // 26
+          { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // 27
+          { pubkey: orca.ORCA_POOL_PROGRAM_ID, isSigner: false, isWritable: false }, // 28
           {
             pubkey: orca.ORCA_FARM_PROGRAM_ID,
             isSigner: false,
             isWritable: false,
-          } // 23
-          // { pubkey: depositTrackingAccount, isSigner: false, isWritable: true }, // 24 // TODO: ephemeral_tracking_account
-          // { pubkey: anchor.web3.SystemProgram.programId, isSigner: false, isWritable: false }, // 25
-          // { pubkey: orcaVault.farmData.feeCollectorTokenAccount, isSigner: false, isWritable: true } // 26
+          }, // 29
+          { pubkey: ephemeralTrackingAccount, isSigner: false, isWritable: true }, // 30
+          { pubkey: anchor.web3.SystemProgram.programId, isSigner: false, isWritable: false }, // 31
+          { pubkey: orcaVault.farmData.feeCollectorTokenAccount, isSigner: false, isWritable: true } // 32
         );
         break;
       case tulip.VaultType.OrcaDD:
         const orcaDDVault = vaultInfo as tulip.OrcaDDVaultInfo;
-        // const userTokenAccountA = await getAssociatedTokenAddress(orcaDDVault.ddFarmData.tokenAMint, userKey);
-        // preInstructions.push(await createATAWithoutCheckIx(userKey, orcaDDVault.ddFarmData.tokenAMint));
-        // const userTokenAccountB = await getAssociatedTokenAddress(orcaDDVault.ddFarmData.tokenBMint, userKey);
-        // preInstructions.push(await createATAWithoutCheckIx(userKey, orcaDDVault.ddFarmData.tokenBMint));
+        const userTokenAccountA = await getAssociatedTokenAddress(orcaDDVault.ddFarmData.tokenAMint, userKey);
+        preInstructions.push(await createATAWithoutCheckIx(userKey, orcaDDVault.ddFarmData.tokenAMint));
+        const userTokenAccountB = await getAssociatedTokenAddress(orcaDDVault.ddFarmData.tokenBMint, userKey);
+        preInstructions.push(await createATAWithoutCheckIx(userKey, orcaDDVault.ddFarmData.tokenBMint));
         // preInstructions.push(
         //   await this._withdrawTrackingAccountIx(orcaDDVault, userKey, new anchor.BN(params.withdrawAmount))
         // );
         remainingAccounts.push(
-          // { pubkey: depositTrackingAccount, isSigner: false, isWritable: true }, // 0
-          // { pubkey: depositTrackingPda, isSigner: false, isWritable: true }, // 1
-          // {
-          //   pubkey: depositTrackingHoldAccount,
-          //   isSigner: false,
-          //   isWritable: true,
-          // }, // 2
-          // { pubkey: anchor.web3.SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false }, // 3
-          // { pubkey: userTokenAccountA, isSigner: false, isWritable: true }, // 4
-          // { pubkey: userTokenAccountB, isSigner: false, isWritable: true }, // 5
-          // { pubkey: orcaDDVault.ddFarmData.poolSwapTokenA.address, isSigner: false, isWritable: true }, // 6
-          // { pubkey: orcaDDVault.ddFarmData.poolSwapTokenB.address, isSigner: false, isWritable: true }, // 7
+          { pubkey: depositTrackingAccount, isSigner: false, isWritable: true }, // 0
+          { pubkey: depositTrackingPda, isSigner: false, isWritable: true }, // 1
+          {
+            pubkey: depositTrackingHoldAccount,
+            isSigner: false,
+            isWritable: true,
+          }, // 2
+          { pubkey: anchor.web3.SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false }, // 3
+          { pubkey: userTokenAccountA, isSigner: false, isWritable: true }, // 4
+          { pubkey: userTokenAccountB, isSigner: false, isWritable: true }, // 5
           {
             pubkey: userKey,
             isSigner: true,
             isWritable: true,
-          }, // 0
+          }, // 6
           {
             pubkey: vaultInfo.vaultId,
             isSigner: false,
             isWritable: true,
-          }, // 1
+          }, // 7
           {
             pubkey: vaultInfo.base.pda,
             isSigner: false,
             isWritable: true,
-          }, // 2
+          }, // 8
           {
             pubkey: userSharesAccount,
             isSigner: false,
             isWritable: true,
-          }, // 3
-          {
-            pubkey: userLpAccount,
-            isSigner: false,
-            isWritable: true,
-          }, // 4
-          {
-            pubkey: orcaDDVault.ddFarmData.vaultFarmTokenAccount,
-            isSigner: false,
-            isWritable: true,
-          }, // 5
-          {
-            pubkey: orcaDDVault.ddFarmData.vaultRewardTokenAccount,
-            isSigner: false,
-            isWritable: true,
-          }, // 6
-          {
-            pubkey: orcaDDVault.ddFarmData.vaultSwapTokenAccount,
-            isSigner: false,
-            isWritable: true,
-          }, // 7
-          {
-            pubkey: orcaDDVault.ddFarmData.globalRewardTokenVault,
-            isSigner: false,
-            isWritable: true,
-          }, // 8
-          {
-            pubkey: orcaVault.farmData.globalBaseTokenVault,
-            isSigner: false,
-            isWritable: true,
           }, // 9
           {
-            pubkey: orcaDDVault.ddFarmData.poolSwapTokenA.address,
+            pubkey: orcaVault.base.underlyingWithdrawQueue,
             isSigner: false,
             isWritable: true,
           }, // 10
           {
-            pubkey: orcaDDVault.ddFarmData.poolSwapTokenB.address,
+            pubkey: orcaDDVault.ddFarmData.vaultFarmTokenAccount,
             isSigner: false,
             isWritable: true,
           }, // 11
           {
-            pubkey: orcaDDVault.ddFarmData.globalFarm,
+            pubkey: orcaDDVault.ddFarmData.vaultRewardTokenAccount,
             isSigner: false,
             isWritable: true,
           }, // 12
           {
-            pubkey: orcaDDVault.ddFarmData.userFarmAddr,
+            pubkey: orcaDDVault.ddFarmData.vaultSwapTokenAccount,
             isSigner: false,
             isWritable: true,
           }, // 13
           {
-            pubkey: orcaDDVault.ddFarmData.convertAuthority,
+            pubkey: orcaDDVault.ddFarmData.globalRewardTokenVault,
             isSigner: false,
-            isWritable: false,
+            isWritable: true,
           }, // 14
           {
-            pubkey: orcaDDVault.ddFarmData.poolSwapAccount,
+            pubkey: orcaVault.farmData.globalBaseTokenVault,
             isSigner: false,
             isWritable: true,
           }, // 15
           {
-            pubkey: orcaDDVault.ddFarmData.poolSwapAuthority,
+            pubkey: orcaDDVault.ddFarmData.poolSwapTokenA.address,
             isSigner: false,
-            isWritable: false,
+            isWritable: true,
           }, // 16
           {
-            pubkey: orcaDDVault.ddFarmData.swapPoolMint.address,
+            pubkey: orcaDDVault.ddFarmData.poolSwapTokenB.address,
             isSigner: false,
             isWritable: true,
           }, // 17
           {
-            pubkey: orcaDDVault.ddFarmData.farmTokenMint,
+            pubkey: orcaDDVault.ddFarmData.globalFarm,
             isSigner: false,
             isWritable: true,
           }, // 18
           {
-            pubkey: orcaDDVault.shareMint,
+            pubkey: orcaDDVault.ddFarmData.userFarmAddr,
             isSigner: false,
             isWritable: true,
           }, // 19
           {
+            pubkey: orcaDDVault.ddFarmData.convertAuthority,
+            isSigner: false,
+            isWritable: false,
+          }, // 20
+          {
+            pubkey: orcaDDVault.ddFarmData.poolSwapAccount,
+            isSigner: false,
+            isWritable: true,
+          }, // 21
+          {
+            pubkey: orcaDDVault.ddFarmData.poolSwapAuthority,
+            isSigner: false,
+            isWritable: false,
+          }, // 22
+          {
+            pubkey: orcaDDVault.ddFarmData.swapPoolMint.address,
+            isSigner: false,
+            isWritable: true,
+          }, // 23
+          {
+            pubkey: orcaDDVault.ddFarmData.farmTokenMint,
+            isSigner: false,
+            isWritable: true,
+          }, // 24
+          {
+            pubkey: orcaDDVault.shareMint,
+            isSigner: false,
+            isWritable: true,
+          }, // 25
+          {
             pubkey: orcaDDVault.ddFarmData.swapPoolFeeTokenAccount,
             isSigner: false,
             isWritable: true,
-          }, // 20
-          { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // 21
-          { pubkey: orca.ORCA_POOL_PROGRAM_ID, isSigner: false, isWritable: false }, // 22
+          }, // 26
+          { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // 27
+          { pubkey: orca.ORCA_POOL_PROGRAM_ID, isSigner: false, isWritable: false }, // 28
           {
             pubkey: orca.ORCA_FARM_PROGRAM_ID,
             isSigner: false,
             isWritable: false,
-          }, // 23
-          // { pubkey: depositTrackingAccount, isSigner: false, isWritable: true }, // 31 // TODO: ephemeral_tracking_account
-          // { pubkey: anchor.web3.SystemProgram.programId, isSigner: false, isWritable: false }, // 32
-          // { pubkey: orcaDDVault.ddFarmData.feeCollectorTokenAccount, isSigner: false, isWritable: true }, // 33
-          { pubkey: orcaDDVault.base.underlyingWithdrawQueue, isSigner: false, isWritable: true } // 24 TODO: ephemeral_tracking_account
+          }, // 29
+          { pubkey: ephemeralTrackingAccount, isSigner: false, isWritable: true }, // 30
+          { pubkey: anchor.web3.SystemProgram.programId, isSigner: false, isWritable: false }, // 31
+          { pubkey: orcaDDVault.ddFarmData.feeCollectorTokenAccount, isSigner: false, isWritable: true }, // 32
+          { pubkey: orcaDDVault.base.underlyingWithdrawQueue, isSigner: false, isWritable: true } // 33
         );
         break;
       default:
         console.error("Error: Unsupported Vault Protocol");
         break;
     }
+
+    const setComputeUnitLimitParams = { units: 1000000 };
+    const setComputeUnitLimitIx = anchor.web3.ComputeBudgetProgram.setComputeUnitLimit(setComputeUnitLimitParams);
+    preInstructions = [setComputeUnitLimitIx, ...preInstructions];
 
     const txWithdraw = await this._gatewayProgram.methods
       .withdraw()
@@ -793,13 +794,14 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
         activityIndex: await getActivityIndex(userKey),
         gatewayAuthority: getGatewayAuthority(),
       })
-      // .preInstructions(preInstructions)
+      // .preInstructions([setComputeUnitLimitIx])
+      .preInstructions(preInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    const preTx = new anchor.web3.Transaction().add(...preInstructions);
+    // const preTx = new anchor.web3.Transaction().add(...preInstructions);
 
-    return { txs: [preTx, txWithdraw], input: payload };
+    return { txs: [txWithdraw], input: payload };
   }
 
   private _refreshReserveIx(
