@@ -462,6 +462,12 @@ export type GatewayParams = TypeDef<
         {
           name: "poolDirection";
           type: "u8";
+        },
+        {
+          name: "farmType";
+          type: {
+            array: ["u64", 2];
+          };
         }
       ];
     };

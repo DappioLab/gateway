@@ -87,11 +87,7 @@ export class GatewayBuilder {
   // 6. Determine fromMint and toMint: Use B as fromMint and A as toMint
 
   constructor(private _provider: anchor.AnchorProvider) {
-    this._program = new anchor.Program(
-      GatewayIDL,
-      GATEWAY_PROGRAM_ID,
-      this._provider
-    );
+    this._program = new anchor.Program(GatewayIDL, GATEWAY_PROGRAM_ID, this._provider);
     this._stateSeed = new anchor.BN(Math.floor(Math.random() * 100000000));
 
     // Default params
@@ -109,6 +105,7 @@ export class GatewayBuilder {
       // Extra Metadata
       poolDirection: PoolDirection.Obverse,
       swapMinOutAmount: new anchor.BN(0),
+      farmType: [],
     };
 
     this._metadata = {
@@ -120,14 +117,10 @@ export class GatewayBuilder {
   }
 
   async getGatewayStateKey(): Promise<anchor.web3.PublicKey> {
-    const [gatewayStateAccount, _bump] =
-      await anchor.web3.PublicKey.findProgramAddress(
-        [
-          Buffer.from(anchor.utils.bytes.utf8.encode("gateway")),
-          this._stateSeed.toArrayLike(Buffer, "le", 8),
-        ],
-        GATEWAY_PROGRAM_ID
-      );
+    const [gatewayStateAccount, _bump] = await anchor.web3.PublicKey.findProgramAddress(
+      [Buffer.from(anchor.utils.bytes.utf8.encode("gateway")), this._stateSeed.toArrayLike(Buffer, "le", 8)],
+      GATEWAY_PROGRAM_ID
+    );
 
     return gatewayStateAccount;
   }
@@ -156,10 +149,7 @@ export class GatewayBuilder {
           ? [...this._metadata.routes, await protocol.getRoute()]
           : [await protocol.getRoute()];
 
-        this._transactions = [
-          ...this._transactions,
-          ...(await protocol.swap()),
-        ];
+        this._transactions = [...this._transactions, ...(await protocol.swap())];
 
         break;
       default:
@@ -170,9 +160,7 @@ export class GatewayBuilder {
   }
 
   // IProtocolPool
-  async addLiquidity(
-    addLiquidityParams: AddLiquidityParams
-  ): Promise<GatewayBuilder> {
+  async addLiquidity(addLiquidityParams: AddLiquidityParams): Promise<GatewayBuilder> {
     this.params.actionQueue.push(ActionType.AddLiquidity);
     this.params.protocolQueue.push(addLiquidityParams.protocol);
     this.params.versionQueue.push(addLiquidityParams.version || 1);
@@ -182,10 +170,7 @@ export class GatewayBuilder {
 
     switch (addLiquidityParams.protocol) {
       case SupportedProtocols.Raydium:
-        this._metadata.pool = await raydium.infos.getPool(
-          this._provider.connection,
-          addLiquidityParams.poolId
-        );
+        this._metadata.pool = await raydium.infos.getPool(this._provider.connection, addLiquidityParams.poolId);
 
         protocol = new ProtocolRaydium(
           this._provider.connection,
@@ -196,10 +181,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Saber:
-        this._metadata.pool = await saber.infos.getPool(
-          this._provider.connection,
-          addLiquidityParams.poolId
-        );
+        this._metadata.pool = await saber.infos.getPool(this._provider.connection, addLiquidityParams.poolId);
 
         protocol = new ProtocolSaber(
           this._provider.connection,
@@ -210,10 +192,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Lifinity:
-        this._metadata.pool = await lifinity.infos.getPool(
-          this._provider.connection,
-          addLiquidityParams.poolId
-        );
+        this._metadata.pool = await lifinity.infos.getPool(this._provider.connection, addLiquidityParams.poolId);
 
         protocol = new ProtocolLifinity(
           this._provider.connection,
@@ -224,10 +203,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Orca:
-        this._metadata.pool = await orca.infos.getPool(
-          this._provider.connection,
-          addLiquidityParams.poolId
-        );
+        this._metadata.pool = await orca.infos.getPool(this._provider.connection, addLiquidityParams.poolId);
         protocol = new ProtocolOrca(
           this._provider.connection,
           this._program,
@@ -262,13 +238,9 @@ export class GatewayBuilder {
   }
 
   // IProtocolPool
-  async removeLiquidity(
-    removeLiquidityParams: RemoveLiquidityParams
-  ): Promise<GatewayBuilder> {
+  async removeLiquidity(removeLiquidityParams: RemoveLiquidityParams): Promise<GatewayBuilder> {
     this.params.actionQueue.push(
-      removeLiquidityParams.singleToTokenMint
-        ? ActionType.RemoveLiquiditySingle
-        : ActionType.RemoveLiquidity
+      removeLiquidityParams.singleToTokenMint ? ActionType.RemoveLiquiditySingle : ActionType.RemoveLiquidity
     );
     this.params.protocolQueue.push(removeLiquidityParams.protocol);
     this.params.versionQueue.push(removeLiquidityParams.version || 1);
@@ -277,10 +249,7 @@ export class GatewayBuilder {
 
     switch (removeLiquidityParams.protocol) {
       case SupportedProtocols.Raydium:
-        this._metadata.pool = await raydium.infos.getPool(
-          this._provider.connection,
-          removeLiquidityParams.poolId
-        );
+        this._metadata.pool = await raydium.infos.getPool(this._provider.connection, removeLiquidityParams.poolId);
 
         protocol = new ProtocolRaydium(
           this._provider.connection,
@@ -291,13 +260,9 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Saber:
-        this._metadata.pool = await saber.infos.getPool(
-          this._provider.connection,
-          removeLiquidityParams.poolId
-        );
+        this._metadata.pool = await saber.infos.getPool(this._provider.connection, removeLiquidityParams.poolId);
 
-        this._metadata.removeLiquiditySingleToTokenMint =
-          removeLiquidityParams.singleToTokenMint;
+        this._metadata.removeLiquiditySingleToTokenMint = removeLiquidityParams.singleToTokenMint;
 
         protocol = new ProtocolSaber(
           this._provider.connection,
@@ -308,10 +273,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Lifinity:
-        this._metadata.pool = await lifinity.infos.getPool(
-          this._provider.connection,
-          removeLiquidityParams.poolId
-        );
+        this._metadata.pool = await lifinity.infos.getPool(this._provider.connection, removeLiquidityParams.poolId);
 
         protocol = new ProtocolLifinity(
           this._provider.connection,
@@ -322,12 +284,8 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Orca:
-        this._metadata.pool = await orca.infos.getPool(
-          this._provider.connection,
-          removeLiquidityParams.poolId
-        );
-        this._metadata.removeLiquiditySingleToTokenMint =
-          removeLiquidityParams.singleToTokenMint;
+        this._metadata.pool = await orca.infos.getPool(this._provider.connection, removeLiquidityParams.poolId);
+        this._metadata.removeLiquiditySingleToTokenMint = removeLiquidityParams.singleToTokenMint;
         protocol = new ProtocolOrca(
           this._provider.connection,
           this._program,
@@ -373,10 +331,7 @@ export class GatewayBuilder {
 
     switch (stakeParams.protocol) {
       case SupportedProtocols.Raydium:
-        this._metadata.farm = await raydium.infos.getFarm(
-          this._provider.connection,
-          stakeParams.farmId
-        );
+        this._metadata.farm = await raydium.infos.getFarm(this._provider.connection, stakeParams.farmId);
 
         protocol = new ProtocolRaydium(
           this._provider.connection,
@@ -387,10 +342,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Saber:
-        this._metadata.farm = await saber.infos.getFarm(
-          this._provider.connection,
-          stakeParams.farmId
-        );
+        this._metadata.farm = await saber.infos.getFarm(this._provider.connection, stakeParams.farmId);
 
         protocol = new ProtocolSaber(
           this._provider.connection,
@@ -401,10 +353,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Orca:
-        this._metadata.farm = await orca.infos.getFarm(
-          this._provider.connection,
-          stakeParams.farmId
-        );
+        this._metadata.farm = await orca.infos.getFarm(this._provider.connection, stakeParams.farmId);
         protocol = new ProtocolOrca(
           this._provider.connection,
           this._program,
@@ -413,10 +362,7 @@ export class GatewayBuilder {
         );
         break;
       case SupportedProtocols.Larix:
-        this._metadata.farm = await larix.infos.getFarm(
-          this._provider.connection,
-          stakeParams.farmId
-        );
+        this._metadata.farm = await larix.infos.getFarm(this._provider.connection, stakeParams.farmId);
         protocol = new ProtocolLarix(
           this._provider.connection,
           this._program,
@@ -425,10 +371,7 @@ export class GatewayBuilder {
         );
         break;
       case SupportedProtocols.Francium:
-        this._metadata.farm = await francium.infos.getFarm(
-          this._provider.connection,
-          stakeParams.farmId
-        );
+        this._metadata.farm = await francium.infos.getFarm(this._provider.connection, stakeParams.farmId);
 
         protocol = new ProtocolFrancium(
           this._provider.connection,
@@ -475,10 +418,7 @@ export class GatewayBuilder {
 
     switch (unstakeParams.protocol) {
       case SupportedProtocols.Raydium:
-        this._metadata.farm = await raydium.infos.getFarm(
-          this._provider.connection,
-          unstakeParams.farmId
-        );
+        this._metadata.farm = await raydium.infos.getFarm(this._provider.connection, unstakeParams.farmId);
 
         protocol = new ProtocolRaydium(
           this._provider.connection,
@@ -489,10 +429,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Saber:
-        this._metadata.farm = await saber.infos.getFarm(
-          this._provider.connection,
-          unstakeParams.farmId
-        );
+        this._metadata.farm = await saber.infos.getFarm(this._provider.connection, unstakeParams.farmId);
 
         protocol = new ProtocolSaber(
           this._provider.connection,
@@ -503,10 +440,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Orca:
-        this._metadata.farm = await orca.infos.getFarm(
-          this._provider.connection,
-          unstakeParams.farmId
-        );
+        this._metadata.farm = await orca.infos.getFarm(this._provider.connection, unstakeParams.farmId);
         protocol = new ProtocolOrca(
           this._provider.connection,
           this._program,
@@ -515,10 +449,7 @@ export class GatewayBuilder {
         );
         break;
       case SupportedProtocols.Larix:
-        this._metadata.farm = await larix.infos.getFarm(
-          this._provider.connection,
-          unstakeParams.farmId
-        );
+        this._metadata.farm = await larix.infos.getFarm(this._provider.connection, unstakeParams.farmId);
         protocol = new ProtocolLarix(
           this._provider.connection,
           this._program,
@@ -527,10 +458,7 @@ export class GatewayBuilder {
         );
         break;
       case SupportedProtocols.Francium:
-        this._metadata.farm = await francium.infos.getFarm(
-          this._provider.connection,
-          unstakeParams.farmId
-        );
+        this._metadata.farm = await francium.infos.getFarm(this._provider.connection, unstakeParams.farmId);
 
         protocol = new ProtocolFrancium(
           this._provider.connection,
@@ -577,10 +505,7 @@ export class GatewayBuilder {
 
     switch (harvestParams.protocol) {
       case SupportedProtocols.Raydium:
-        this._metadata.farm = await raydium.infos.getFarm(
-          this._provider.connection,
-          harvestParams.farmId
-        );
+        this._metadata.farm = await raydium.infos.getFarm(this._provider.connection, harvestParams.farmId);
 
         protocol = new ProtocolRaydium(
           this._provider.connection,
@@ -591,10 +516,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Saber:
-        this._metadata.farm = await saber.infos.getFarm(
-          this._provider.connection,
-          harvestParams.farmId
-        );
+        this._metadata.farm = await saber.infos.getFarm(this._provider.connection, harvestParams.farmId);
 
         protocol = new ProtocolSaber(
           this._provider.connection,
@@ -605,10 +527,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Orca:
-        this._metadata.farm = await orca.infos.getFarm(
-          this._provider.connection,
-          harvestParams.farmId
-        );
+        this._metadata.farm = await orca.infos.getFarm(this._provider.connection, harvestParams.farmId);
         protocol = new ProtocolOrca(
           this._provider.connection,
           this._program,
@@ -617,10 +536,7 @@ export class GatewayBuilder {
         );
         break;
       case SupportedProtocols.Larix:
-        this._metadata.farm = await larix.infos.getFarm(
-          this._provider.connection,
-          harvestParams.farmId
-        );
+        this._metadata.farm = await larix.infos.getFarm(this._provider.connection, harvestParams.farmId);
         protocol = new ProtocolLarix(
           this._provider.connection,
           this._program,
@@ -665,10 +581,7 @@ export class GatewayBuilder {
 
     switch (supplyParams.protocol) {
       case SupportedProtocols.Solend:
-        this._metadata.reserve = await solend.infos.getReserve(
-          this._provider.connection,
-          supplyParams.reserveId
-        );
+        this._metadata.reserve = await solend.infos.getReserve(this._provider.connection, supplyParams.reserveId);
 
         protocol = new ProtocolSolend(
           this._provider.connection,
@@ -679,10 +592,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Larix:
-        this._metadata.reserve = await larix.infos.getReserve(
-          this._provider.connection,
-          supplyParams.reserveId
-        );
+        this._metadata.reserve = await larix.infos.getReserve(this._provider.connection, supplyParams.reserveId);
 
         protocol = new ProtocolLarix(
           this._provider.connection,
@@ -693,10 +603,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Francium:
-        this._metadata.reserve = await francium.infos.getReserve(
-          this._provider.connection,
-          supplyParams.reserveId
-        );
+        this._metadata.reserve = await francium.infos.getReserve(this._provider.connection, supplyParams.reserveId);
 
         protocol = new ProtocolFrancium(
           this._provider.connection,
@@ -707,10 +614,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Tulip:
-        this._metadata.reserve = await tulip.infos.getReserve(
-          this._provider.connection,
-          supplyParams.reserveId
-        );
+        this._metadata.reserve = await tulip.infos.getReserve(this._provider.connection, supplyParams.reserveId);
 
         protocol = new ProtocolTulip(
           this._provider.connection,
@@ -730,11 +634,7 @@ export class GatewayBuilder {
     // Ideally gateway params should be the only one single source of truth
     // However input params are necessary in some circustances. Ex: WSOL, input payload, etc
     // Need to pass params as argument
-    const { txs, input } = await protocol.supply(
-      supplyParams,
-      this._metadata.reserve,
-      this._provider.wallet.publicKey
-    );
+    const { txs, input } = await protocol.supply(supplyParams, this._metadata.reserve, this._provider.wallet.publicKey);
 
     // Push input payload
     (this.params.payloadQueue as Uint8Array[]).push(input);
@@ -747,9 +647,7 @@ export class GatewayBuilder {
   }
 
   // IProtocolMoneyMarket
-  async collateralize(
-    collateralizeParams: CollateralizeParams
-  ): Promise<GatewayBuilder> {
+  async collateralize(collateralizeParams: CollateralizeParams): Promise<GatewayBuilder> {
     this.params.actionQueue.push(ActionType.Collateralize);
     this.params.protocolQueue.push(collateralizeParams.protocol);
     this.params.versionQueue.push(collateralizeParams.version || 1);
@@ -772,10 +670,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Larix:
-        this._metadata.reserve = await larix.infos.getReserve(
-          this._provider.connection,
-          collateralizeParams.reserveId
-        );
+        this._metadata.reserve = await larix.infos.getReserve(this._provider.connection, collateralizeParams.reserveId);
 
         protocol = new ProtocolLarix(
           this._provider.connection,
@@ -822,10 +717,7 @@ export class GatewayBuilder {
 
     switch (unsupplyParams.protocol) {
       case SupportedProtocols.Solend:
-        this._metadata.reserve = await solend.infos.getReserve(
-          this._provider.connection,
-          unsupplyParams.reserveId
-        );
+        this._metadata.reserve = await solend.infos.getReserve(this._provider.connection, unsupplyParams.reserveId);
 
         protocol = new ProtocolSolend(
           this._provider.connection,
@@ -836,10 +728,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Larix:
-        this._metadata.reserve = await larix.infos.getReserve(
-          this._provider.connection,
-          unsupplyParams.reserveId
-        );
+        this._metadata.reserve = await larix.infos.getReserve(this._provider.connection, unsupplyParams.reserveId);
 
         protocol = new ProtocolLarix(
           this._provider.connection,
@@ -851,10 +740,7 @@ export class GatewayBuilder {
         break;
 
       case SupportedProtocols.Francium:
-        this._metadata.reserve = await francium.infos.getReserve(
-          this._provider.connection,
-          unsupplyParams.reserveId
-        );
+        this._metadata.reserve = await francium.infos.getReserve(this._provider.connection, unsupplyParams.reserveId);
 
         protocol = new ProtocolFrancium(
           this._provider.connection,
@@ -865,10 +751,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Tulip:
-        this._metadata.reserve = await tulip.infos.getReserve(
-          this._provider.connection,
-          unsupplyParams.reserveId
-        );
+        this._metadata.reserve = await tulip.infos.getReserve(this._provider.connection, unsupplyParams.reserveId);
 
         protocol = new ProtocolTulip(
           this._provider.connection,
@@ -905,9 +788,7 @@ export class GatewayBuilder {
   }
 
   // IProtocolMoneyMarket
-  async uncollateralize(
-    uncollateralizeParams: UncollateralizeParams
-  ): Promise<GatewayBuilder> {
+  async uncollateralize(uncollateralizeParams: UncollateralizeParams): Promise<GatewayBuilder> {
     this.params.actionQueue.push(ActionType.Uncollateralize);
     this.params.protocolQueue.push(uncollateralizeParams.protocol);
     this.params.versionQueue.push(uncollateralizeParams.version || 1);
@@ -980,10 +861,7 @@ export class GatewayBuilder {
 
     switch (borrowParams.protocol) {
       case SupportedProtocols.Solend:
-        this._metadata.reserve = await solend.infos.getReserve(
-          this._provider.connection,
-          borrowParams.reserveId
-        );
+        this._metadata.reserve = await solend.infos.getReserve(this._provider.connection, borrowParams.reserveId);
 
         protocol = new ProtocolSolend(
           this._provider.connection,
@@ -994,10 +872,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Larix:
-        this._metadata.reserve = await larix.infos.getReserve(
-          this._provider.connection,
-          borrowParams.reserveId
-        );
+        this._metadata.reserve = await larix.infos.getReserve(this._provider.connection, borrowParams.reserveId);
 
         protocol = new ProtocolLarix(
           this._provider.connection,
@@ -1017,11 +892,7 @@ export class GatewayBuilder {
     // Ideally gateway params should be the only one single source of truth
     // However input params are necessary in some circustances. Ex: WSOL, input payload, etc
     // Need to pass params as argument
-    const { txs, input } = await protocol.borrow(
-      borrowParams,
-      this._metadata.reserve,
-      this._provider.wallet.publicKey
-    );
+    const { txs, input } = await protocol.borrow(borrowParams, this._metadata.reserve, this._provider.wallet.publicKey);
 
     // Push input payload
     (this.params.payloadQueue as Uint8Array[]).push(input);
@@ -1043,10 +914,7 @@ export class GatewayBuilder {
 
     switch (repayParams.protocol) {
       case SupportedProtocols.Solend:
-        this._metadata.reserve = await solend.infos.getReserve(
-          this._provider.connection,
-          repayParams.reserveId
-        );
+        this._metadata.reserve = await solend.infos.getReserve(this._provider.connection, repayParams.reserveId);
 
         protocol = new ProtocolSolend(
           this._provider.connection,
@@ -1057,10 +925,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Larix:
-        this._metadata.reserve = await larix.infos.getReserve(
-          this._provider.connection,
-          repayParams.reserveId
-        );
+        this._metadata.reserve = await larix.infos.getReserve(this._provider.connection, repayParams.reserveId);
 
         protocol = new ProtocolLarix(
           this._provider.connection,
@@ -1080,11 +945,7 @@ export class GatewayBuilder {
     // Ideally gateway params should be the only one single source of truth
     // However input params are necessary in some circustances. Ex: WSOL, input payload, etc
     // Need to pass params as argument
-    const { txs, input } = await protocol.repay(
-      repayParams,
-      this._metadata.reserve,
-      this._provider.wallet.publicKey
-    );
+    const { txs, input } = await protocol.repay(repayParams, this._metadata.reserve, this._provider.wallet.publicKey);
 
     // Push input payload
     (this.params.payloadQueue as Uint8Array[]).push(input);
@@ -1097,9 +958,7 @@ export class GatewayBuilder {
   }
 
   // IProtocolMoneyMarket
-  async claimCollateralReward(
-    claimCollateralRewardParams: ClaimCollateralRewardParams
-  ): Promise<GatewayBuilder> {
+  async claimCollateralReward(claimCollateralRewardParams: ClaimCollateralRewardParams): Promise<GatewayBuilder> {
     this.params.actionQueue.push(ActionType.ClaimCollateralReward);
     this.params.protocolQueue.push(claimCollateralRewardParams.protocol);
     this.params.versionQueue.push(claimCollateralRewardParams.version || 1);
@@ -1161,10 +1020,7 @@ export class GatewayBuilder {
 
     switch (depositParams.protocol) {
       case SupportedProtocols.Tulip:
-        this._metadata.vault = await tulip.infos.getVault(
-          this._provider.connection,
-          depositParams.vaultId
-        );
+        this._metadata.vault = await tulip.infos.getVault(this._provider.connection, depositParams.vaultId);
 
         protocol = new ProtocolTulip(
           this._provider.connection,
@@ -1176,10 +1032,7 @@ export class GatewayBuilder {
         break;
 
       case SupportedProtocols.Friktion:
-        this._metadata.vault = await friktion.infos.getVault(
-          this._provider.connection,
-          depositParams.vaultId
-        );
+        this._metadata.vault = await friktion.infos.getVault(this._provider.connection, depositParams.vaultId);
         protocol = new ProtocolFriktion(
           this._provider.connection,
           this._program,
@@ -1198,11 +1051,7 @@ export class GatewayBuilder {
     // Ideally gateway params should be the only one single source of truth
     // However input params are necessary in some circustances. Ex: WSOL, input payload, etc
     // Need to pass params as argument
-    const { txs, input } = await protocol.deposit(
-      depositParams,
-      this._metadata.vault,
-      this._provider.wallet.publicKey
-    );
+    const { txs, input } = await protocol.deposit(depositParams, this._metadata.vault, this._provider.wallet.publicKey);
 
     // Push input payload
     (this.params.payloadQueue as Uint8Array[]).push(input);
@@ -1222,10 +1071,7 @@ export class GatewayBuilder {
 
     switch (depositParams.protocol) {
       case SupportedProtocols.Friktion:
-        this._metadata.vault = await friktion.infos.getVault(
-          this._provider.connection,
-          depositParams.vaultId
-        );
+        this._metadata.vault = await friktion.infos.getVault(this._provider.connection, depositParams.vaultId);
         protocol = new ProtocolFriktion(
           this._provider.connection,
           this._program,
@@ -1235,10 +1081,7 @@ export class GatewayBuilder {
 
         break;
       case SupportedProtocols.Katana:
-        this._metadata.vault = await katana.infos.getVault(
-          this._provider.connection,
-          depositParams.vaultId
-        );
+        this._metadata.vault = await katana.infos.getVault(this._provider.connection, depositParams.vaultId);
         protocol = new ProtocolKatana(
           this._provider.connection,
           this._program,
@@ -1283,10 +1126,7 @@ export class GatewayBuilder {
 
     switch (withdrawParams.protocol) {
       case SupportedProtocols.Tulip:
-        this._metadata.vault = await tulip.infos.getVault(
-          this._provider.connection,
-          withdrawParams.vaultId
-        );
+        this._metadata.vault = await tulip.infos.getVault(this._provider.connection, withdrawParams.vaultId);
 
         protocol = new ProtocolTulip(
           this._provider.connection,
@@ -1322,9 +1162,7 @@ export class GatewayBuilder {
 
     return this;
   }
-  async initiateWithdrawal(
-    withdrawParams: WithdrawParams
-  ): Promise<GatewayBuilder> {
+  async initiateWithdrawal(withdrawParams: WithdrawParams): Promise<GatewayBuilder> {
     this.params.actionQueue.push(ActionType.InitiateWithdrawal);
 
     this.params.protocolQueue.push(withdrawParams.protocol);
@@ -1334,10 +1172,7 @@ export class GatewayBuilder {
 
     switch (withdrawParams.protocol) {
       case SupportedProtocols.Friktion:
-        this._metadata.vault = await friktion.infos.getVault(
-          this._provider.connection,
-          withdrawParams.vaultId
-        );
+        this._metadata.vault = await friktion.infos.getVault(this._provider.connection, withdrawParams.vaultId);
         protocol = new ProtocolFriktion(
           this._provider.connection,
           this._program,
@@ -1346,10 +1181,7 @@ export class GatewayBuilder {
         );
         break;
       case SupportedProtocols.Katana:
-        this._metadata.vault = await katana.infos.getVault(
-          this._provider.connection,
-          withdrawParams.vaultId
-        );
+        this._metadata.vault = await katana.infos.getVault(this._provider.connection, withdrawParams.vaultId);
         protocol = new ProtocolKatana(
           this._provider.connection,
           this._program,
@@ -1383,9 +1215,7 @@ export class GatewayBuilder {
 
     return this;
   }
-  async finalizeDeposit(
-    withdrawParams: WithdrawParams
-  ): Promise<GatewayBuilder> {
+  async finalizeDeposit(withdrawParams: WithdrawParams): Promise<GatewayBuilder> {
     this.params.actionQueue.push(ActionType.FinalizeDeposit);
 
     this.params.protocolQueue.push(withdrawParams.protocol);
@@ -1395,10 +1225,7 @@ export class GatewayBuilder {
 
     switch (withdrawParams.protocol) {
       case SupportedProtocols.Friktion:
-        this._metadata.vault = await friktion.infos.getVault(
-          this._provider.connection,
-          withdrawParams.vaultId
-        );
+        this._metadata.vault = await friktion.infos.getVault(this._provider.connection, withdrawParams.vaultId);
         protocol = new ProtocolFriktion(
           this._provider.connection,
           this._program,
@@ -1407,10 +1234,7 @@ export class GatewayBuilder {
         );
         break;
       case SupportedProtocols.Katana:
-        this._metadata.vault = await katana.infos.getVault(
-          this._provider.connection,
-          withdrawParams.vaultId
-        );
+        this._metadata.vault = await katana.infos.getVault(this._provider.connection, withdrawParams.vaultId);
         protocol = new ProtocolKatana(
           this._provider.connection,
           this._program,
@@ -1454,10 +1278,7 @@ export class GatewayBuilder {
 
     switch (withdrawParams.protocol) {
       case SupportedProtocols.Friktion:
-        this._metadata.vault = await friktion.infos.getVault(
-          this._provider.connection,
-          withdrawParams.vaultId
-        );
+        this._metadata.vault = await friktion.infos.getVault(this._provider.connection, withdrawParams.vaultId);
         protocol = new ProtocolFriktion(
           this._provider.connection,
           this._program,
@@ -1466,10 +1287,7 @@ export class GatewayBuilder {
         );
         break;
       case SupportedProtocols.Katana:
-        this._metadata.vault = await katana.infos.getVault(
-          this._provider.connection,
-          withdrawParams.vaultId
-        );
+        this._metadata.vault = await katana.infos.getVault(this._provider.connection, withdrawParams.vaultId);
         protocol = new ProtocolKatana(
           this._provider.connection,
           this._program,
@@ -1503,9 +1321,7 @@ export class GatewayBuilder {
 
     return this;
   }
-  async finalizeWithdrawal(
-    withdrawParams: WithdrawParams
-  ): Promise<GatewayBuilder> {
+  async finalizeWithdrawal(withdrawParams: WithdrawParams): Promise<GatewayBuilder> {
     this.params.actionQueue.push(ActionType.FinalizeWithdrawal);
 
     this.params.protocolQueue.push(withdrawParams.protocol);
@@ -1515,10 +1331,7 @@ export class GatewayBuilder {
 
     switch (withdrawParams.protocol) {
       case SupportedProtocols.Friktion:
-        this._metadata.vault = await friktion.infos.getVault(
-          this._provider.connection,
-          withdrawParams.vaultId
-        );
+        this._metadata.vault = await friktion.infos.getVault(this._provider.connection, withdrawParams.vaultId);
         protocol = new ProtocolFriktion(
           this._provider.connection,
           this._program,
@@ -1527,10 +1340,7 @@ export class GatewayBuilder {
         );
         break;
       case SupportedProtocols.Katana:
-        this._metadata.vault = await katana.infos.getVault(
-          this._provider.connection,
-          withdrawParams.vaultId
-        );
+        this._metadata.vault = await katana.infos.getVault(this._provider.connection, withdrawParams.vaultId);
         protocol = new ProtocolKatana(
           this._provider.connection,
           this._program,
@@ -1564,9 +1374,7 @@ export class GatewayBuilder {
 
     return this;
   }
-  async cancelWithdrawal(
-    withdrawParams: WithdrawParams
-  ): Promise<GatewayBuilder> {
+  async cancelWithdrawal(withdrawParams: WithdrawParams): Promise<GatewayBuilder> {
     this.params.actionQueue.push(ActionType.CancelWithdrawal);
 
     this.params.protocolQueue.push(withdrawParams.protocol);
@@ -1576,10 +1384,7 @@ export class GatewayBuilder {
 
     switch (withdrawParams.protocol) {
       case SupportedProtocols.Friktion:
-        this._metadata.vault = await friktion.infos.getVault(
-          this._provider.connection,
-          withdrawParams.vaultId
-        );
+        this._metadata.vault = await friktion.infos.getVault(this._provider.connection, withdrawParams.vaultId);
         protocol = new ProtocolFriktion(
           this._provider.connection,
           this._program,
@@ -1623,10 +1428,7 @@ export class GatewayBuilder {
 
     switch (lockNFTParams.protocol) {
       case SupportedProtocols.NftFinance:
-        this._metadata.nftPool = await nftFinance.infos.getPool(
-          this._provider.connection,
-          lockNFTParams.poolId
-        );
+        this._metadata.nftPool = await nftFinance.infos.getPool(this._provider.connection, lockNFTParams.poolId);
 
         protocol = new ProtocolNftFinance(
           this._provider.connection,
@@ -1673,10 +1475,7 @@ export class GatewayBuilder {
 
     switch (unlockNFTParams.protocol) {
       case SupportedProtocols.NftFinance:
-        this._metadata.nftPool = await nftFinance.infos.getPool(
-          this._provider.connection,
-          unlockNFTParams.poolId
-        );
+        this._metadata.nftPool = await nftFinance.infos.getPool(this._provider.connection, unlockNFTParams.poolId);
 
         protocol = new ProtocolNftFinance(
           this._provider.connection,
@@ -1714,9 +1513,7 @@ export class GatewayBuilder {
   }
 
   // IProtocolNFTFarm
-  async stakeProof(
-    stakeProofParams: StakeProofParams
-  ): Promise<GatewayBuilder> {
+  async stakeProof(stakeProofParams: StakeProofParams): Promise<GatewayBuilder> {
     this.params.actionQueue.push(ActionType.StakeProof);
     this.params.protocolQueue.push(stakeProofParams.protocol);
     this.params.versionQueue.push(stakeProofParams.version || 1);
@@ -1725,10 +1522,7 @@ export class GatewayBuilder {
 
     switch (stakeProofParams.protocol) {
       case SupportedProtocols.NftFinance:
-        this._metadata.nftFarm = await nftFinance.infos.getFarm(
-          this._provider.connection,
-          stakeProofParams.farmId
-        );
+        this._metadata.nftFarm = await nftFinance.infos.getFarm(this._provider.connection, stakeProofParams.farmId);
 
         protocol = new ProtocolNftFinance(
           this._provider.connection,
@@ -1765,9 +1559,7 @@ export class GatewayBuilder {
   }
 
   // IProtocolNFTFarm
-  async unstakeProof(
-    unstakeProofParams: UnstakeProofParams
-  ): Promise<GatewayBuilder> {
+  async unstakeProof(unstakeProofParams: UnstakeProofParams): Promise<GatewayBuilder> {
     this.params.actionQueue.push(ActionType.UnstakeProof);
     this.params.protocolQueue.push(unstakeProofParams.protocol);
     this.params.versionQueue.push(unstakeProofParams.version || 1);
@@ -1776,10 +1568,7 @@ export class GatewayBuilder {
 
     switch (unstakeProofParams.protocol) {
       case SupportedProtocols.NftFinance:
-        this._metadata.nftFarm = await nftFinance.infos.getFarm(
-          this._provider.connection,
-          unstakeProofParams.farmId
-        );
+        this._metadata.nftFarm = await nftFinance.infos.getFarm(this._provider.connection, unstakeProofParams.farmId);
 
         protocol = new ProtocolNftFinance(
           this._provider.connection,
@@ -1825,10 +1614,7 @@ export class GatewayBuilder {
 
     switch (claimParams.protocol) {
       case SupportedProtocols.NftFinance:
-        this._metadata.nftFarm = await nftFinance.infos.getFarm(
-          this._provider.connection,
-          claimParams.farmId
-        );
+        this._metadata.nftFarm = await nftFinance.infos.getFarm(this._provider.connection, claimParams.farmId);
 
         protocol = new ProtocolNftFinance(
           this._provider.connection,
@@ -1848,11 +1634,7 @@ export class GatewayBuilder {
     // Ideally gateway params should be the only one single source of truth
     // However input params are necessary in some circustances. Ex: WSOL, input payload, etc
     // Need to pass params as argument
-    const { txs, input } = await protocol.claim(
-      claimParams,
-      this._metadata.nftFarm,
-      this._provider.wallet.publicKey
-    );
+    const { txs, input } = await protocol.claim(claimParams, this._metadata.nftFarm, this._provider.wallet.publicKey);
 
     // Push input payload
     (this.params.payloadQueue as Uint8Array[]).push(input);
@@ -1870,18 +1652,14 @@ export class GatewayBuilder {
     // Determine poolDirection
     // 1. From fromTokenMint
     if (this._metadata?.fromTokenMint) {
-      this.params.poolDirection = this._metadata.pool?.tokenAMint?.equals(
-        this._metadata?.fromTokenMint
-      )
+      this.params.poolDirection = this._metadata.pool?.tokenAMint?.equals(this._metadata?.fromTokenMint)
         ? PoolDirection.Obverse
         : PoolDirection.Reverse;
     } else {
       // 2. From addLiquidityTokenMint
       // NOTE: only when `fromTokenMint` is null (meaning no swap)
       if (this._metadata?.addLiquidityTokenMint) {
-        this.params.poolDirection = this._metadata.pool?.tokenAMint?.equals(
-          this._metadata?.addLiquidityTokenMint
-        )
+        this.params.poolDirection = this._metadata.pool?.tokenAMint?.equals(this._metadata?.addLiquidityTokenMint)
           ? PoolDirection.Reverse // tokenA is the input token
           : PoolDirection.Obverse; // tokenB is the input token
       }
@@ -1889,21 +1667,15 @@ export class GatewayBuilder {
 
     // ZapIn only: Update poolTokenAInAmount if swapOutAmount has value
     if (this.params?.swapMinOutAmount?.toNumber() > 0) {
-      const indexAddLiquidity = this.params.actionQueue.indexOf(
-        ActionType.AddLiquidity
-      );
+      const indexAddLiquidity = this.params.actionQueue.indexOf(ActionType.AddLiquidity);
       // Note: ZapIn only
       if (indexAddLiquidity > 0) {
         switch (this.params.poolDirection) {
           case PoolDirection.Obverse:
-            this.params.payloadQueue[indexAddLiquidity] = new anchor.BN(
-              this.params.swapMinOutAmount.toNumber()
-            );
+            this.params.payloadQueue[indexAddLiquidity] = new anchor.BN(this.params.swapMinOutAmount.toNumber());
             break;
           case PoolDirection.Reverse:
-            this.params.payloadQueue[indexAddLiquidity] = new anchor.BN(
-              this.params.swapMinOutAmount.toNumber()
-            );
+            this.params.payloadQueue[indexAddLiquidity] = new anchor.BN(this.params.swapMinOutAmount.toNumber());
             break;
         }
       }

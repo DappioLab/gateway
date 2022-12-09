@@ -258,6 +258,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       },
       payload
     );
+    this._gatewayParams.farmType.push(...vaultInfo.base.farm);
 
     // Handle transaction here
     const vaultInfoWrapper = new tulip.VaultInfoWrapper(vaultInfo);
@@ -365,6 +366,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       },
       payload
     );
+    this._gatewayParams.farmType.push(...vaultInfo.base.farm);
 
     // Handle transaction here
     const vaultInfoWrapper = new tulip.VaultInfoWrapper(vaultInfo);
