@@ -13,6 +13,8 @@ import {
   UnsupplyParams,
   DepositParams,
   WithdrawParams,
+  AddLiquidityParams,
+  RemoveLiquidityParams,
 } from "../src";
 
 describe("Gateway", () => {
@@ -172,12 +174,21 @@ describe("Gateway", () => {
   });
 
   it("Deposit in Tulip Vault", async () => {
+    const poolId = new PublicKey(
+      "DVa7Qmb5ct9RCpaU7UTpSaf3GVMYz17vNVU67XpdCRut" // RAY-USDT
+    );
     const vaultId = new PublicKey(
       // "6tkFEgE6zry2gGC4yqLrTghdqtqadyT5H3H2AJd4w5rz" // RAY-USDC (Raydium)
       // "GSAqLGG3AHABTnNSzsorjbqTSbhTmtkFN2dBPxua3RGR" // RAY-SRM (Raydium)
-      "7nbcWTUnvELLmLjJtMRrbg9qH9zabZ9VowJSfwB2j8y7" // ORCA-USDC (Orca)
+      "3WzpxdEk8G59RVztKFRuqL5zNYHwEPvmenJHCECCJxSN" // RAY-USDT (Raydium)
+      // "7nbcWTUnvELLmLjJtMRrbg9qH9zabZ9VowJSfwB2j8y7" // ORCA-USDC (Orca)
       // "CjwvvwuacJAJm8w54VcNDgpbnyde6k65mvdRpEFK2Dqm" // ATLAS-USDC (Orca)
     );
+    const addLiquidityParams: AddLiquidityParams = {
+      protocol: SupportedProtocols.Raydium,
+      poolId,
+      tokenInAmount: 10,
+    };
 
     const depositParams: DepositParams = {
       protocol: SupportedProtocols.Tulip,
@@ -187,6 +198,7 @@ describe("Gateway", () => {
     };
 
     const gateway = new GatewayBuilder(provider);
+    // await gateway.addLiquidity(addLiquidityParams); // Only for Raydium vault
     await gateway.deposit(depositParams);
 
     await gateway.finalize();
@@ -212,20 +224,30 @@ describe("Gateway", () => {
   });
 
   it("Withdraw in Tulip Vault, need to wait 900 slot (~15 mins) after deposit", async () => {
-    const vaultId = new PublicKey(
-      // "6tkFEgE6zry2gGC4yqLrTghdqtqadyT5H3H2AJd4w5rz" // RAY-USDC
-      // "GSAqLGG3AHABTnNSzsorjbqTSbhTmtkFN2dBPxua3RGR" // RAY-SRM
-      "7nbcWTUnvELLmLjJtMRrbg9qH9zabZ9VowJSfwB2j8y7" // ORCA-USDC (Orca)
+    const poolId = new PublicKey(
+      "DVa7Qmb5ct9RCpaU7UTpSaf3GVMYz17vNVU67XpdCRut" // RAY-USDT
     );
+    const vaultId = new PublicKey(
+      // "6tkFEgE6zry2gGC4yqLrTghdqtqadyT5H3H2AJd4w5rz" // RAY-USDC (Raydium)
+      // "GSAqLGG3AHABTnNSzsorjbqTSbhTmtkFN2dBPxua3RGR" // RAY-SRM (Raydium)
+      "3WzpxdEk8G59RVztKFRuqL5zNYHwEPvmenJHCECCJxSN" // RAY-USDT (Raydium)
+      // "7nbcWTUnvELLmLjJtMRrbg9qH9zabZ9VowJSfwB2j8y7" // ORCA-USDC (Orca)
+    );
+    const removeLiquidityParams: RemoveLiquidityParams = {
+      protocol: SupportedProtocols.Raydium,
+      poolId,
+      lpAmount: 10, // dummy
+    };
 
     const withdrawParams: WithdrawParams = {
       protocol: SupportedProtocols.Tulip,
       vaultId: vaultId,
-      withdrawAmount: 2,
+      withdrawAmount: 3,
     };
 
     const gateway = new GatewayBuilder(provider);
     await gateway.withdraw(withdrawParams);
+    // await gateway.removeLiquidity(removeLiquidityParams); // Only for Raydium vault
 
     await gateway.finalize();
 
