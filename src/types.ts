@@ -355,7 +355,6 @@ export interface WithdrawParams {
   vaultId: anchor.web3.PublicKey;
   withdrawAmount: number;
   version?: number;
-  validatorIndex?: number;
 }
 
 export interface LockNFTParams {
