@@ -22,7 +22,10 @@ import {
   WithdrawParams,
 } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
-import { NATIVE_SOL, TULIP_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
+import { NATIVE_SOL, PROGRAM_ACCOUNT_LOOKUP_TABLE, TULIP_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
+import { getMultipleAccounts } from "@dappio-wonderland/navigator/dist/utils";
+
+const TULIP_VAULT_ACCOUNT_LOOKUP = new anchor.web3.PublicKey("CLQRVRUiRWSXLg1EFNZPc3NiwrXhptQMUaHTsbZYjWAd");
 
 export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
   constructor(
@@ -353,7 +356,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
     params: WithdrawParams,
     vault: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+  ): Promise<{ txs: (anchor.web3.Transaction | anchor.web3.VersionedTransaction)[]; input: Buffer }> {
     const vaultInfo = vault as tulip.VaultInfo;
     // Handle payload input here
     const inputLayout = struct([u64("shareAmount"), u64("farmType0"), u64("farmType1")]);
@@ -796,14 +799,33 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
         activityIndex: await getActivityIndex(userKey),
         gatewayAuthority: getGatewayAuthority(),
       })
-      // .preInstructions([setComputeUnitLimitIx])
       .preInstructions(preInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    // const preTx = new anchor.web3.Transaction().add(...preInstructions);
+    const latestBlockhash = await this._connection.getLatestBlockhash();
+    const addressLookupTable = await getMultipleAccounts(this._connection, [
+      PROGRAM_ACCOUNT_LOOKUP_TABLE,
+      TULIP_VAULT_ACCOUNT_LOOKUP,
+    ]);
 
-    return { txs: [txWithdraw], input: payload };
+    const addressLookupTableAccounts = addressLookupTable.map((accountInfo) => {
+      if (accountInfo !== null) {
+        return new anchor.web3.AddressLookupTableAccount({
+          key: accountInfo.pubkey,
+          state: anchor.web3.AddressLookupTableAccount.deserialize(accountInfo.account.data),
+        });
+      }
+    });
+    const message = anchor.web3.MessageV0.compile({
+      payerKey: userKey,
+      instructions: txWithdraw.instructions,
+      recentBlockhash: latestBlockhash.blockhash,
+      addressLookupTableAccounts,
+    });
+    const versionedTx = new anchor.web3.VersionedTransaction(message);
+
+    return { txs: [versionedTx], input: payload };
   }
 
   private _refreshReserveIx(

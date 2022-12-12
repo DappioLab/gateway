@@ -137,7 +137,7 @@ export interface IProtocolVault {
     params: WithdrawParams,
     vaultId: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
+  ) => Promise<{ txs: (anchor.web3.Transaction | anchor.web3.VersionedTransaction)[]; input: Buffer }>;
   initiateWithdrawal?: (
     params: WithdrawParams,
     vaultId: IVaultInfo,

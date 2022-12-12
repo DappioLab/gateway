@@ -69,7 +69,7 @@ export class GatewayBuilder {
   private _metadata: GatewayMetadata;
   private _program: anchor.Program<Gateway>;
   private _stateSeed: anchor.BN;
-  private _transactions: anchor.web3.Transaction[] = [];
+  private _transactions: (anchor.web3.Transaction | anchor.web3.VersionedTransaction)[] = [];
 
   // # Use Cases of PoolDirection in Different Scenarios (In/Out)
   //
@@ -1712,7 +1712,7 @@ export class GatewayBuilder {
     return this;
   }
 
-  transactions(): anchor.web3.Transaction[] {
+  transactions(): (anchor.web3.Transaction | anchor.web3.VersionedTransaction)[] {
     return this._transactions;
   }
 
