@@ -33,7 +33,6 @@ export class ProtocolLido implements IProtocolVault {
 
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
 
-    // Maybe better to do in navigator?
     const bufferArray = [lido.LIDO_ADDRESS.toBuffer(), Buffer.from("reserve_account")];
     const [reserveAccount] = anchor.web3.PublicKey.findProgramAddressSync(bufferArray, lido.LIDO_PROGRAM_ID);
     const bufferArrayMint = [lido.LIDO_ADDRESS.toBuffer(), Buffer.from("mint_authority")];
@@ -41,7 +40,6 @@ export class ProtocolLido implements IProtocolVault {
 
     const recipientStSolAddress = await getAssociatedTokenAddress(vault.shareMint, userKey);
 
-    // TVerify if this requires a check here
     preInstructions.push(await createATAWithoutCheckIx(userKey, vault.shareMint));
 
     const remainingAccounts = [
@@ -82,11 +80,9 @@ export class ProtocolLido implements IProtocolVault {
     const vaultInfo = vault as lido.VaultInfo;
     const vaultInfoWrapper = new lido.VaultInfoWrapper(vaultInfo);
 
-    const heaviestValidator = vaultInfoWrapper.getHeaviestValidator();
+    const heaviestValidatorIndex = vaultInfoWrapper.getHeaviestValidatorIndex();
 
-    const heaviestValidatorIndex = vaultInfo.validators.entries.findIndex((value) =>
-      value.pubkey.equals(heaviestValidator.pubkey)
-    );
+    const heaviestValidator = vaultInfo.validators!.entries[heaviestValidatorIndex];
 
     inputLayout.encode(
       {

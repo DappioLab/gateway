@@ -1314,11 +1314,13 @@ export class GatewayBuilder {
         break;
 
       case SupportedProtocols.Lido:
-          this._metadata.vault = await lido.infos.getVault(
+          // NOTE: This is a temporary work-around, and will be removed once multiple indexes are supported in `gateway-programs`
+          const vault = await lido.infos.getVault(
             this._provider.connection,
             withdrawParams.vaultId
           );
-          this.params.validatorIndex = withdrawParams.validatorIndex;
+          this._metadata.vault = vault;
+          this.params.validatorIndex = (new lido.VaultInfoWrapper(vault as lido.VaultInfo)).getHeaviestValidatorIndex();
   
           protocol = new ProtocolLido(
             this._provider.connection,
