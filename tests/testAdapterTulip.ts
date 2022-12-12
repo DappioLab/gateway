@@ -108,7 +108,7 @@ describe("Gateway", () => {
       // tx.feePayer = wallet.publicKey;
       // tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
       // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
-      const sig = await provider.sendAndConfirm(tx, [], {
+      const sig = await provider.sendAndConfirm(tx as anchor.web3.Transaction, [], {
         skipPreflight: false,
         commitment: "confirmed",
       } as unknown as anchor.web3.ConfirmOptions);
@@ -163,7 +163,7 @@ describe("Gateway", () => {
       // tx.feePayer = wallet.publicKey;
       // tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
       // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
-      const sig = await provider.sendAndConfirm(tx, [], {
+      const sig = await provider.sendAndConfirm(tx as anchor.web3.Transaction, [], {
         skipPreflight: false,
         commitment: "confirmed",
       } as unknown as anchor.web3.ConfirmOptions);
@@ -213,7 +213,7 @@ describe("Gateway", () => {
       // tx.feePayer = wallet.publicKey;
       // tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
       // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
-      const sig = await provider.sendAndConfirm(tx, [], {
+      const sig = await provider.sendAndConfirm(tx as anchor.web3.Transaction, [], {
         skipPreflight: true,
         commitment: "confirmed",
       } as unknown as anchor.web3.ConfirmOptions);
@@ -230,8 +230,8 @@ describe("Gateway", () => {
     const vaultId = new PublicKey(
       // "6tkFEgE6zry2gGC4yqLrTghdqtqadyT5H3H2AJd4w5rz" // RAY-USDC (Raydium)
       // "GSAqLGG3AHABTnNSzsorjbqTSbhTmtkFN2dBPxua3RGR" // RAY-SRM (Raydium)
-      "3WzpxdEk8G59RVztKFRuqL5zNYHwEPvmenJHCECCJxSN" // RAY-USDT (Raydium)
-      // "7nbcWTUnvELLmLjJtMRrbg9qH9zabZ9VowJSfwB2j8y7" // ORCA-USDC (Orca)
+      // "3WzpxdEk8G59RVztKFRuqL5zNYHwEPvmenJHCECCJxSN" // RAY-USDT (Raydium)
+      "7nbcWTUnvELLmLjJtMRrbg9qH9zabZ9VowJSfwB2j8y7" // ORCA-USDC (Orca)
     );
     const removeLiquidityParams: RemoveLiquidityParams = {
       protocol: SupportedProtocols.Raydium,
@@ -260,47 +260,41 @@ describe("Gateway", () => {
     const lookupTableAddress2 = new PublicKey("CLQRVRUiRWSXLg1EFNZPc3NiwrXhptQMUaHTsbZYjWAd");
 
     // get the table from the cluster
-    const lookupTableAccount1 = await connection.getAddressLookupTable(lookupTableAddress1).then((res) => res.value);
-    const lookupTableAccount2 = await connection.getAddressLookupTable(lookupTableAddress2).then((res) => res.value);
+    // const lookupTableAccount1 = await connection.getAddressLookupTable(lookupTableAddress1).then((res) => res.value);
+    // const lookupTableAccount2 = await connection.getAddressLookupTable(lookupTableAddress2).then((res) => res.value);
 
     console.log("======");
     console.log("Txs are sent...");
-    const latestBlockhash = await connection.getLatestBlockhash();
+    // const latestBlockhash = await connection.getLatestBlockhash();
     for (let tx of txs) {
-      // tx.recentBlockhash = recentBlockhash;
-      // tx.feePayer = wallet.publicKey;
-      // tx.sign(wallet.payer);
-      // console.log(tx.serialize().length);
-      const message = anchor.web3.MessageV0.compile({
-        payerKey: wallet.publicKey,
-        instructions: tx.instructions,
-        recentBlockhash: latestBlockhash.blockhash,
-        addressLookupTableAccounts: [lookupTableAccount1!, lookupTableAccount2!],
-      });
-      const versionedTx = new anchor.web3.VersionedTransaction(message);
-      versionedTx.sign([wallet.payer]);
-      console.log(versionedTx.serialize().length);
-      // const confirmStrategy: BlockheightBasedTransactionConfirmationStrategy = {
-      //   blockhash: latestBlockhash.blockhash,
-      //   lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-      //   signature: versionedTx.signatures[0],
-      // };
-      const sig = await sendAndConfirmRawTransaction(
-        connection,
-        Buffer.from(versionedTx.serialize()),
-        //confirmStrategy,
-        {
+      let sig: string = "";
+      if ((tx as anchor.web3.Transaction).instructions) {
+        // tx.feePayer = wallet.publicKey;
+        // tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+        // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
+        sig = await provider.sendAndConfirm(tx as anchor.web3.Transaction, [], {
           skipPreflight: true,
           commitment: "confirmed",
-        } as unknown as anchor.web3.ConfirmOptions
-      );
-      // tx.feePayer = wallet.publicKey;
-      // tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-      // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
-      // const sig = await provider.sendAndConfirm(tx, [], {
-      //   skipPreflight: true,
-      //   commitment: "confirmed",
-      // } as unknown as anchor.web3.ConfirmOptions);
+        } as unknown as anchor.web3.ConfirmOptions);
+      } else {
+        const versionedTx = tx as anchor.web3.VersionedTransaction;
+        versionedTx.sign([wallet.payer]);
+        console.log(versionedTx.serialize().length); // const confirmStrategy: BlockheightBasedTransactionConfirmationStrategy = {
+        //   blockhash: latestBlockhash.blockhash,
+        //   lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+        //   signature: versionedTx.signatures[0],
+        // };
+        sig = await sendAndConfirmRawTransaction(
+          connection,
+          Buffer.from(versionedTx.serialize()),
+          //confirmStrategy,
+          {
+            skipPreflight: true,
+            commitment: "confirmed",
+          } as unknown as anchor.web3.ConfirmOptions
+        );
+      }
+
       console.log(sig);
     }
     console.log("Txs are executed");

@@ -83,7 +83,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], true);
+      const sig2 = await utils.signAndSendAll(tx as anchor.web3.Transaction, connection, [wallet.payer], true);
       console.log("https://mf.wei1769.com/tx/" + sig2);
     }
     console.log("Txs are executed");
@@ -133,7 +133,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], true);
+      const sig2 = await utils.signAndSendAll(tx as anchor.web3.Transaction, connection, [wallet.payer], true);
       console.log("https://mf.wei1769.com/tx/" + sig2);
     }
     console.log("Txs are executed");

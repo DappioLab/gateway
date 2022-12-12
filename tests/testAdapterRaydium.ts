@@ -117,7 +117,7 @@ describe("Gateway", () => {
     console.log("======");
     console.log("Txs are sent...");
     for (let tx of txs) {
-      const sig = await provider.sendAndConfirm(tx, [], {
+      const sig = await provider.sendAndConfirm(tx as anchor.web3.Transaction, [], {
         skipPreflight: true,
         commitment: "confirmed",
       } as unknown as anchor.web3.ConfirmOptions);
@@ -428,7 +428,7 @@ describe("Gateway", () => {
     console.log("======");
     console.log("Txs are sent...");
     for (let tx of txs) {
-      const sig = await provider.sendAndConfirm(tx, [], {
+      const sig = await provider.sendAndConfirm(tx as anchor.web3.Transaction, [], {
         skipPreflight: true,
         commitment: "confirmed",
       } as unknown as anchor.web3.ConfirmOptions);

@@ -141,7 +141,8 @@ describe("Gateway", () => {
 
           console.log("======");
           console.log("Txs are sent...");
-          for (let tx of txs) {
+          for (let transaction of txs) {
+            const tx = transaction as anchor.web3.Transaction;
             tx.feePayer = wallet.publicKey;
             tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
             let simulation = await connection.simulateTransaction(tx);
