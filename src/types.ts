@@ -219,6 +219,7 @@ export enum SupportedProtocols {
   Francium = 9,
   Friktion = 10,
   Katana = 11,
+  Lido = 12,
 }
 
 export interface RouteInfoExtend extends RouteInfo {
@@ -461,6 +462,10 @@ export type GatewayParams = TypeDef<
         {
           name: "poolDirection";
           type: "u8";
+        },
+        {
+          name: "validatorIndex";
+          type: "u32";
         }
       ];
     };

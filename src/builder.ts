@@ -14,6 +14,7 @@ import {
   nftFinance,
   katana,
   friktion,
+  lido,
 } from "@dappio-wonderland/navigator";
 import {
   ActionType,
@@ -63,6 +64,7 @@ import { ProtocolFrancium } from "./protocols/francium";
 import { ProtocolKatana } from "./protocols/katana";
 import { ProtocolTulip } from "./protocols/tulip";
 import { ProtocolFriktion } from "./protocols/friktion";
+import { ProtocolLido } from "./protocols/lido";
 
 export class GatewayBuilder {
   public params: GatewayParams;
@@ -109,6 +111,7 @@ export class GatewayBuilder {
       // Extra Metadata
       poolDirection: PoolDirection.Obverse,
       swapMinOutAmount: new anchor.BN(0),
+      validatorIndex: 0,
     };
 
     this._metadata = {
@@ -1188,6 +1191,19 @@ export class GatewayBuilder {
         );
 
         break;
+      case SupportedProtocols.Lido:
+          this._metadata.vault = await lido.infos.getVault(
+            this._provider.connection,
+            depositParams.vaultId
+          );
+          protocol = new ProtocolLido(
+            this._provider.connection,
+            this._program,
+            await this.getGatewayStateKey(),
+            this.params
+          );
+  
+          break;
       default:
         throw new Error("Unsupported Protocol");
     }
@@ -1296,6 +1312,24 @@ export class GatewayBuilder {
         );
 
         break;
+
+      case SupportedProtocols.Lido:
+          // NOTE: This is a temporary work-around, and will be removed once multiple indexes are supported in `gateway-programs`
+          const vault = await lido.infos.getVault(
+            this._provider.connection,
+            withdrawParams.vaultId
+          );
+          this._metadata.vault = vault;
+          this.params.validatorIndex = (new lido.VaultInfoWrapper(vault as lido.VaultInfo)).getHeaviestValidatorIndex();
+  
+          protocol = new ProtocolLido(
+            this._provider.connection,
+            this._program,
+            await this.getGatewayStateKey(),
+            this.params
+          );
+  
+          break;
 
       default:
         throw new Error("Unsupported Protocol");
