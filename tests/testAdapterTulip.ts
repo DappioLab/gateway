@@ -180,9 +180,10 @@ describe("Gateway", () => {
     const vaultId = new PublicKey(
       // "6tkFEgE6zry2gGC4yqLrTghdqtqadyT5H3H2AJd4w5rz" // RAY-USDC (Raydium)
       // "GSAqLGG3AHABTnNSzsorjbqTSbhTmtkFN2dBPxua3RGR" // RAY-SRM (Raydium)
-      "3WzpxdEk8G59RVztKFRuqL5zNYHwEPvmenJHCECCJxSN" // RAY-USDT (Raydium)
+      // "3WzpxdEk8G59RVztKFRuqL5zNYHwEPvmenJHCECCJxSN" // RAY-USDT (Raydium)
       // "7nbcWTUnvELLmLjJtMRrbg9qH9zabZ9VowJSfwB2j8y7" // ORCA-USDC (Orca)
       // "CjwvvwuacJAJm8w54VcNDgpbnyde6k65mvdRpEFK2Dqm" // ATLAS-USDC (Orca)
+      "DUnC2MTUtcMhzr7JgUMF7dRyUoEiUTqv4aBy1gEi3gpt" // SAMO-USDC (Orca)
     );
     const addLiquidityParams: AddLiquidityParams = {
       protocol: SupportedProtocols.Raydium,
@@ -193,12 +194,12 @@ describe("Gateway", () => {
     const depositParams: DepositParams = {
       protocol: SupportedProtocols.Tulip,
       vaultId: vaultId,
-      depositAmount: 10,
+      depositAmount: 1000000,
       tokenBAmount: depositAmount,
     };
 
     const gateway = new GatewayBuilder(provider);
-    await gateway.addLiquidity(addLiquidityParams); // Only for Raydium vault
+    // await gateway.addLiquidity(addLiquidityParams); // Only for Raydium vault
     await gateway.deposit(depositParams);
 
     await gateway.finalize();
@@ -231,8 +232,9 @@ describe("Gateway", () => {
       // "6tkFEgE6zry2gGC4yqLrTghdqtqadyT5H3H2AJd4w5rz" // RAY-USDC (Raydium)
       // "GSAqLGG3AHABTnNSzsorjbqTSbhTmtkFN2dBPxua3RGR" // RAY-SRM (Raydium)
       // "3WzpxdEk8G59RVztKFRuqL5zNYHwEPvmenJHCECCJxSN" // RAY-USDT (Raydium)
-      //"7nbcWTUnvELLmLjJtMRrbg9qH9zabZ9VowJSfwB2j8y7" // ORCA-USDC (Orca)
-      "CjwvvwuacJAJm8w54VcNDgpbnyde6k65mvdRpEFK2Dqm" // ATLAS-USDC (Orca)
+      // "7nbcWTUnvELLmLjJtMRrbg9qH9zabZ9VowJSfwB2j8y7" // ORCA-USDC (Orca)
+      // "CjwvvwuacJAJm8w54VcNDgpbnyde6k65mvdRpEFK2Dqm" // ATLAS-USDC (Orca)
+      "DUnC2MTUtcMhzr7JgUMF7dRyUoEiUTqv4aBy1gEi3gpt" // SAMO-USDC (Orca)
     );
     const removeLiquidityParams: RemoveLiquidityParams = {
       protocol: SupportedProtocols.Raydium,
@@ -243,7 +245,7 @@ describe("Gateway", () => {
     const withdrawParams: WithdrawParams = {
       protocol: SupportedProtocols.Tulip,
       vaultId: vaultId,
-      withdrawAmount: 10,
+      withdrawAmount: 1000,
     };
 
     const gateway = new GatewayBuilder(provider);
