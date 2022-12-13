@@ -417,7 +417,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
             isWritable: true,
           }, // 3
           {
-            pubkey: raydiumVault.poolId,
+            pubkey: raydiumVault.deprecatedPoolId,
             isSigner: false,
             isWritable: true,
           }, // 4
@@ -684,7 +684,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
             isWritable: true,
           }, // 9
           {
-            pubkey: orcaVault.base.underlyingWithdrawQueue,
+            pubkey: orcaDDVault.base.underlyingWithdrawQueue,
             isSigner: false,
             isWritable: true,
           }, // 10
@@ -699,7 +699,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
             isWritable: true,
           }, // 12
           {
-            pubkey: orcaDDVault.ddFarmData.vaultSwapTokenAccount,
+            pubkey: orcaDDVault.farmData.vaultFarmTokenAccount,
             isSigner: false,
             isWritable: true,
           }, // 13
@@ -709,7 +709,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
             isWritable: true,
           }, // 14
           {
-            pubkey: orcaVault.farmData.globalBaseTokenVault,
+            pubkey: orcaDDVault.ddFarmData.globalBaseTokenVault,
             isSigner: false,
             isWritable: true,
           }, // 15
@@ -778,7 +778,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
           { pubkey: ephemeralTrackingAccount, isSigner: false, isWritable: true }, // 30
           { pubkey: anchor.web3.SystemProgram.programId, isSigner: false, isWritable: false }, // 31
           { pubkey: orcaDDVault.ddFarmData.feeCollectorTokenAccount, isSigner: false, isWritable: true }, // 32
-          { pubkey: orcaDDVault.base.underlyingWithdrawQueue, isSigner: false, isWritable: true } // 33
+          { pubkey: orcaDDVault.ddWithdrawQueue, isSigner: false, isWritable: true } // 33
         );
         break;
       default:
@@ -912,11 +912,10 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
 
     if (vault.type === tulip.VaultType.OrcaDD) {
       const orcaDDVault = vault as tulip.OrcaDDVaultInfo;
-      const depositTrackingPdaLpAta = await getAssociatedTokenAddress(
-        orcaDDVault.farmData.farmTokenMint,
-        depositTrackingPda,
-        true
-      );
+      const depositTrackingPdaLpAta = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("ddwithdrawqueue"), depositTrackingPda.toBuffer(), vault.vaultId.toBuffer()],
+        tulip.TULIP_VAULT_V2_PROGRAM_ID
+      )[0];
       keys.push(
         {
           pubkey: depositTrackingPdaLpAta,
