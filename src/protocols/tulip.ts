@@ -651,9 +651,12 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
         preInstructions.push(await createATAWithoutCheckIx(userKey, orcaDDVault.ddFarmData.tokenBMint));
         const userFarmTokenAccount = await getAssociatedTokenAddress(orcaDDVault.farmData.farmTokenMint, userKey);
         preInstructions.push(await createATAWithoutCheckIx(userKey, orcaDDVault.farmData.farmTokenMint));
-        // preInstructions.push(
-        //   await this._withdrawTrackingAccountIx(orcaDDVault, userKey, new anchor.BN(params.withdrawAmount))
-        // );
+        preInstructions.push(
+          await this._withdrawTrackingAccountIx(orcaDDVault, userKey, new anchor.BN(params.withdrawAmount))
+        );
+        preInstructions.push(
+          await this._withdrawOrcaDdStageOneIx(orcaDDVault, userKey, new anchor.BN(params.withdrawAmount))
+        );
         remainingAccounts.push(
           { pubkey: depositTrackingAccount, isSigner: false, isWritable: true }, // 0
           { pubkey: depositTrackingPda, isSigner: false, isWritable: true }, // 1
@@ -681,7 +684,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
             isWritable: true,
           }, // 8
           {
-            pubkey: userSharesAccount,
+            pubkey: userFarmTokenAccount,
             isSigner: false,
             isWritable: true,
           }, // 9
@@ -691,27 +694,27 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
             isWritable: true,
           }, // 10
           {
-            pubkey: orcaDDVault.ddFarmData.vaultFarmTokenAccount,
+            pubkey: orcaDDVault.ddWithdrawQueue,
             isSigner: false,
             isWritable: true,
           }, // 11
           {
-            pubkey: orcaDDVault.ddFarmData.vaultRewardTokenAccount,
+            pubkey: orcaDDVault.farmData.vaultRewardTokenAccount,
             isSigner: false,
             isWritable: true,
           }, // 12
           {
-            pubkey: orcaDDVault.farmData.vaultFarmTokenAccount,
+            pubkey: orcaDDVault.farmData.vaultSwapTokenAccount,
             isSigner: false,
             isWritable: true,
           }, // 13
           {
-            pubkey: orcaDDVault.ddFarmData.globalRewardTokenVault,
+            pubkey: orcaDDVault.farmData.globalRewardTokenVault,
             isSigner: false,
             isWritable: true,
           }, // 14
           {
-            pubkey: orcaDDVault.ddFarmData.globalBaseTokenVault,
+            pubkey: orcaDDVault.farmData.globalBaseTokenVault,
             isSigner: false,
             isWritable: true,
           }, // 15
@@ -726,17 +729,17 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
             isWritable: true,
           }, // 17
           {
-            pubkey: orcaDDVault.ddFarmData.globalFarm,
+            pubkey: orcaDDVault.farmData.globalFarm,
             isSigner: false,
             isWritable: true,
           }, // 18
           {
-            pubkey: orcaDDVault.ddFarmData.userFarmAddr,
+            pubkey: orcaDDVault.farmData.userFarmAddr,
             isSigner: false,
             isWritable: true,
           }, // 19
           {
-            pubkey: orcaDDVault.ddFarmData.convertAuthority,
+            pubkey: orcaDDVault.farmData.convertAuthority,
             isSigner: false,
             isWritable: false,
           }, // 20
@@ -756,7 +759,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
             isWritable: true,
           }, // 23
           {
-            pubkey: orcaDDVault.ddFarmData.farmTokenMint,
+            pubkey: orcaDDVault.farmData.farmTokenMint,
             isSigner: false,
             isWritable: true,
           }, // 24
@@ -778,19 +781,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
             isWritable: false,
           }, // 29
           { pubkey: ephemeralTrackingAccount, isSigner: false, isWritable: true }, // 30
-          { pubkey: anchor.web3.SystemProgram.programId, isSigner: false, isWritable: false }, // 31
-          { pubkey: orcaDDVault.ddFarmData.feeCollectorTokenAccount, isSigner: false, isWritable: true }, // 32
-          { pubkey: orcaDDVault.ddWithdrawQueue, isSigner: false, isWritable: true }, // 33
-          { pubkey: userFarmTokenAccount, isSigner: false, isWritable: true }, // 34
-          { pubkey: orcaDDVault.farmData.vaultRewardTokenAccount, isSigner: false, isWritable: true }, // 35
-          { pubkey: orcaDDVault.farmData.vaultSwapTokenAccount, isSigner: false, isWritable: true }, // 36
-          { pubkey: orcaDDVault.farmData.globalRewardTokenVault, isSigner: false, isWritable: true }, // 37
-          { pubkey: orcaDDVault.farmData.globalBaseTokenVault, isSigner: false, isWritable: true }, // 38
-          { pubkey: orcaDDVault.farmData.globalFarm, isSigner: false, isWritable: true }, // 39
-          { pubkey: orcaDDVault.farmData.userFarmAddr, isSigner: false, isWritable: true }, // 40
-          { pubkey: orcaDDVault.farmData.convertAuthority, isSigner: false, isWritable: true }, // 41
-          { pubkey: orcaDDVault.farmData.farmTokenMint, isSigner: false, isWritable: true }, // 42
-          { pubkey: orcaDDVault.farmData.feeCollectorTokenAccount, isSigner: false, isWritable: true } // 43
+          { pubkey: orcaDDVault.farmData.feeCollectorTokenAccount, isSigner: false, isWritable: false } // 31
         );
         break;
       default:
@@ -1004,6 +995,156 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       }, // 6
       { pubkey: vault.shareMint, isSigner: false, isWritable: false }, // 7
       { pubkey: vault.vaultId, isSigner: false, isWritable: true }, // 8
+    ];
+
+    return new anchor.web3.TransactionInstruction({
+      keys,
+      programId: tulip.TULIP_VAULT_V2_PROGRAM_ID,
+      data,
+    });
+  }
+
+  private async _withdrawOrcaDdStageOneIx(
+    orcaDDVault: tulip.OrcaDDVaultInfo,
+    userKey: anchor.web3.PublicKey,
+    amount: anchor.BN
+  ): Promise<anchor.web3.TransactionInstruction> {
+    const dataLayout = struct([u8("bool"), u64("amount")]);
+    const hashArr = sigHash("global", "withdraw_orca_vault_dd_stage_one");
+    const instruction = Buffer.from(hashArr, "hex");
+    let data = Buffer.alloc(dataLayout.span);
+    dataLayout.encode(
+      {
+        bool: true,
+        amount: amount,
+      },
+      data
+    );
+
+    data = Buffer.concat([instruction, data]);
+    const userSharesAccount = await getAssociatedTokenAddress(orcaDDVault.shareMint, userKey);
+    const ephemeralTrackingAccount = anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("ephemeraltracking"), orcaDDVault.vaultId.toBuffer(), userKey.toBuffer()],
+      tulip.TULIP_VAULT_V2_PROGRAM_ID
+    )[0];
+
+    const keys = [
+      {
+        pubkey: userKey,
+        isSigner: true,
+        isWritable: true,
+      }, // 6
+      {
+        pubkey: orcaDDVault.vaultId,
+        isSigner: false,
+        isWritable: true,
+      }, // 7
+      {
+        pubkey: orcaDDVault.base.pda,
+        isSigner: false,
+        isWritable: true,
+      }, // 8
+      {
+        pubkey: userSharesAccount,
+        isSigner: false,
+        isWritable: true,
+      }, // 9
+      {
+        pubkey: orcaDDVault.base.underlyingWithdrawQueue,
+        isSigner: false,
+        isWritable: true,
+      }, // 10
+      {
+        pubkey: orcaDDVault.ddFarmData.vaultFarmTokenAccount,
+        isSigner: false,
+        isWritable: true,
+      }, // 11
+      {
+        pubkey: orcaDDVault.ddFarmData.vaultRewardTokenAccount,
+        isSigner: false,
+        isWritable: true,
+      }, // 12
+      {
+        pubkey: orcaDDVault.farmData.vaultFarmTokenAccount,
+        isSigner: false,
+        isWritable: true,
+      }, // 13
+      {
+        pubkey: orcaDDVault.ddFarmData.globalRewardTokenVault,
+        isSigner: false,
+        isWritable: true,
+      }, // 14
+      {
+        pubkey: orcaDDVault.ddFarmData.globalBaseTokenVault,
+        isSigner: false,
+        isWritable: true,
+      }, // 15
+      {
+        pubkey: orcaDDVault.ddFarmData.poolSwapTokenA.address,
+        isSigner: false,
+        isWritable: true,
+      }, // 16
+      {
+        pubkey: orcaDDVault.ddFarmData.poolSwapTokenB.address,
+        isSigner: false,
+        isWritable: true,
+      }, // 17
+      {
+        pubkey: orcaDDVault.ddFarmData.globalFarm,
+        isSigner: false,
+        isWritable: true,
+      }, // 18
+      {
+        pubkey: orcaDDVault.ddFarmData.userFarmAddr,
+        isSigner: false,
+        isWritable: true,
+      }, // 19
+      {
+        pubkey: orcaDDVault.ddFarmData.convertAuthority,
+        isSigner: false,
+        isWritable: false,
+      }, // 20
+      {
+        pubkey: orcaDDVault.ddFarmData.poolSwapAccount,
+        isSigner: false,
+        isWritable: true,
+      }, // 21
+      {
+        pubkey: orcaDDVault.ddFarmData.poolSwapAuthority,
+        isSigner: false,
+        isWritable: false,
+      }, // 22
+      {
+        pubkey: orcaDDVault.ddFarmData.swapPoolMint.address,
+        isSigner: false,
+        isWritable: true,
+      }, // 23
+      {
+        pubkey: orcaDDVault.ddFarmData.farmTokenMint,
+        isSigner: false,
+        isWritable: true,
+      }, // 24
+      {
+        pubkey: orcaDDVault.shareMint,
+        isSigner: false,
+        isWritable: true,
+      }, // 25
+      {
+        pubkey: orcaDDVault.ddFarmData.swapPoolFeeTokenAccount,
+        isSigner: false,
+        isWritable: true,
+      }, // 26
+      { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // 27
+      { pubkey: orca.ORCA_POOL_PROGRAM_ID, isSigner: false, isWritable: false }, // 28
+      {
+        pubkey: orca.ORCA_FARM_PROGRAM_ID,
+        isSigner: false,
+        isWritable: false,
+      }, // 29
+      { pubkey: ephemeralTrackingAccount, isSigner: false, isWritable: true }, // 30
+      { pubkey: anchor.web3.SystemProgram.programId, isSigner: false, isWritable: false }, // 31
+      { pubkey: orcaDDVault.ddFarmData.feeCollectorTokenAccount, isSigner: false, isWritable: true }, // 32
+      { pubkey: orcaDDVault.ddWithdrawQueue, isSigner: false, isWritable: true }, // 33
     ];
 
     return new anchor.web3.TransactionInstruction({
