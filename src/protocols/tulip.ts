@@ -22,10 +22,10 @@ import {
   WithdrawParams,
 } from "../types";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
-import { NATIVE_SOL, PROGRAM_ACCOUNT_LOOKUP_TABLE, TULIP_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
+import { NATIVE_SOL, TULIP_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
 import { getMultipleAccounts } from "@dappio-wonderland/navigator/dist/utils";
 
-const TULIP_VAULT_ACCOUNT_LOOKUP = new anchor.web3.PublicKey("CLQRVRUiRWSXLg1EFNZPc3NiwrXhptQMUaHTsbZYjWAd");
+const TULIP_VAULT_ACCOUNT_LOOKUP = new anchor.web3.PublicKey("DuUSqiffUKEZwEvKBz9iDY2LZqt7LmLkPihy8E8Vfwyq");
 
 export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
   constructor(
@@ -319,7 +319,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // 9
     ];
 
-    if (vaultInfo.type == tulip.VaultType.Orca) {
+    if (vaultInfo.type == tulip.VaultType.Orca || vaultInfo.type == tulip.VaultType.OrcaDD) {
       const orcaVault = vault as tulip.OrcaVaultInfo;
       const userTokenAAta = await getAssociatedTokenAddress(orcaVault.farmData.tokenAMint, userKey);
       const userTokenBAta = await getAssociatedTokenAddress(orcaVault.farmData.tokenBMint, userKey);
@@ -804,10 +804,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       .transaction();
 
     const latestBlockhash = await this._connection.getLatestBlockhash();
-    const addressLookupTable = await getMultipleAccounts(this._connection, [
-      PROGRAM_ACCOUNT_LOOKUP_TABLE,
-      TULIP_VAULT_ACCOUNT_LOOKUP,
-    ]);
+    const addressLookupTable = await getMultipleAccounts(this._connection, [TULIP_VAULT_ACCOUNT_LOOKUP]);
 
     const addressLookupTableAccounts = addressLookupTable.map((accountInfo) => {
       if (accountInfo !== null) {
@@ -912,6 +909,27 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
         isWritable: false,
       }, // 9
     ];
+
+    if (vault.type === tulip.VaultType.OrcaDD) {
+      const orcaDDVault = vault as tulip.OrcaDDVaultInfo;
+      const depositTrackingPdaLpAta = await getAssociatedTokenAddress(
+        orcaDDVault.farmData.farmTokenMint,
+        depositTrackingPda,
+        true
+      );
+      keys.push(
+        {
+          pubkey: depositTrackingPdaLpAta,
+          isSigner: false,
+          isWritable: true,
+        }, // 10
+        {
+          pubkey: orcaDDVault.farmData.farmTokenMint,
+          isSigner: false,
+          isWritable: true,
+        } // 11
+      );
+    }
 
     return new anchor.web3.TransactionInstruction({
       keys,
