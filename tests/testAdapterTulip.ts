@@ -22,10 +22,10 @@ describe("Gateway", () => {
   //   commitment: "confirmed",
   //   wsEndpoint: "wss://rpc-mainnet-fork-1.dappio.xyz/ws",
   // });
-  const connection = new Connection("https://rpc-mainnet-fork.epochs.studio", {
-    commitment: "confirmed",
-    wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
-  });
+  // const connection = new Connection("https://rpc-mainnet-fork.epochs.studio", {
+  //   commitment: "confirmed",
+  //   wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
+  // });
   // const connection = new Connection("https://solana-api.tt-prod.net", {
   //   commitment: "confirmed",
   //   confirmTransactionInitialTimeout: 180 * 1000,
@@ -34,10 +34,10 @@ describe("Gateway", () => {
   //   commitment: "confirmed",
   //   confirmTransactionInitialTimeout: 180 * 1000,
   // });
-  // const connection = new Connection("https:////api.mainnet-beta.solana.com", {
-  //   commitment: "confirmed",
-  //   confirmTransactionInitialTimeout: 180 * 1000,
-  // });
+  const connection = new Connection("https://api.mainnet-beta.solana.com", {
+    commitment: "confirmed",
+    confirmTransactionInitialTimeout: 180 * 1000,
+  });
 
   const options = anchor.AnchorProvider.defaultOptions();
   const wallet = NodeWallet.local();
@@ -198,7 +198,7 @@ describe("Gateway", () => {
     };
 
     const gateway = new GatewayBuilder(provider);
-    // await gateway.addLiquidity(addLiquidityParams); // Only for Raydium vault
+    await gateway.addLiquidity(addLiquidityParams); // Only for Raydium vault
     await gateway.deposit(depositParams);
 
     await gateway.finalize();
@@ -231,7 +231,8 @@ describe("Gateway", () => {
       // "6tkFEgE6zry2gGC4yqLrTghdqtqadyT5H3H2AJd4w5rz" // RAY-USDC (Raydium)
       // "GSAqLGG3AHABTnNSzsorjbqTSbhTmtkFN2dBPxua3RGR" // RAY-SRM (Raydium)
       // "3WzpxdEk8G59RVztKFRuqL5zNYHwEPvmenJHCECCJxSN" // RAY-USDT (Raydium)
-      "7nbcWTUnvELLmLjJtMRrbg9qH9zabZ9VowJSfwB2j8y7" // ORCA-USDC (Orca)
+      //"7nbcWTUnvELLmLjJtMRrbg9qH9zabZ9VowJSfwB2j8y7" // ORCA-USDC (Orca)
+      "CjwvvwuacJAJm8w54VcNDgpbnyde6k65mvdRpEFK2Dqm" // ATLAS-USDC (Orca)
     );
     const removeLiquidityParams: RemoveLiquidityParams = {
       protocol: SupportedProtocols.Raydium,
@@ -242,7 +243,7 @@ describe("Gateway", () => {
     const withdrawParams: WithdrawParams = {
       protocol: SupportedProtocols.Tulip,
       vaultId: vaultId,
-      withdrawAmount: 3,
+      withdrawAmount: 10,
     };
 
     const gateway = new GatewayBuilder(provider);
@@ -265,14 +266,25 @@ describe("Gateway", () => {
 
     console.log("======");
     console.log("Txs are sent...");
-    // const latestBlockhash = await connection.getLatestBlockhash();
+    const latestBlockhash = await connection.getLatestBlockhash();
     for (let tx of txs) {
       let sig: string = "";
       if ((tx as anchor.web3.Transaction).instructions) {
-        // tx.feePayer = wallet.publicKey;
-        // tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+        const _tx = tx as anchor.web3.Transaction;
+        // _tx.feePayer = wallet.publicKey;
+        // _tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+        // _tx.sign(wallet.payer);
+        // sig = await sendAndConfirmRawTransaction(
+        //   connection,
+        //   Buffer.from(_tx.serialize()),
+        //   //confirmStrategy,
+        //   {
+        //     skipPreflight: true,
+        //     commitment: "confirmed",
+        //   } as unknown as anchor.web3.ConfirmOptions
+        // );
         // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
-        sig = await provider.sendAndConfirm(tx as anchor.web3.Transaction, [], {
+        sig = await provider.sendAndConfirm(_tx, [], {
           skipPreflight: true,
           commitment: "confirmed",
         } as unknown as anchor.web3.ConfirmOptions);
