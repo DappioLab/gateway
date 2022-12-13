@@ -649,6 +649,8 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
         preInstructions.push(await createATAWithoutCheckIx(userKey, orcaDDVault.ddFarmData.tokenAMint));
         const userTokenAccountB = await getAssociatedTokenAddress(orcaDDVault.ddFarmData.tokenBMint, userKey);
         preInstructions.push(await createATAWithoutCheckIx(userKey, orcaDDVault.ddFarmData.tokenBMint));
+        const userFarmTokenAccount = await getAssociatedTokenAddress(orcaDDVault.farmData.farmTokenMint, userKey);
+        preInstructions.push(await createATAWithoutCheckIx(userKey, orcaDDVault.farmData.farmTokenMint));
         // preInstructions.push(
         //   await this._withdrawTrackingAccountIx(orcaDDVault, userKey, new anchor.BN(params.withdrawAmount))
         // );
@@ -778,7 +780,17 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
           { pubkey: ephemeralTrackingAccount, isSigner: false, isWritable: true }, // 30
           { pubkey: anchor.web3.SystemProgram.programId, isSigner: false, isWritable: false }, // 31
           { pubkey: orcaDDVault.ddFarmData.feeCollectorTokenAccount, isSigner: false, isWritable: true }, // 32
-          { pubkey: orcaDDVault.ddWithdrawQueue, isSigner: false, isWritable: true } // 33
+          { pubkey: orcaDDVault.ddWithdrawQueue, isSigner: false, isWritable: true }, // 33
+          { pubkey: userFarmTokenAccount, isSigner: false, isWritable: true }, // 34
+          { pubkey: orcaDDVault.farmData.vaultRewardTokenAccount, isSigner: false, isWritable: true }, // 35
+          { pubkey: orcaDDVault.farmData.vaultSwapTokenAccount, isSigner: false, isWritable: true }, // 36
+          { pubkey: orcaDDVault.farmData.globalRewardTokenVault, isSigner: false, isWritable: true }, // 37
+          { pubkey: orcaDDVault.farmData.globalBaseTokenVault, isSigner: false, isWritable: true }, // 38
+          { pubkey: orcaDDVault.farmData.globalFarm, isSigner: false, isWritable: true }, // 39
+          { pubkey: orcaDDVault.farmData.userFarmAddr, isSigner: false, isWritable: true }, // 40
+          { pubkey: orcaDDVault.farmData.convertAuthority, isSigner: false, isWritable: true }, // 41
+          { pubkey: orcaDDVault.farmData.farmTokenMint, isSigner: false, isWritable: true }, // 42
+          { pubkey: orcaDDVault.farmData.feeCollectorTokenAccount, isSigner: false, isWritable: true } // 43
         );
         break;
       default:
