@@ -137,7 +137,7 @@ export interface IProtocolVault {
     params: WithdrawParams,
     vaultId: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ) => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
+  ) => Promise<{ txs: (anchor.web3.Transaction | anchor.web3.VersionedTransaction)[]; input: Buffer }>;
   initiateWithdrawal?: (
     params: WithdrawParams,
     vaultId: IVaultInfo,
@@ -349,6 +349,7 @@ export interface DepositParams {
   protocol: SupportedProtocols;
   vaultId: anchor.web3.PublicKey;
   depositAmount: number;
+  tokenBAmount?: number;
   version?: number;
 }
 
@@ -461,6 +462,12 @@ export type GatewayParams = TypeDef<
         {
           name: "poolDirection";
           type: "u8";
+        },
+        {
+          name: "farmType";
+          type: {
+            array: ["u64", 2];
+          };
         }
       ];
     };

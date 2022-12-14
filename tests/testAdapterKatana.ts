@@ -41,7 +41,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], true);
+      const sig2 = await utils.signAndSendAll(tx as anchor.web3.Transaction, connection, [wallet.payer], true);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -71,7 +71,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], false);
+      const sig2 = await utils.signAndSendAll(tx as anchor.web3.Transaction, connection, [wallet.payer], false);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -101,7 +101,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], true);
+      const sig2 = await utils.signAndSendAll(tx as anchor.web3.Transaction, connection, [wallet.payer], true);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -131,7 +131,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], true);
+      const sig2 = await utils.signAndSendAll(tx as anchor.web3.Transaction, connection, [wallet.payer], true);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");
@@ -161,7 +161,7 @@ describe("Gateway", () => {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(tx, connection, [wallet.payer], true);
+      const sig2 = await utils.signAndSendAll(tx as anchor.web3.Transaction, connection, [wallet.payer], true);
       console.log(sig2, "\n");
     }
     console.log("Txs are executed");

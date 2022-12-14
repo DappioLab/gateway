@@ -88,7 +88,7 @@ describe("Gateway", () => {
       // tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
       // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
 
-      const sig = await provider.sendAndConfirm(tx, [], {
+      const sig = await provider.sendAndConfirm(tx as anchor.web3.Transaction, [], {
         skipPreflight: true,
         commitment: "confirmed",
       } as unknown as anchor.web3.ConfirmOptions);
@@ -142,7 +142,7 @@ describe("Gateway", () => {
       // tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
       // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
 
-      const sig = await provider.sendAndConfirm(tx, [], {
+      const sig = await provider.sendAndConfirm(tx as anchor.web3.Transaction, [], {
         skipPreflight: true,
         commitment: "confirmed",
       } as unknown as anchor.web3.ConfirmOptions);
