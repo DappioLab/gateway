@@ -25,7 +25,8 @@ import { Gateway } from "@dappio-wonderland/gateway-idls";
 import { NATIVE_SOL, TULIP_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
 import { getMultipleAccounts } from "@dappio-wonderland/navigator/dist/utils";
 
-const TULIP_VAULT_ACCOUNT_LOOKUP = new anchor.web3.PublicKey("DuUSqiffUKEZwEvKBz9iDY2LZqt7LmLkPihy8E8Vfwyq");
+// This account table stored tulip v2 orca vault accounts for withdraw from vault
+const TULIP_ACCOUNT_LOOKUP_TABLE = new anchor.web3.PublicKey("DuUSqiffUKEZwEvKBz9iDY2LZqt7LmLkPihy8E8Vfwyq");
 
 export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
   constructor(
@@ -511,9 +512,6 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
         preInstructions.push(await createATAWithoutCheckIx(userKey, orcaVault.farmData.tokenAMint));
         const userTokenBAccount = await getAssociatedTokenAddress(orcaVault.farmData.tokenBMint, userKey);
         preInstructions.push(await createATAWithoutCheckIx(userKey, orcaVault.farmData.tokenBMint));
-        // preInstructions.push(
-        //   await this._withdrawTrackingAccountIx(orcaVault, userKey, new anchor.BN(params.withdrawAmount))
-        // );
 
         remainingAccounts.push(
           { pubkey: depositTrackingAccount, isSigner: false, isWritable: true }, // 0
@@ -651,6 +649,9 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
         preInstructions.push(await createATAWithoutCheckIx(userKey, orcaDDVault.ddFarmData.tokenBMint));
         const userFarmTokenAccount = await getAssociatedTokenAddress(orcaDDVault.farmData.farmTokenMint, userKey);
         preInstructions.push(await createATAWithoutCheckIx(userKey, orcaDDVault.farmData.farmTokenMint));
+
+        // Due to inner instruction too large issue, move `withdraw_deposit_tracking` and `withdraw_orca_vault_dd_stage_one`
+        // to pre-instruction as a workaround. Once Solana core have solution on this can move it inside adapter.
         preInstructions.push(
           await this._withdrawTrackingAccountIx(orcaDDVault, userKey, new anchor.BN(params.withdrawAmount))
         );
@@ -807,7 +808,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       .transaction();
 
     const latestBlockhash = await this._connection.getLatestBlockhash();
-    const addressLookupTable = await getMultipleAccounts(this._connection, [TULIP_VAULT_ACCOUNT_LOOKUP]);
+    const addressLookupTable = await getMultipleAccounts(this._connection, [TULIP_ACCOUNT_LOOKUP_TABLE]);
 
     const addressLookupTableAccounts = addressLookupTable.map((accountInfo) => {
       if (accountInfo !== null) {
