@@ -21,7 +21,7 @@ import {
   StakeParams,
   UnstakeParams,
 } from "../types";
-import { RAYDIUM_ADAPTER_PROGRAM_ID, SERUM_PROGRAM_ID, WSOL } from "../ids";
+import { RAYDIUM_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
 
 const WSOL_BUFFER_FACTOR = 1.01; // 1%, actual amount might be different since pool balance might change.
@@ -194,56 +194,56 @@ export class ProtocolRaydium implements IProtocolPool, IProtocolFarm {
     }
 
     const remainingAccounts = [
-      { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-      { pubkey: pool.poolId, isSigner: false, isWritable: true },
-      { pubkey: raydium.AMM_AUTHORITY, isSigner: false, isWritable: false },
-      { pubkey: pool.ammOpenOrders, isSigner: false, isWritable: true },
-      { pubkey: pool.ammTargetOrders, isSigner: false, isWritable: true },
-      { pubkey: pool.lpMint, isSigner: false, isWritable: true },
-      { pubkey: pool.poolCoinTokenAccount, isSigner: false, isWritable: true },
-      { pubkey: pool.poolPcTokenAccount, isSigner: false, isWritable: true },
-      { pubkey: pool.poolWithdrawQueue, isSigner: false, isWritable: true },
+      { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // 0
+      { pubkey: pool.poolId, isSigner: false, isWritable: true }, // 1
+      { pubkey: raydium.AMM_AUTHORITY, isSigner: false, isWritable: false }, // 2
+      { pubkey: pool.ammOpenOrders, isSigner: false, isWritable: true }, // 3
+      { pubkey: pool.ammTargetOrders, isSigner: false, isWritable: true }, // 4
+      { pubkey: pool.lpMint, isSigner: false, isWritable: true }, // 5
+      { pubkey: pool.poolCoinTokenAccount, isSigner: false, isWritable: true }, // 6
+      { pubkey: pool.poolPcTokenAccount, isSigner: false, isWritable: true }, // 7
+      { pubkey: pool.poolWithdrawQueue, isSigner: false, isWritable: true }, // 8
       {
         pubkey: pool.poolTempLpTokenAccount,
         isSigner: false,
         isWritable: true,
-      },
-      { pubkey: SERUM_PROGRAM_ID, isSigner: false, isWritable: false },
-      { pubkey: pool.serumMarket, isSigner: false, isWritable: true },
+      }, // 9
+      { pubkey: new anchor.web3.PublicKey(poolWithMarketInfo.marketProgramId), isSigner: false, isWritable: false }, // 10
+      { pubkey: pool.serumMarket, isSigner: false, isWritable: true }, // 11
       {
         pubkey: new anchor.web3.PublicKey(poolWithMarketInfo.marketBaseVault),
         isSigner: false,
         isWritable: true,
-      },
+      }, // 12
       {
         pubkey: new anchor.web3.PublicKey(poolWithMarketInfo.marketQuoteVault),
         isSigner: false,
         isWritable: true,
-      },
+      }, // 13
       {
         pubkey: new anchor.web3.PublicKey(poolWithMarketInfo.marketAuthority),
         isSigner: false,
         isWritable: false,
-      },
-      { pubkey: userLPAccountKey, isSigner: false, isWritable: true },
-      { pubkey: userTokenAAccountKey, isSigner: false, isWritable: true },
-      { pubkey: userTokenBAccountKey, isSigner: false, isWritable: true },
-      { pubkey: userKey, isSigner: true, isWritable: false },
+      }, // 14
+      { pubkey: userLPAccountKey, isSigner: false, isWritable: true }, // 15
+      { pubkey: userTokenAAccountKey, isSigner: false, isWritable: true }, // 16
+      { pubkey: userTokenBAccountKey, isSigner: false, isWritable: true }, // 17
+      { pubkey: userKey, isSigner: true, isWritable: false }, // 18
       {
         pubkey: new anchor.web3.PublicKey(poolWithMarketInfo.marketEventQueue),
         isSigner: false,
         isWritable: true,
-      },
+      }, // 19
       {
         pubkey: new anchor.web3.PublicKey(poolWithMarketInfo.marketBids),
         isSigner: false,
         isWritable: true,
-      },
+      }, // 20
       {
         pubkey: new anchor.web3.PublicKey(poolWithMarketInfo.marketAsks),
         isSigner: false,
         isWritable: true,
-      },
+      }, // 21
     ];
 
     const txRemoveLiquidity = await this._gatewayProgram.methods
