@@ -436,7 +436,7 @@ export class ProtocolFriktion implements IProtocolVault {
       }, //2
       { pubkey: vault.vaultAuthority, isSigner: false, isWritable: true }, //3
       {
-        pubkey: vault.underlyingAssetMint,
+        pubkey: vault.vaultMint,
         isSigner: false,
         isWritable: true,
       }, //4
@@ -448,7 +448,9 @@ export class ProtocolFriktion implements IProtocolVault {
       }, //6
       { pubkey: userWithdrawerId, isSigner: false, isWritable: true }, //7
       {
-        pubkey: vaultWrapper.getRoundUnderlyingTokensAddress(withdrawInfo.roundNumber),
+        pubkey: vaultWrapper.getRoundUnderlyingTokensPendingWithdrawalsAddress(withdrawInfo.roundNumber),
+        isSigner: false,
+        isWritable: true,
       }, //8
       {
         pubkey: anchor.web3.SystemProgram.programId,
