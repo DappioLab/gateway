@@ -248,15 +248,30 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
     params: DepositParams,
     vault: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
+  ): Promise<{ txs: (anchor.web3.Transaction | anchor.web3.VersionedTransaction)[]; input: Buffer }> {
     const vaultInfo = vault as tulip.VaultInfo;
+    const vaultInfoWrapper = new tulip.VaultInfoWrapper(vaultInfo);
     // Handle payload input here
     const inputLayout = struct([u64("lpOrTokenAAmount"), u64("tokenBAmount"), u64("farmType0"), u64("farmType1")]);
     let payload = Buffer.alloc(PAYLOAD_SIZE);
+
+    let lpOrTokenAAmount = new anchor.BN(params.depositAmount);
+    let tokenBAmount = new anchor.BN(params.tokenBAmount || 0);
+    // This is only for Orca (DD) vault, the ratio between token A and B to deposit must close to the pool
+    if (vaultInfo.type == tulip.VaultType.Orca || vaultInfo.type == tulip.VaultType.OrcaDD) {
+      let estimatedTokenBAmount = vaultInfoWrapper.getTokenBAmount(lpOrTokenAAmount);
+      if (Number(estimatedTokenBAmount) > Number(tokenBAmount)) {
+        // modified token A amount to meet the pool slippage limit
+        lpOrTokenAAmount = vaultInfoWrapper.getTokenAAmount(tokenBAmount);
+      } else {
+        // modified token B amount to meet the pool slippage limit
+        tokenBAmount = estimatedTokenBAmount;
+      }
+    }
     inputLayout.encode(
       {
-        lpOrTokenAAmount: new anchor.BN(params.depositAmount),
-        tokenBAmount: new anchor.BN(params.tokenBAmount || 0),
+        lpOrTokenAAmount: lpOrTokenAAmount,
+        tokenBAmount: tokenBAmount,
         farmType0: vaultInfo.base.farm[0],
         farmType1: vaultInfo.base.farm[1],
       },
@@ -265,9 +280,9 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
     this._gatewayParams.farmType.push(...vaultInfo.base.farm);
 
     // Handle transaction here
-    const vaultInfoWrapper = new tulip.VaultInfoWrapper(vaultInfo);
 
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
+    let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
     const [depositTrackingAccount, _trackingNonce] = vaultInfoWrapper.deriveTrackingAddress(userKey);
     const [depositTrackingPda, _depositTrackingPdaNonce] =
@@ -322,8 +337,33 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
 
     if (vaultInfo.type == tulip.VaultType.Orca || vaultInfo.type == tulip.VaultType.OrcaDD) {
       const orcaVault = vault as tulip.OrcaVaultInfo;
-      const userTokenAAta = await getAssociatedTokenAddress(orcaVault.farmData.tokenAMint, userKey);
-      const userTokenBAta = await getAssociatedTokenAddress(orcaVault.farmData.tokenBMint, userKey);
+      const userTokenAAta = await getAssociatedTokenAddress(orcaVault.farmData.tokenAMint.address, userKey);
+      const userTokenBAta = await getAssociatedTokenAddress(orcaVault.farmData.tokenBMint.address, userKey);
+      if (orcaVault.farmData.tokenAMint.address.equals(WSOL)) {
+        preInstructions.push(await createATAWithoutCheckIx(userKey, WSOL));
+        preInstructions.push(
+          anchor.web3.SystemProgram.transfer({
+            fromPubkey: userKey,
+            toPubkey: userTokenAAta,
+            lamports: Math.floor(Number(lpOrTokenAAmount)),
+          }),
+          createSyncNativeInstruction(userTokenAAta)
+        );
+        postInstructions.push(createCloseAccountInstruction(userTokenAAta, userKey, userKey));
+      }
+      if (orcaVault.farmData.tokenBMint.address.equals(WSOL)) {
+        preInstructions.push(await createATAWithoutCheckIx(userKey, WSOL));
+        preInstructions.push(
+          anchor.web3.SystemProgram.transfer({
+            fromPubkey: userKey,
+            toPubkey: userTokenBAta,
+            lamports: Math.floor(Number(tokenBAmount)),
+          }),
+          createSyncNativeInstruction(userTokenBAta)
+        );
+        postInstructions.push(createCloseAccountInstruction(userTokenBAta, userKey, userKey));
+      }
+
       remainingAccounts.push(
         { pubkey: orca.ORCA_FARM_PROGRAM_ID, isSigner: false, isWritable: false }, // 10
         { pubkey: userTokenAAta, isSigner: false, isWritable: true }, // 11
@@ -337,6 +377,10 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       );
     }
 
+    const setComputeUnitLimitParams = { units: 1000000 };
+    const setComputeUnitLimitIx = anchor.web3.ComputeBudgetProgram.setComputeUnitLimit(setComputeUnitLimitParams);
+    preInstructions = [setComputeUnitLimitIx, ...preInstructions];
+
     const txDeposit = await this._gatewayProgram.methods
       .deposit()
       .accounts({
@@ -347,10 +391,30 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
         gatewayAuthority: getGatewayAuthority(),
       })
       .preInstructions(preInstructions)
+      .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return { txs: [txDeposit], input: payload };
+    const latestBlockhash = await this._connection.getLatestBlockhash();
+    const addressLookupTable = await getMultipleAccounts(this._connection, [TULIP_ACCOUNT_LOOKUP_TABLE]);
+
+    const addressLookupTableAccounts = addressLookupTable.map((accountInfo) => {
+      if (accountInfo !== null) {
+        return new anchor.web3.AddressLookupTableAccount({
+          key: accountInfo.pubkey,
+          state: anchor.web3.AddressLookupTableAccount.deserialize(accountInfo.account.data),
+        });
+      }
+    });
+    const message = anchor.web3.MessageV0.compile({
+      payerKey: userKey,
+      instructions: txDeposit.instructions,
+      recentBlockhash: latestBlockhash.blockhash,
+      addressLookupTableAccounts,
+    });
+    const versionedTx = new anchor.web3.VersionedTransaction(message);
+
+    return { txs: [versionedTx], input: payload };
   }
 
   async withdraw(
@@ -376,6 +440,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
     const vaultInfoWrapper = new tulip.VaultInfoWrapper(vaultInfo);
 
     let preInstructions = [] as anchor.web3.TransactionInstruction[];
+    let postInstructions = [] as anchor.web3.TransactionInstruction[];
 
     const depositTrackingAccount = vaultInfoWrapper.deriveTrackingAddress(userKey)[0];
     const depositTrackingPda = vaultInfoWrapper.deriveTrackingPdaAddress(depositTrackingAccount)[0];
@@ -508,10 +573,15 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
         break;
       case tulip.VaultType.Orca:
         const orcaVault = vaultInfo as tulip.OrcaVaultInfo;
-        const userTokenAAccount = await getAssociatedTokenAddress(orcaVault.farmData.tokenAMint, userKey);
-        preInstructions.push(await createATAWithoutCheckIx(userKey, orcaVault.farmData.tokenAMint));
-        const userTokenBAccount = await getAssociatedTokenAddress(orcaVault.farmData.tokenBMint, userKey);
-        preInstructions.push(await createATAWithoutCheckIx(userKey, orcaVault.farmData.tokenBMint));
+        const userTokenAAccount = await getAssociatedTokenAddress(orcaVault.farmData.tokenAMint.address, userKey);
+        preInstructions.push(await createATAWithoutCheckIx(userKey, orcaVault.farmData.tokenAMint.address));
+        const userTokenBAccount = await getAssociatedTokenAddress(orcaVault.farmData.tokenBMint.address, userKey);
+        preInstructions.push(await createATAWithoutCheckIx(userKey, orcaVault.farmData.tokenBMint.address));
+
+        if (orcaVault.farmData.tokenBMint.address.equals(WSOL) || orcaVault.farmData.tokenAMint.address.equals(WSOL)) {
+          const userWSOLATA = await getAssociatedTokenAddress(WSOL, userKey);
+          postInstructions.push(createCloseAccountInstruction(userWSOLATA, userKey, userKey));
+        }
 
         remainingAccounts.push(
           { pubkey: depositTrackingAccount, isSigner: false, isWritable: true }, // 0
@@ -643,12 +713,20 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
         break;
       case tulip.VaultType.OrcaDD:
         const orcaDDVault = vaultInfo as tulip.OrcaDDVaultInfo;
-        const userTokenAccountA = await getAssociatedTokenAddress(orcaDDVault.ddFarmData.tokenAMint, userKey);
-        preInstructions.push(await createATAWithoutCheckIx(userKey, orcaDDVault.ddFarmData.tokenAMint));
-        const userTokenAccountB = await getAssociatedTokenAddress(orcaDDVault.ddFarmData.tokenBMint, userKey);
-        preInstructions.push(await createATAWithoutCheckIx(userKey, orcaDDVault.ddFarmData.tokenBMint));
+        const userTokenAccountA = await getAssociatedTokenAddress(orcaDDVault.ddFarmData.tokenAMint.address, userKey);
+        preInstructions.push(await createATAWithoutCheckIx(userKey, orcaDDVault.ddFarmData.tokenAMint.address));
+        const userTokenAccountB = await getAssociatedTokenAddress(orcaDDVault.ddFarmData.tokenBMint.address, userKey);
+        preInstructions.push(await createATAWithoutCheckIx(userKey, orcaDDVault.ddFarmData.tokenBMint.address));
         const userFarmTokenAccount = await getAssociatedTokenAddress(orcaDDVault.farmData.farmTokenMint, userKey);
         preInstructions.push(await createATAWithoutCheckIx(userKey, orcaDDVault.farmData.farmTokenMint));
+
+        if (
+          orcaDDVault.ddFarmData.tokenBMint.address.equals(WSOL) ||
+          orcaDDVault.ddFarmData.tokenAMint.address.equals(WSOL)
+        ) {
+          const userWSOLATA = await getAssociatedTokenAddress(WSOL, userKey);
+          postInstructions.push(createCloseAccountInstruction(userWSOLATA, userKey, userKey));
+        }
 
         // Due to inner instruction too large issue, move `withdraw_deposit_tracking` and `withdraw_orca_vault_dd_stage_one`
         // to pre-instruction as a workaround. Once Solana core have solution on this can move it inside adapter.
@@ -804,6 +882,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
         gatewayAuthority: getGatewayAuthority(),
       })
       .preInstructions(preInstructions)
+      .postInstructions(postInstructions)
       .remainingAccounts(remainingAccounts)
       .transaction();
 

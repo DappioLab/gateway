@@ -26,10 +26,10 @@
   resolved "https://registry.yarnpkg.com/@dappio-wonderland/gateway-idls/-/gateway-idls-0.2.8.tgz#65af88946a483f1fd4b68fd9d7028387c6b2cad6"
   integrity sha512-5xUskBwsEq/LhpZ63rQXIY9Xiaii9vicn8quKekJXsvW3L4nQ5qMtvmudE8sdJRmvRUV6uxHdTtMg2OqvhdRxQ==
 
-"@dappio-wonderland/navigator@^0.2.25":
-  version "0.2.25"
-  resolved "https://registry.yarnpkg.com/@dappio-wonderland/navigator/-/navigator-0.2.25.tgz#c3f63ece3064eb84b8d81f92e4ba24c0f39155ee"
-  integrity sha512-inYbPT990TM5+niion4hQ379rjR3ZMKNsUOcz8rH1uW2eMBbMAQDa1UQ1U63phE3tbvyA7feOGXKj65VQibgZg==
+"@dappio-wonderland/navigator@^0.2.26":
+  version "0.2.26"
+  resolved "https://registry.yarnpkg.com/@dappio-wonderland/navigator/-/navigator-0.2.26.tgz#001ab10563064b01d0a742712cdb9a1dc00aa002"
+  integrity sha512-21W9VEAp4aMDg5XXLWxY9Appt2zEbj1f0bb/0J+5h6Q97cySyzsGxHPJ+6bIo3lDafesjcqg2iJmf4CDjmu3xA==
   dependencies:
     "@project-serum/borsh" "^0.2.2"
     "@project-serum/serum" "^0.13.61"

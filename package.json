@@ -1,6 +1,6 @@
 {
   "name": "@dappio-wonderland/gateway",
-  "version": "0.2.24",
+  "version": "0.2.24-test-3e193c1f",
   "description": "Dappio Gateway: The Framework that Empowers the Composability of Solana Programs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,7 +9,7 @@
   ],
   "dependencies": {
     "@dappio-wonderland/gateway-idls": "^0.2.8",
-    "@dappio-wonderland/navigator": "^0.2.25",
+    "@dappio-wonderland/navigator": "^0.2.26",
     "@jup-ag/core": "1.0.0-beta.26",
     "@project-serum/anchor": "^0.24.2",
     "@project-serum/borsh": "^0.2.5",
