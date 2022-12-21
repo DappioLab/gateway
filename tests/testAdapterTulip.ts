@@ -183,7 +183,8 @@ describe("Gateway", () => {
       // "3WzpxdEk8G59RVztKFRuqL5zNYHwEPvmenJHCECCJxSN" // RAY-USDT (Raydium)
       // "7nbcWTUnvELLmLjJtMRrbg9qH9zabZ9VowJSfwB2j8y7" // ORCA-USDC (Orca)
       // "CjwvvwuacJAJm8w54VcNDgpbnyde6k65mvdRpEFK2Dqm" // ATLAS-USDC (Orca)
-      "DUnC2MTUtcMhzr7JgUMF7dRyUoEiUTqv4aBy1gEi3gpt" // SAMO-USDC (Orca)
+      // "DUnC2MTUtcMhzr7JgUMF7dRyUoEiUTqv4aBy1gEi3gpt" // SAMO-USDC (Orca)
+      "J4cPE6XncW4pTCRferxiNpBEaHPy26HEoDnxBnxve3pw" // SHDW-SOL (Orca)
     );
     const addLiquidityParams: AddLiquidityParams = {
       protocol: SupportedProtocols.Raydium,
@@ -195,7 +196,7 @@ describe("Gateway", () => {
       protocol: SupportedProtocols.Tulip,
       vaultId: vaultId,
       depositAmount: 1000000,
-      tokenBAmount: depositAmount,
+      tokenBAmount: 6252,
     };
 
     const gateway = new GatewayBuilder(provider);
@@ -211,13 +212,33 @@ describe("Gateway", () => {
     console.log("======");
     console.log("Txs are sent...");
     for (let tx of txs) {
-      // tx.feePayer = wallet.publicKey;
-      // tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-      // console.log("\n", tx.serializeMessage().toString("base64"), "\n");
-      const sig = await provider.sendAndConfirm(tx as anchor.web3.Transaction, [], {
-        skipPreflight: true,
-        commitment: "confirmed",
-      } as unknown as anchor.web3.ConfirmOptions);
+      let sig: string = "";
+      if ((tx as anchor.web3.Transaction).instructions) {
+        const _tx = tx as anchor.web3.Transaction;
+        sig = await provider.sendAndConfirm(_tx, [], {
+          skipPreflight: true,
+          commitment: "confirmed",
+        } as unknown as anchor.web3.ConfirmOptions);
+      } else {
+        const versionedTx = tx as anchor.web3.VersionedTransaction;
+        versionedTx.sign([wallet.payer]);
+        console.log(versionedTx.serialize().length);
+        // const confirmStrategy: BlockheightBasedTransactionConfirmationStrategy = {
+        //   blockhash: latestBlockhash.blockhash,
+        //   lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+        //   signature: versionedTx.signatures[0],
+        // };
+        sig = await sendAndConfirmRawTransaction(
+          connection,
+          Buffer.from(versionedTx.serialize()),
+          //confirmStrategy,
+          {
+            skipPreflight: true,
+            commitment: "confirmed",
+          } as unknown as anchor.web3.ConfirmOptions
+        );
+      }
+
       console.log(sig);
     }
     console.log("Txs are executed");
@@ -234,7 +255,8 @@ describe("Gateway", () => {
       // "3WzpxdEk8G59RVztKFRuqL5zNYHwEPvmenJHCECCJxSN" // RAY-USDT (Raydium)
       // "7nbcWTUnvELLmLjJtMRrbg9qH9zabZ9VowJSfwB2j8y7" // ORCA-USDC (Orca)
       // "CjwvvwuacJAJm8w54VcNDgpbnyde6k65mvdRpEFK2Dqm" // ATLAS-USDC (Orca)
-      "DUnC2MTUtcMhzr7JgUMF7dRyUoEiUTqv4aBy1gEi3gpt" // SAMO-USDC (Orca)
+      // "DUnC2MTUtcMhzr7JgUMF7dRyUoEiUTqv4aBy1gEi3gpt" // SAMO-USDC (Orca)
+      "J4cPE6XncW4pTCRferxiNpBEaHPy26HEoDnxBnxve3pw" // SHDW-SOL (Orca)
     );
     const removeLiquidityParams: RemoveLiquidityParams = {
       protocol: SupportedProtocols.Raydium,
@@ -245,7 +267,7 @@ describe("Gateway", () => {
     const withdrawParams: WithdrawParams = {
       protocol: SupportedProtocols.Tulip,
       vaultId: vaultId,
-      withdrawAmount: 1000,
+      withdrawAmount: 100,
     };
 
     const gateway = new GatewayBuilder(provider);
