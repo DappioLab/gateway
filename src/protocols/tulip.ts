@@ -26,7 +26,7 @@ import { NATIVE_SOL, TULIP_ADAPTER_PROGRAM_ID, WSOL } from "../ids";
 import { getMultipleAccounts } from "@dappio-wonderland/navigator/dist/utils";
 
 // This account table stored tulip v2 orca vault accounts for withdraw from vault
-const TULIP_ACCOUNT_LOOKUP_TABLE = new anchor.web3.PublicKey("DuUSqiffUKEZwEvKBz9iDY2LZqt7LmLkPihy8E8Vfwyq");
+export const TULIP_ACCOUNT_LOOKUP_TABLE = new anchor.web3.PublicKey("DuUSqiffUKEZwEvKBz9iDY2LZqt7LmLkPihy8E8Vfwyq");
 
 export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
   constructor(
@@ -248,7 +248,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
     params: DepositParams,
     vault: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<{ txs: (anchor.web3.Transaction | anchor.web3.VersionedTransaction)[]; input: Buffer }> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     const vaultInfo = vault as tulip.VaultInfo;
     const vaultInfoWrapper = new tulip.VaultInfoWrapper(vaultInfo);
     // Handle payload input here
@@ -395,33 +395,14 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    const latestBlockhash = await this._connection.getLatestBlockhash();
-    const addressLookupTable = await getMultipleAccounts(this._connection, [TULIP_ACCOUNT_LOOKUP_TABLE]);
-
-    const addressLookupTableAccounts = addressLookupTable.map((accountInfo) => {
-      if (accountInfo !== null) {
-        return new anchor.web3.AddressLookupTableAccount({
-          key: accountInfo.pubkey,
-          state: anchor.web3.AddressLookupTableAccount.deserialize(accountInfo.account.data),
-        });
-      }
-    });
-    const message = anchor.web3.MessageV0.compile({
-      payerKey: userKey,
-      instructions: txDeposit.instructions,
-      recentBlockhash: latestBlockhash.blockhash,
-      addressLookupTableAccounts,
-    });
-    const versionedTx = new anchor.web3.VersionedTransaction(message);
-
-    return { txs: [versionedTx], input: payload };
+    return { txs: [txDeposit], input: payload };
   }
 
   async withdraw(
     params: WithdrawParams,
     vault: IVaultInfo,
     userKey: anchor.web3.PublicKey
-  ): Promise<{ txs: (anchor.web3.Transaction | anchor.web3.VersionedTransaction)[]; input: Buffer }> {
+  ): Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }> {
     const vaultInfo = vault as tulip.VaultInfo;
     // Handle payload input here
     const inputLayout = struct([u64("shareAmount"), u64("farmType0"), u64("farmType1")]);
@@ -886,26 +867,7 @@ export class ProtocolTulip implements IProtocolMoneyMarket, IProtocolVault {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    const latestBlockhash = await this._connection.getLatestBlockhash();
-    const addressLookupTable = await getMultipleAccounts(this._connection, [TULIP_ACCOUNT_LOOKUP_TABLE]);
-
-    const addressLookupTableAccounts = addressLookupTable.map((accountInfo) => {
-      if (accountInfo !== null) {
-        return new anchor.web3.AddressLookupTableAccount({
-          key: accountInfo.pubkey,
-          state: anchor.web3.AddressLookupTableAccount.deserialize(accountInfo.account.data),
-        });
-      }
-    });
-    const message = anchor.web3.MessageV0.compile({
-      payerKey: userKey,
-      instructions: txWithdraw.instructions,
-      recentBlockhash: latestBlockhash.blockhash,
-      addressLookupTableAccounts,
-    });
-    const versionedTx = new anchor.web3.VersionedTransaction(message);
-
-    return { txs: [versionedTx], input: payload };
+    return { txs: [txWithdraw], input: payload };
   }
 
   private _refreshReserveIx(
