@@ -1,5 +1,4 @@
 import * as anchor from "@project-serum/anchor";
-import { struct, u8, u64 } from "@project-serum/borsh";
 import {
   IFarmInfo,
   IPoolInfo,
@@ -15,6 +14,7 @@ import {
   katana,
   friktion,
 } from "@dappio-wonderland/navigator";
+import { compressTransactions, compressV0Transactions } from "@dappio-wonderland/utils";
 import {
   ActionType,
   AddLiquidityParams,
@@ -49,7 +49,7 @@ import {
   UnsupplyParams,
   WithdrawParams,
 } from "./types";
-import { GATEWAY_PROGRAM_ID } from "./ids";
+import { ADDRESS_LOOKUP_TABLES, GATEWAY_PROGRAM_ID } from "./ids";
 import { Gateway, GatewayIDL } from "@dappio-wonderland/gateway-idls";
 import { ProtocolJupiter } from "./protocols/jupiter";
 import { ProtocolRaydium } from "./protocols/raydium";
@@ -69,7 +69,7 @@ export class GatewayBuilder {
   private _metadata: GatewayMetadata;
   private _program: anchor.Program<Gateway>;
   private _stateSeed: anchor.BN;
-  private _transactions: (anchor.web3.Transaction | anchor.web3.VersionedTransaction)[] = [];
+  private _transactions: anchor.web3.Transaction[] = [];
 
   // # Use Cases of PoolDirection in Different Scenarios (In/Out)
   //
@@ -1712,10 +1712,15 @@ export class GatewayBuilder {
     return this;
   }
 
-  transactions(): (anchor.web3.Transaction | anchor.web3.VersionedTransaction)[] {
-    return this._transactions;
+  transactions(): anchor.web3.Transaction[] {
+    return compressTransactions(this._transactions, this._provider.wallet.publicKey);
   }
-
+  async v0Transactions(addressLookupTable: anchor.web3.PublicKey[] = []): Promise<anchor.web3.VersionedTransaction[]> {
+    return compressV0Transactions(this._transactions, this._provider.wallet.publicKey, this._provider.connection, [
+      ...ADDRESS_LOOKUP_TABLES,
+      ...addressLookupTable,
+    ]);
+  }
   getRoutes(): RouteInfoExtend[] {
     return this._metadata.routes;
   }
