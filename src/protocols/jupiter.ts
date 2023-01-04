@@ -1,7 +1,7 @@
 import * as anchor from "@project-serum/anchor";
 import { Jupiter, RouteInfo } from "@jup-ag/core";
 import JSBI from "jsbi";
-import { GatewayParams, IProtocolSwap, PAYLOAD_SIZE } from "../types";
+import { GatewayParams, IProtocolSwap, PAYLOAD_SIZE, SwapParams } from "../types";
 import { GATEWAY_PROGRAM_ID, JUPITER_ADAPTER_PROGRAM_ID, JUPITER_PROGRAM_ID, WSOL } from "../ids";
 import { getAssociatedTokenAddress } from "@solana/spl-token-v2";
 import { Gateway } from "@dappio-wonderland/gateway-idls";
@@ -41,14 +41,19 @@ export class ProtocolJupiter implements IProtocolSwap {
     const routes = await this._jupiter.computeRoutes({
       inputMint: this._params.fromTokenMint,
       outputMint: this._params.toTokenMint,
-      amount: JSBI.BigInt(this._params.amount), // 1000000 => 1 USDC if inputToken.address is USDC mint
+      amount: JSBI.BigInt(Math.floor(this._params.amount)), // 1000000 => 1 USDC if inputToken.address is USDC mint
       slippageBps: Math.ceil(this._params.slippage * 100), // 100 = 1%
       // forceFetch (optional) to force fetching routes and not use the cache
       // intermediateTokens, if provided will only find routes that use the intermediate tokens
       // feeBps
     });
-
     this._bestRoute = routes.routesInfos[0];
+    for (let route of routes.routesInfos) {
+      if (route.marketInfos.length <= 2) {
+        this._bestRoute = route;
+        break;
+      }
+    }
   }
 
   async swap(): Promise<{ txs: (anchor.web3.Transaction | anchor.web3.VersionedTransaction)[]; input: Buffer }> {
@@ -72,19 +77,19 @@ export class ProtocolJupiter implements IProtocolSwap {
       routeInfo: this._bestRoute,
       userPublicKey: this._params.userKey,
     });
-    console.log(swapTransaction);
-    console.log("compiledInstructions");
-    (swapTransaction as anchor.web3.VersionedTransaction).message.compiledInstructions.forEach((ix, i) => {
-      console.log(`#${i}:`, ix);
-    });
-    console.log("addressTableLookups");
-    (swapTransaction as anchor.web3.VersionedTransaction).message.addressTableLookups.forEach((table, i) => {
-      console.log(`#${i}:`, table.accountKey.toBase58());
-    });
-    console.log("staticAccountKeys");
-    (swapTransaction as anchor.web3.VersionedTransaction).message.staticAccountKeys.forEach((key, i) => {
-      console.log(`#${i}:`, key.toBase58());
-    });
+    // console.log(swapTransaction);
+    // console.log("compiledInstructions");
+    // (swapTransaction as anchor.web3.VersionedTransaction).message.compiledInstructions.forEach((ix, i) => {
+    //   console.log(`#${i}:`, ix);
+    // });
+    // console.log("addressTableLookups");
+    // (swapTransaction as anchor.web3.VersionedTransaction).message.addressTableLookups.forEach((table, i) => {
+    //   console.log(`#${i}:`, table.accountKey.toBase58());
+    // });
+    // console.log("staticAccountKeys");
+    // (swapTransaction as anchor.web3.VersionedTransaction).message.staticAccountKeys.forEach((key, i) => {
+    //   console.log(`#${i}:`, key.toBase58());
+    // });
 
     let isTxV2 = true;
     if ((swapTransaction as anchor.web3.Transaction).instructions) {
@@ -150,22 +155,22 @@ export class ProtocolJupiter implements IProtocolSwap {
       };
 
       payload.set(swapConfig.inputAmount);
-      console.log("payload:", payload);
+      // console.log("payload:", payload);
       payload.set(swapConfig.outputAmount, 8);
-      console.log("payload:", payload);
+      // console.log("payload:", payload);
       payload.set(swapConfig.slippageBps, 16);
-      console.log("payload:", payload);
+      // console.log("payload:", payload);
       // payload.set(swapConfig.platformFeeBps, 18);
       // console.log("payload:", payload);
       payload.set(swapConfig.protocolConfig, 18);
-      console.log("payload:", payload);
+      // console.log("payload:", payload);
       // payload.set([255], 18 + swapConfig.protocolConfig.length); // for on-chain identify
       // console.log("payload:", payload);
 
       this._gatewayParams.swapConfig.push(...swapConfig.inputAmount);
       this._gatewayParams.swapConfig.push(...swapConfig.outputAmount);
       this._gatewayParams.swapConfig.push(...swapConfig.slippageBps);
-      this._gatewayParams.swapConfig.push(...swapConfig.platformFeeBps);
+      // this._gatewayParams.swapConfig.push(...swapConfig.platformFeeBps);
       this._gatewayParams.swapConfig.push(...swapConfig.protocolConfig);
       console.log("swapConfig:", this._gatewayParams.swapConfig);
       swapIx.data = swapDiscriminator;
@@ -179,15 +184,15 @@ export class ProtocolJupiter implements IProtocolSwap {
         ...swapIx.accountKeyIndexes,
       ];
       swapTx.message.compiledInstructions[swapIndex] = swapIx;
-      console.log("after wrap tx:", swapTx);
-      console.log("compiledInstructions");
-      swapTx.message.compiledInstructions.forEach((ix, i) => {
-        console.log(`#${i}:`, ix);
-      });
-      console.log("staticAccountKeys");
-      swapTx.message.staticAccountKeys.forEach((key, i) => {
-        console.log(`#${i}:`, key.toBase58());
-      });
+      // console.log("after wrap tx:", swapTx);
+      // console.log("compiledInstructions");
+      // swapTx.message.compiledInstructions.forEach((ix, i) => {
+      //   console.log(`#${i}:`, ix);
+      // });
+      // console.log("staticAccountKeys");
+      // swapTx.message.staticAccountKeys.forEach((key, i) => {
+      //   console.log(`#${i}:`, key.toBase58());
+      // });
       txs = [swapTx];
     } else {
       let isPreIx = true;
@@ -213,8 +218,8 @@ export class ProtocolJupiter implements IProtocolSwap {
         slippageBps: Buffer.from(rawData.slice(rawData.byteLength - 3, rawData.byteLength - 1)), // u16
         platformFeeBps: Buffer.from(rawData.slice(rawData.byteLength - 1, rawData.byteLength)), // u8
       };
-      console.log("data:", swapIx.data);
-      console.log("swapConfig:", swapConfig);
+      // console.log("data:", swapIx.data);
+      // console.log("swapConfig:", swapConfig);
 
       const preTx = new anchor.web3.Transaction();
       if (preInstructions.length > 0) preTx.add(...preInstructions);
@@ -234,7 +239,7 @@ export class ProtocolJupiter implements IProtocolSwap {
         .remainingAccounts(remainingAccounts)
         .transaction();
 
-      console.log("remainingAccounts:");
+      // console.log("remainingAccounts:");
       remainingAccounts.forEach((acc, i) => {
         console.log(`#${i}:`, acc.pubkey.toBase58());
       });
@@ -242,10 +247,10 @@ export class ProtocolJupiter implements IProtocolSwap {
       payload.set(swapConfig.inputAmount);
       payload.set(swapConfig.outputAmount, 8);
       payload.set(swapConfig.slippageBps, 16);
-      payload.set(swapConfig.platformFeeBps, 18);
-      payload.set(swapConfig.protocolConfig, 19);
+      // payload.set(swapConfig.platformFeeBps, 18);
+      payload.set(swapConfig.protocolConfig, 18);
       // payload.set([255], 19 + swapConfig.protocolConfig.length);
-      console.log("payload:", payload);
+      // console.log("payload:", payload);
       // inputLayout.encode(
       //   {
       //     inputAmount: new anchor.BN(5000),
@@ -258,15 +263,15 @@ export class ProtocolJupiter implements IProtocolSwap {
       const slippage = new BN(swapConfig.slippageBps, "le");
       const fee = new BN(swapConfig.platformFeeBps, "le");
 
-      console.log("inputAmount:", Number(inputAmount));
-      console.log("outputAmount:", Number(outputAmount));
-      console.log("slippage:", Number(slippage));
-      console.log("fee:", Number(fee));
+      // console.log("inputAmount:", Number(inputAmount));
+      // console.log("outputAmount:", Number(outputAmount));
+      // console.log("slippage:", Number(slippage));
+      // console.log("fee:", Number(fee));
 
       this._gatewayParams.swapConfig.push(...swapConfig.inputAmount);
       this._gatewayParams.swapConfig.push(...swapConfig.outputAmount);
       this._gatewayParams.swapConfig.push(...swapConfig.slippageBps);
-      this._gatewayParams.swapConfig.push(...swapConfig.platformFeeBps);
+      // this._gatewayParams.swapConfig.push(...swapConfig.platformFeeBps);
       this._gatewayParams.swapConfig.push(...swapConfig.protocolConfig);
       console.log("swapConfig:", this._gatewayParams.swapConfig);
 

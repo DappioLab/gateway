@@ -53,21 +53,25 @@ describe("Gateway", () => {
     const swapParams: SwapParams = {
       protocol: SupportedProtocols.Jupiter,
       fromTokenMint: new PublicKey(
-        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
+        // "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
         // "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" // RAY
+        "So11111111111111111111111111111111111111112" // WSOL
+        // "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" // SRM
       ),
       toTokenMint: new PublicKey(
         // "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" // RAY
         // "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" // USDT
         // "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
-        // "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" // SRM
-        "So11111111111111111111111111111111111111112" // WSOL
+        "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" // SRM
+        // "So11111111111111111111111111111111111111112" // WSOL
         // "GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz" // GENE
         // "66edZnAPEJSxnAK4SckuupssXpbu5doV57FUcghaqPsY" // PRGC
         // "7s6NLX42eURZfpyuKkVLrr9ED9hJE8718cyXFsYKqq5g" // GEAR
+        // "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263" // Bonk
       ),
       amount: zapInAmount, // Swap half of the fromToken to proceed zapIn
       slippage: 1,
+      jupiterMarketUrl: "https://rpc-mainnet-fork.epochs.studio/jup/market.json",
     };
 
     const gateway = new GatewayBuilder(provider);
@@ -81,11 +85,6 @@ describe("Gateway", () => {
 
     const txs = gateway.transactions();
     console.log(txs);
-    // const connection = new Connection("https://rpc-mainnet-fork.epochs.studio", {
-    //   commitment: "confirmed",
-    //   wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
-    // });
-    // provider = new anchor.AnchorProvider(connection, wallet, options);
 
     console.log("======");
     console.log("Txs are sent...");
@@ -100,9 +99,9 @@ describe("Gateway", () => {
       } else {
         const txV2 = tx as anchor.web3.VersionedTransaction;
         txV2.message.recentBlockhash = recentBlockhash.blockhash;
+        console.log(txV2.serialize().length);
         txV2.sign([wallet.payer]);
         let versionMessage = txV2.serialize();
-        console.log(Buffer.from(versionMessage).toString("base64"));
         //const result = sendAndConfirmTransaction(connection, tx, wallet);
         const sig = await connection.sendRawTransaction(versionMessage, {
           skipPreflight: true,

@@ -106,8 +106,8 @@ export class GatewayBuilder {
       // Extra Metadata
       poolDirection: PoolDirection.Obverse,
       swapMinOutAmount: new anchor.BN(0),
-      swapConfig: [],
       farmType: [],
+      swapConfig: [],
     };
 
     this._metadata = {
@@ -130,6 +130,9 @@ export class GatewayBuilder {
   // IProtocolSwap
   async swap(swapParams: SwapParams): Promise<GatewayBuilder> {
     // NOTE: No need to push protocol / action to queue since Jupiter apapter is not implemented yet
+    this.params.actionQueue.push(ActionType.Swap);
+    this.params.protocolQueue.push(swapParams.protocol);
+    this.params.versionQueue.push(1);
     this._metadata.fromTokenMint = swapParams.fromTokenMint;
     this._metadata.toTokenMint = swapParams.toTokenMint;
 
@@ -158,9 +161,6 @@ export class GatewayBuilder {
         this._metadata.routes = Boolean(this._metadata.routes)
           ? [...this._metadata.routes, await protocol.getRoute()]
           : [await protocol.getRoute()];
-
-        this._transactions = [...this._transactions, ...(await protocol.swap())];
-
         break;
       default:
         throw new Error("Unsupported Protocol");
@@ -1685,20 +1685,20 @@ export class GatewayBuilder {
     }
 
     // ZapIn only: Update poolTokenAInAmount if swapOutAmount has value
-    if (this.params?.swapMinOutAmount?.toNumber() > 0) {
-      const indexAddLiquidity = this.params.actionQueue.indexOf(ActionType.AddLiquidity);
-      // Note: ZapIn only
-      if (indexAddLiquidity > 0) {
-        switch (this.params.poolDirection) {
-          case PoolDirection.Obverse:
-            this.params.payloadQueue[indexAddLiquidity] = new anchor.BN(this.params.swapMinOutAmount.toNumber());
-            break;
-          case PoolDirection.Reverse:
-            this.params.payloadQueue[indexAddLiquidity] = new anchor.BN(this.params.swapMinOutAmount.toNumber());
-            break;
-        }
-      }
-    }
+    // if (this.params?.swapMinOutAmount?.toNumber() > 0) {
+    //   const indexAddLiquidity = this.params.actionQueue.indexOf(ActionType.AddLiquidity);
+    //   // Note: ZapIn only
+    //   if (indexAddLiquidity > 0) {
+    //     switch (this.params.poolDirection) {
+    //       case PoolDirection.Obverse:
+    //         this.params.payloadQueue[indexAddLiquidity] = new anchor.BN(this.params.swapMinOutAmount.toNumber());
+    //         break;
+    //       case PoolDirection.Reverse:
+    //         this.params.payloadQueue[indexAddLiquidity] = new anchor.BN(this.params.swapMinOutAmount.toNumber());
+    //         break;
+    //     }
+    //   }
+    // }
   }
 
   async finalize(): Promise<GatewayBuilder> {

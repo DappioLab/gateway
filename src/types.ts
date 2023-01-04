@@ -467,15 +467,15 @@ export type GatewayParams = TypeDef<
           type: "u8";
         },
         {
-          name: "swapConfig";
-          type: {
-            array: ["u8", 32];
-          };
-        },
-        {
           name: "farmType";
           type: {
             array: ["u64", 2];
+          };
+        },
+        {
+          name: "swapConfig";
+          type: {
+            array: ["u8", 32];
           };
         }
       ];
