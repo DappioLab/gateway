@@ -1,18 +1,7 @@
 import * as anchor from "@project-serum/anchor";
 import { PublicKey, Connection } from "@solana/web3.js";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
-import { getAccount, getAssociatedTokenAddress } from "@solana/spl-token-v2";
-import {
-  AddLiquidityParams,
-  StakeParams,
-  GatewayBuilder,
-  SupportedProtocols,
-  SwapParams,
-  UnstakeParams,
-  RemoveLiquidityParams,
-  HarvestParams,
-} from "../src";
-import { raydium } from "@dappio-wonderland/navigator";
+import { GatewayBuilder, SupportedProtocols, SwapParams } from "../src";
 
 describe("Gateway", () => {
   const connection = new Connection("https://rpc-mainnet-fork.epochs.studio", {
