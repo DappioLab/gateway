@@ -8,7 +8,7 @@
     "dist"
   ],
   "dependencies": {
-    "@dappio-wonderland/gateway-idls": "^0.2.8-test-0d6d0430",
+    "@dappio-wonderland/gateway-idls": "^0.2.8-test-57afaf35",
     "@dappio-wonderland/navigator": "^0.2.26",
     "@dappio-wonderland/utils": "^0.2.0",
     "@jup-ag/core": "4.0.0-beta.3",
