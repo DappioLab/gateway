@@ -50,7 +50,7 @@ describe("Gateway", () => {
   const zapInAmount = 10000;
 
   it("Swap in Jupiter", async () => {
-    const swapParams: SwapParams = {
+    const swapParams1: SwapParams = {
       protocol: SupportedProtocols.Jupiter,
       fromTokenMint: new PublicKey(
         // "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
@@ -60,10 +60,34 @@ describe("Gateway", () => {
       ),
       toTokenMint: new PublicKey(
         // "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" // RAY
+        "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" // USDT
+        // "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
+        // "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" // SRM
+        // "So11111111111111111111111111111111111111112" // WSOL
+        // "GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz" // GENE
+        // "66edZnAPEJSxnAK4SckuupssXpbu5doV57FUcghaqPsY" // PRGC
+        // "7s6NLX42eURZfpyuKkVLrr9ED9hJE8718cyXFsYKqq5g" // GEAR
+        // "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263" // Bonk
+      ),
+      amount: zapInAmount, // Swap half of the fromToken to proceed zapIn
+      slippage: 1,
+      jupiterMarketUrl: "https://rpc-mainnet-fork.epochs.studio/jup/market.json",
+    };
+
+    const swapParams2: SwapParams = {
+      protocol: SupportedProtocols.Jupiter,
+      fromTokenMint: new PublicKey(
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
+        // "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" // RAY
+        // "So11111111111111111111111111111111111111112" // WSOL
+        // "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" // SRM
+      ),
+      toTokenMint: new PublicKey(
+        // "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" // RAY
         // "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" // USDT
         // "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
-        "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" // SRM
-        // "So11111111111111111111111111111111111111112" // WSOL
+        // "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" // SRM
+        "So11111111111111111111111111111111111111112" // WSOL
         // "GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz" // GENE
         // "66edZnAPEJSxnAK4SckuupssXpbu5doV57FUcghaqPsY" // PRGC
         // "7s6NLX42eURZfpyuKkVLrr9ED9hJE8718cyXFsYKqq5g" // GEAR
@@ -76,7 +100,8 @@ describe("Gateway", () => {
 
     const gateway = new GatewayBuilder(provider);
 
-    await gateway.swap(swapParams);
+    await gateway.swap(swapParams1);
+    await gateway.swap(swapParams2);
     await gateway.finalize();
 
     console.log(gateway.params);
