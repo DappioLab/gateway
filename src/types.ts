@@ -473,9 +473,29 @@ export type GatewayParams = TypeDef<
           };
         },
         {
-          name: "swapConfig";
+          name: "swapIndex";
+          type: "u8";
+        },
+        {
+          name: "swapAmountConfig";
           type: {
-            array: ["u8", 32];
+            array: [
+              {
+                array: ["u8", 18];
+              },
+              4
+            ];
+          };
+        },
+        {
+          name: "swapRouteConfig";
+          type: {
+            array: [
+              {
+                array: ["u8", 30];
+              },
+              4
+            ];
           };
         }
       ];

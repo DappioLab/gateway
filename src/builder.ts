@@ -107,7 +107,9 @@ export class GatewayBuilder {
       poolDirection: PoolDirection.Obverse,
       swapMinOutAmount: new anchor.BN(0),
       farmType: [],
-      swapConfig: [],
+      swapIndex: 0,
+      swapAmountConfig: [] as Uint8Array[],
+      swapRouteConfig: [] as Uint8Array[],
     };
 
     this._metadata = {

@@ -9,6 +9,13 @@ import { getActivityIndex, getGatewayAuthority, sigHash } from "../utils";
 import { struct, u64 } from "@project-serum/borsh";
 import { BN } from "bn.js";
 
+// Parameter for storing `SwapLeg` from Jupiter
+const MAX_SWAP_CONFIG_SIZE = 30;
+// Parameter for swap hop allowed in Jupiter route, currently Jupiter set to 3.
+// But we target to 2 due to CPI still have ix size restriction now, track progress here:
+// https://github.com/solana-labs/solana/issues/26641
+const MAX_ROUTE_HOP = 2;
+
 interface ProtocolJupiterParams extends SwapParams {
   userKey: anchor.web3.PublicKey;
 }
@@ -25,12 +32,6 @@ export class ProtocolJupiter implements IProtocolSwap {
     private _gatewayParams: GatewayParams,
     private _params: ProtocolJupiterParams
   ) {}
-  // constructor(
-  //   private _connection: anchor.web3.Connection,
-  //   private _gatewayProgram: anchor.Program<Gateway>,
-  //   private _gatewayStateKey: anchor.web3.PublicKey,
-  //   private _gatewayParams: GatewayParams
-  // ) {}
 
   async build(): Promise<void> {
     this._jupiter = await Jupiter.load({
@@ -49,7 +50,7 @@ export class ProtocolJupiter implements IProtocolSwap {
     });
     this._bestRoute = routes.routesInfos[0];
     for (let route of routes.routesInfos) {
-      if (route.marketInfos.length <= 2) {
+      if (route.marketInfos.length <= MAX_ROUTE_HOP) {
         this._bestRoute = route;
         break;
       }
@@ -59,37 +60,17 @@ export class ProtocolJupiter implements IProtocolSwap {
   async swap(): Promise<{ txs: (anchor.web3.Transaction | anchor.web3.VersionedTransaction)[]; input: Buffer }> {
     // Handle payload input here
     let payload = Buffer.alloc(PAYLOAD_SIZE);
+    let swapRouteConfig = Buffer.alloc(MAX_SWAP_CONFIG_SIZE);
 
     let txs: (anchor.web3.Transaction | anchor.web3.VersionedTransaction)[] = [];
     const preInstructions: anchor.web3.TransactionInstruction[] = [];
     const postInstructions: anchor.web3.TransactionInstruction[] = [];
     let remainingAccounts: anchor.web3.AccountMeta[];
 
-    // tx v1
-    // const { transactions } = await this._jupiter.exchange({
-    //   routeInfo: this._bestRoute,
-    //   userPublicKey: this._params.userKey,
-    // });
-    // const { setupTransaction, swapTransaction, cleanupTransaction } = transactions;
-
-    // tx v2
     let { swapTransaction } = await this._jupiter.exchange({
       routeInfo: this._bestRoute,
       userPublicKey: this._params.userKey,
     });
-    // console.log(swapTransaction);
-    // console.log("compiledInstructions");
-    // (swapTransaction as anchor.web3.VersionedTransaction).message.compiledInstructions.forEach((ix, i) => {
-    //   console.log(`#${i}:`, ix);
-    // });
-    // console.log("addressTableLookups");
-    // (swapTransaction as anchor.web3.VersionedTransaction).message.addressTableLookups.forEach((table, i) => {
-    //   console.log(`#${i}:`, table.accountKey.toBase58());
-    // });
-    // console.log("staticAccountKeys");
-    // (swapTransaction as anchor.web3.VersionedTransaction).message.staticAccountKeys.forEach((key, i) => {
-    //   console.log(`#${i}:`, key.toBase58());
-    // });
 
     let isTxV2 = true;
     if ((swapTransaction as anchor.web3.Transaction).instructions) {
@@ -147,7 +128,7 @@ export class ProtocolJupiter implements IProtocolSwap {
 
       const rawData = Uint8Array.from(swapIx.data);
       const swapConfig = {
-        protocolConfig: Buffer.from(rawData.slice(8, rawData.byteLength - 19)), // 7 - 9 bytes
+        protocolConfig: Buffer.from(rawData.slice(8, rawData.byteLength - 19)), // (regular)7 - 12 bytes, but sometimes(split swap) might be upto 17 bytes
         inputAmount: Buffer.from(rawData.slice(rawData.byteLength - 19, rawData.byteLength - 11)), // u64
         outputAmount: Buffer.from(rawData.slice(rawData.byteLength - 11, rawData.byteLength - 3)), // u64
         slippageBps: Buffer.from(rawData.slice(rawData.byteLength - 3, rawData.byteLength - 1)), // u16
@@ -155,24 +136,19 @@ export class ProtocolJupiter implements IProtocolSwap {
       };
 
       payload.set(swapConfig.inputAmount);
-      // console.log("payload:", payload);
       payload.set(swapConfig.outputAmount, 8);
-      // console.log("payload:", payload);
       payload.set(swapConfig.slippageBps, 16);
-      // console.log("payload:", payload);
-      // payload.set(swapConfig.platformFeeBps, 18);
-      // console.log("payload:", payload);
-      payload.set(swapConfig.protocolConfig, 18);
-      // console.log("payload:", payload);
-      // payload.set([255], 18 + swapConfig.protocolConfig.length); // for on-chain identify
-      // console.log("payload:", payload);
+      if (swapConfig.protocolConfig.length < MAX_SWAP_CONFIG_SIZE) {
+        swapRouteConfig.set([swapConfig.protocolConfig.length], 0);
+        swapRouteConfig.set(swapConfig.protocolConfig, 1);
+      } else if (swapConfig.protocolConfig.length == MAX_SWAP_CONFIG_SIZE) {
+        payload.set(swapConfig.protocolConfig, 0);
+      } else {
+        throw `Error: Currently Gateway only support swap config under ${MAX_SWAP_CONFIG_SIZE} bytes,\nplease change to another route to fix it or wait for the updates.`;
+      }
+      (this._gatewayParams.swapAmountConfig as Uint8Array[]).push(payload.subarray(0, 18));
+      (this._gatewayParams.swapRouteConfig as Uint8Array[]).push(swapRouteConfig);
 
-      this._gatewayParams.swapConfig.push(...swapConfig.inputAmount);
-      this._gatewayParams.swapConfig.push(...swapConfig.outputAmount);
-      this._gatewayParams.swapConfig.push(...swapConfig.slippageBps);
-      // this._gatewayParams.swapConfig.push(...swapConfig.platformFeeBps);
-      this._gatewayParams.swapConfig.push(...swapConfig.protocolConfig);
-      console.log("swapConfig:", this._gatewayParams.swapConfig);
       swapIx.data = swapDiscriminator;
       swapIx.programIdIndex = gatewayProgramIndex;
       swapIx.accountKeyIndexes = [
@@ -184,15 +160,6 @@ export class ProtocolJupiter implements IProtocolSwap {
         ...swapIx.accountKeyIndexes,
       ];
       swapTx.message.compiledInstructions[swapIndex] = swapIx;
-      // console.log("after wrap tx:", swapTx);
-      // console.log("compiledInstructions");
-      // swapTx.message.compiledInstructions.forEach((ix, i) => {
-      //   console.log(`#${i}:`, ix);
-      // });
-      // console.log("staticAccountKeys");
-      // swapTx.message.staticAccountKeys.forEach((key, i) => {
-      //   console.log(`#${i}:`, key.toBase58());
-      // });
       txs = [swapTx];
     } else {
       let isPreIx = true;
@@ -212,14 +179,26 @@ export class ProtocolJupiter implements IProtocolSwap {
       // Extract config
       const rawData = Uint8Array.from(swapIx.data);
       const swapConfig = {
-        protocolConfig: Buffer.from(rawData.slice(8, rawData.byteLength - 19)), // 7 - 9 bytes
+        protocolConfig: Buffer.from(rawData.slice(8, rawData.byteLength - 19)), // (regular)7 - 9 bytes, but sometimes(split swap) might be upto 17 bytes
         inputAmount: Buffer.from(rawData.slice(rawData.byteLength - 19, rawData.byteLength - 11)), // u64
         outputAmount: Buffer.from(rawData.slice(rawData.byteLength - 11, rawData.byteLength - 3)), // u64
         slippageBps: Buffer.from(rawData.slice(rawData.byteLength - 3, rawData.byteLength - 1)), // u16
         platformFeeBps: Buffer.from(rawData.slice(rawData.byteLength - 1, rawData.byteLength)), // u8
       };
-      // console.log("data:", swapIx.data);
-      // console.log("swapConfig:", swapConfig);
+
+      payload.set(swapConfig.inputAmount);
+      payload.set(swapConfig.outputAmount, 8);
+      payload.set(swapConfig.slippageBps, 16);
+      if (swapConfig.protocolConfig.length < MAX_SWAP_CONFIG_SIZE) {
+        swapRouteConfig.set([swapConfig.protocolConfig.length], 0);
+        swapRouteConfig.set(swapConfig.protocolConfig, 1);
+      } else if (swapConfig.protocolConfig.length == MAX_SWAP_CONFIG_SIZE) {
+        payload.set(swapConfig.protocolConfig, 0);
+      } else {
+        throw `Error: Currently Gateway only support swap config under ${MAX_SWAP_CONFIG_SIZE} bytes,\nplease change to another route to fix it or wait for the updates.`;
+      }
+      (this._gatewayParams.swapAmountConfig as Uint8Array[]).push(payload.subarray(0, 18));
+      (this._gatewayParams.swapRouteConfig as Uint8Array[]).push(swapRouteConfig);
 
       const preTx = new anchor.web3.Transaction();
       if (preInstructions.length > 0) preTx.add(...preInstructions);
@@ -234,52 +213,9 @@ export class ProtocolJupiter implements IProtocolSwap {
           activityIndex: await getActivityIndex(this._params.userKey),
           gatewayAuthority: getGatewayAuthority(),
         })
-        // .preInstructions(preInstructions)
-        // .postInstructions(postInstructions)
         .remainingAccounts(remainingAccounts)
         .transaction();
 
-      // console.log("remainingAccounts:");
-      remainingAccounts.forEach((acc, i) => {
-        console.log(`#${i}:`, acc.pubkey.toBase58());
-      });
-
-      payload.set(swapConfig.inputAmount);
-      payload.set(swapConfig.outputAmount, 8);
-      payload.set(swapConfig.slippageBps, 16);
-      // payload.set(swapConfig.platformFeeBps, 18);
-      payload.set(swapConfig.protocolConfig, 18);
-      // payload.set([255], 19 + swapConfig.protocolConfig.length);
-      // console.log("payload:", payload);
-      // inputLayout.encode(
-      //   {
-      //     inputAmount: new anchor.BN(5000),
-      //   },
-      //   payload
-      // );
-
-      const inputAmount = new BN(swapConfig.inputAmount, "le");
-      const outputAmount = new BN(swapConfig.outputAmount, "le");
-      const slippage = new BN(swapConfig.slippageBps, "le");
-      const fee = new BN(swapConfig.platformFeeBps, "le");
-
-      // console.log("inputAmount:", Number(inputAmount));
-      // console.log("outputAmount:", Number(outputAmount));
-      // console.log("slippage:", Number(slippage));
-      // console.log("fee:", Number(fee));
-
-      this._gatewayParams.swapConfig.push(...swapConfig.inputAmount);
-      this._gatewayParams.swapConfig.push(...swapConfig.outputAmount);
-      this._gatewayParams.swapConfig.push(...swapConfig.slippageBps);
-      // this._gatewayParams.swapConfig.push(...swapConfig.platformFeeBps);
-      this._gatewayParams.swapConfig.push(...swapConfig.protocolConfig);
-      console.log("swapConfig:", this._gatewayParams.swapConfig);
-
-      // for (let transaction of [setupTransaction, txSwap, cleanupTransaction]
-      //   .filter(Boolean)
-      //   .filter((tx) => tx.instructions.length > 0)) {
-      //   this._transactions.push(transaction);
-      // }
       txs.push(txSwap);
       if (preTx.instructions.length > 0) {
         txs = [preTx, ...txs];
@@ -288,9 +224,6 @@ export class ProtocolJupiter implements IProtocolSwap {
         txs = [...txs, postTx];
       }
     }
-    // console.log("setupTransaction:", setupTransaction);
-    // console.log("txSwap:", txSwap);
-    // console.log("cleanupTransaction:", cleanupTransaction);
 
     return { txs, input: payload };
   }
