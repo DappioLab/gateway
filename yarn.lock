@@ -129,10 +129,10 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@jup-ag/core@4.0.0-beta.3":
-  version "4.0.0-beta.3"
-  resolved "https://registry.yarnpkg.com/@jup-ag/core/-/core-4.0.0-beta.3.tgz#3b39a57e5a3a5d39419a244c5336cd486e5f924b"
-  integrity sha512-PynU/337qxrUY+i0GE59Y/D+sWWNlqxFSTEKPA6Uu5H6Urf9+wqZ+LxkZd6iiivALRpCtfO+iQXMU5AIWJYFpw==
+"@jup-ag/core@4.0.0-beta.4":
+  version "4.0.0-beta.4"
+  resolved "https://registry.yarnpkg.com/@jup-ag/core/-/core-4.0.0-beta.4.tgz#d1b7be4e553537efa39b26c0d420bd44b42a3b15"
+  integrity sha512-6R5DdoOC1OTaAQND4Rnq1TjYBCrqjv/x/bZJDOJYdgj8rdvxtUEQkCco7E1j3eLspagV+1p/MolXdPLw21ZwNA==
   dependencies:
     "@jup-ag/crema-sdk-v2" "2.1.6"
     "@jup-ag/cykura-sdk" "0.1.25"
@@ -144,12 +144,12 @@
     "@jup-ag/invariant" "0.9.35"
     "@jup-ag/lifinity-sdk" "0.1.72"
     "@jup-ag/lifinity-sdk-v2" "1.0.8"
-    "@jup-ag/math" "4.0.0-beta.3"
+    "@jup-ag/math" "4.0.0-beta.4"
     "@jup-ag/raydium-clmm-sdk" "1.0.2"
     "@jup-ag/whirlpools-sdk" "0.7.2"
-    "@mercurial-finance/dynamic-amm-sdk" "0.1.9"
+    "@mercurial-finance/dynamic-amm-sdk" "0.1.12"
     "@mercurial-finance/optimist" "0.2.0"
-    "@mercurial-finance/vault-sdk" "0.3.2"
+    "@mercurial-finance/vault-sdk" "0.3.3"
     "@noble/hashes" "1.1.2"
     "@project-serum/anchor" "0.24.2"
     "@project-serum/serum" "0.13.65"
@@ -255,10 +255,10 @@
     "@solana/web3.js" "1.31.0"
     decimal.js "^10.3.1"
 
-"@jup-ag/math@4.0.0-beta.3":
-  version "4.0.0-beta.3"
-  resolved "https://registry.yarnpkg.com/@jup-ag/math/-/math-4.0.0-beta.3.tgz#e813c50c28e5d8989fbfed826cbec5c30cf968c1"
-  integrity sha512-HchwfQGgh+FKpxRx1oIsXbXdvs06XepPwZS9XkzWiGgZRPHDOzRebwwi1dhKCHkDCvKZp3NfY/DWuCAo9QnaPg==
+"@jup-ag/math@4.0.0-beta.4":
+  version "4.0.0-beta.4"
+  resolved "https://registry.yarnpkg.com/@jup-ag/math/-/math-4.0.0-beta.4.tgz#f4265cbfc3a27c34ceb35f2491e57525a045fe10"
+  integrity sha512-k9RKAb4DAPjjD7rvWfXNErIuyW8JutCyaLQchv3IRdBoyOMduxyJCslmTU/gur/RmMOHYLXoYjFYRUFVHMptGQ==
   dependencies:
     decimal.js "10.4.2"
     jsbi "4.3.0"
@@ -296,12 +296,12 @@
     decimal.js "^10.3.1"
     tiny-invariant "^1.1.0"
 
-"@mercurial-finance/dynamic-amm-sdk@0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@mercurial-finance/dynamic-amm-sdk/-/dynamic-amm-sdk-0.1.9.tgz#79986840a04fe2d7e63bc30fb4e4e33f0b3308da"
-  integrity sha512-yT0kPdA2plA/PFTphPJ++Sz802yYJMBSUhVfn8giP1hpn0tDG+E+c8VimOR3a7xj5iAlXf+eIeirxFmrdrbxiQ==
+"@mercurial-finance/dynamic-amm-sdk@0.1.12":
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/@mercurial-finance/dynamic-amm-sdk/-/dynamic-amm-sdk-0.1.12.tgz#24e63c8c6b8f876fb8f643c4f20e34ffc2a9da8a"
+  integrity sha512-MscZP0Mpzs0oo7KsOZlQWvpwKSKAE+baf0E5usseuVnMvarYDDw/7gnZFt2Ot/lFRxv79McqwcV/mLJWW25OnQ==
   dependencies:
-    "@mercurial-finance/vault-sdk" "0.3.2"
+    "@mercurial-finance/vault-sdk" "0.3.3"
     "@project-serum/anchor" "0.24.2"
     "@saberhq/anchor-contrib" "^1.13.32"
     "@saberhq/stableswap-sdk" "^1.13.32"
@@ -369,10 +369,10 @@
     "@solana/web3.js" "^1.66.2"
     lodash "^4.17.21"
 
-"@mercurial-finance/vault-sdk@0.3.2":
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/@mercurial-finance/vault-sdk/-/vault-sdk-0.3.2.tgz#6ed4643f8b254274bc0e122085611cd11e181d96"
-  integrity sha512-q5mulo3KQKzfC0eqKB83+5oRW0iwR7mje6PDN2Y85cMS4OWpQc7y2uYWN8toVgwQKFfnkomp/mDnuRsgqZHTnw==
+"@mercurial-finance/vault-sdk@0.3.3":
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/@mercurial-finance/vault-sdk/-/vault-sdk-0.3.3.tgz#57aed78db652718190b6ee7d954644f88a189062"
+  integrity sha512-6zSLrvQp03x5101DV5+mZaQ3VZ+f78KQgGQEarMPrjm80F/Eb5ElNh7Od9S0BsEfL7nocM8yIi424wgH17/gLQ==
   dependencies:
     "@blockworks-foundation/mango-client" "^3.4.7"
     "@mercurial-finance/apricot-sdk" "0.17.6"
@@ -387,7 +387,6 @@
     "@solana/buffer-layout" "^4.0.0"
     "@solana/spl-token" "0.1.8"
     "@solana/spl-token-registry" "0.2.1105"
-    "@solana/wallet-adapter-base" "^0.9.5"
     "@solana/web3.js" "^1.42.0"
     bn.js "5.2.1"
     cross-fetch "^3.1.5"
@@ -863,13 +862,6 @@
     buffer "6.0.3"
     buffer-layout "^1.2.0"
     dotenv "10.0.0"
-
-"@solana/wallet-adapter-base@^0.9.5":
-  version "0.9.20"
-  resolved "https://registry.yarnpkg.com/@solana/wallet-adapter-base/-/wallet-adapter-base-0.9.20.tgz#42a3a2f42db9f6a41e36a132ee5a06a0bd3784f0"
-  integrity sha512-ZvnhJ4EJk61oyuBH/a9tMpUfeWQ3g3Cc0Nzl1NzE4SdqEhiNoEW8HXDig9HMemZ9bIEUxIpPWxp+SwjVl0u+rg==
-  dependencies:
-    eventemitter3 "^4.0.0"
 
 "@solana/web3.js@1.31.0", "@solana/web3.js@^1.17.0", "@solana/web3.js@^1.21.0", "@solana/web3.js@^1.31.0", "@solana/web3.js@^1.32.0", "@solana/web3.js@^1.36.0", "@solana/web3.js@^1.37.0", "@solana/web3.js@^1.41.1", "@solana/web3.js@^1.42.0", "@solana/web3.js@^1.43.5", "@solana/web3.js@^1.50.1", "@solana/web3.js@^1.52.0", "@solana/web3.js@^1.63.0", "@solana/web3.js@^1.66.0", "@solana/web3.js@^1.66.2":
   version "1.70.0"
@@ -1465,7 +1457,7 @@ event-stream@=3.3.4:
     stream-combiner "~0.0.4"
     through "~2.3.1"
 
-eventemitter3@^4.0.0, eventemitter3@^4.0.7:
+eventemitter3@^4.0.7:
   version "4.0.7"
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.7.tgz#2de9b68f6528d5644ef5c59526a1b4a07306169f"
   integrity sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==
