@@ -15,6 +15,9 @@ const MAX_SWAP_CONFIG_SIZE = 30;
 // But we target to 2 due to CPI still have ix size restriction now, track progress here:
 // https://github.com/solana-labs/solana/issues/26641
 const MAX_ROUTE_HOP = 2;
+// Constraint to avoid exceed tx size limit after adding gateway keys in swap tx Jupiter generated
+const MAX_STATIC_KEYS = 27;
+const MAX_RAW_SWAP_TX_SIZE = 1072;
 
 interface ProtocolJupiterParams extends SwapParams {
   userKey: anchor.web3.PublicKey;
@@ -23,7 +26,8 @@ interface ProtocolJupiterParams extends SwapParams {
 export class ProtocolJupiter implements IProtocolSwap {
   private _jupiter: Jupiter;
   private _bestRoute: RouteInfo;
-  private _transactions: anchor.web3.Transaction[] = [];
+  private _transaction: anchor.web3.Transaction | anchor.web3.VersionedTransaction;
+  private _addressLookupTableAccounts: anchor.web3.AddressLookupTableAccount[] = [];
 
   constructor(
     private _connection: anchor.web3.Connection,
@@ -48,11 +52,18 @@ export class ProtocolJupiter implements IProtocolSwap {
       // intermediateTokens, if provided will only find routes that use the intermediate tokens
       // feeBps
     });
+
     this._bestRoute = routes.routesInfos[0];
-    for (let route of routes.routesInfos) {
-      if (route.marketInfos.length <= MAX_ROUTE_HOP) {
+    for (let [i, route] of routes.routesInfos.entries()) {
+      const { isLegible, swapTransaction, addressLookupTableAccounts } = await this._legibleRoute(route);
+      if (isLegible) {
         this._bestRoute = route;
+        this._transaction = swapTransaction;
+        this._addressLookupTableAccounts = addressLookupTableAccounts;
         break;
+      }
+      if (i == routes.routesInfos.length - 1) {
+        throw "Error: Failed to find a route that can pass through gateway.";
       }
     }
   }
@@ -67,10 +78,19 @@ export class ProtocolJupiter implements IProtocolSwap {
     const postInstructions: anchor.web3.TransactionInstruction[] = [];
     let remainingAccounts: anchor.web3.AccountMeta[];
 
-    let { swapTransaction } = await this._jupiter.exchange({
-      routeInfo: this._bestRoute,
-      userPublicKey: this._params.userKey,
-    });
+    let swapTransaction: anchor.web3.Transaction | anchor.web3.VersionedTransaction;
+    let addressLookupTableAccounts: anchor.web3.AddressLookupTableAccount[];
+    if (this._transaction) {
+      swapTransaction = this._transaction;
+      addressLookupTableAccounts = this._addressLookupTableAccounts;
+    } else {
+      let exchangeInfo = await this._jupiter.exchange({
+        routeInfo: this._bestRoute,
+        userPublicKey: this._params.userKey,
+      });
+      swapTransaction = exchangeInfo.swapTransaction;
+      addressLookupTableAccounts = exchangeInfo.addressLookupTableAccounts;
+    }
 
     let isTxV2 = true;
     if ((swapTransaction as anchor.web3.Transaction).instructions) {
@@ -240,5 +260,36 @@ export class ProtocolJupiter implements IProtocolSwap {
         userPublicKey: this._params.userKey,
       }),
     };
+  }
+
+  private async _legibleRoute(routeInfo: RouteInfo): Promise<{
+    isLegible: boolean;
+    swapTransaction: anchor.web3.Transaction | anchor.web3.VersionedTransaction;
+    addressLookupTableAccounts: anchor.web3.AddressLookupTableAccount[];
+  }> {
+    let { swapTransaction, addressLookupTableAccounts } = await this._jupiter.exchange({
+      routeInfo,
+      userPublicKey: this._params.userKey,
+    });
+
+    let isTxV2 = true;
+    if ((swapTransaction as anchor.web3.Transaction).instructions) {
+      isTxV2 = false;
+    }
+
+    if (isTxV2) {
+      const versionedTx = swapTransaction as anchor.web3.VersionedTransaction;
+      const isLegible =
+        versionedTx.message.staticAccountKeys.length <= MAX_STATIC_KEYS
+          ? versionedTx.serialize().length < MAX_RAW_SWAP_TX_SIZE
+            ? true
+            : false
+          : false;
+      return { isLegible, swapTransaction, addressLookupTableAccounts };
+    } else {
+      const legacyTx = swapTransaction as anchor.web3.Transaction;
+      const isLegible = legacyTx.serialize().length <= MAX_RAW_SWAP_TX_SIZE;
+      return { isLegible, swapTransaction, addressLookupTableAccounts };
+    }
   }
 }
