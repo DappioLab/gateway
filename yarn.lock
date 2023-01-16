@@ -26,7 +26,7 @@
   resolved "https://registry.yarnpkg.com/@dappio-wonderland/gateway-idls/-/gateway-idls-0.2.8.tgz#65af88946a483f1fd4b68fd9d7028387c6b2cad6"
   integrity sha512-5xUskBwsEq/LhpZ63rQXIY9Xiaii9vicn8quKekJXsvW3L4nQ5qMtvmudE8sdJRmvRUV6uxHdTtMg2OqvhdRxQ==
 
-"@dappio-wonderland/navigator@^0.2.20", "@dappio-wonderland/navigator@^0.2.26":
+"@dappio-wonderland/navigator@^0.2.26":
   version "0.2.26"
   resolved "https://registry.yarnpkg.com/@dappio-wonderland/navigator/-/navigator-0.2.26.tgz#001ab10563064b01d0a742712cdb9a1dc00aa002"
   integrity sha512-21W9VEAp4aMDg5XXLWxY9Appt2zEbj1f0bb/0J+5h6Q97cySyzsGxHPJ+6bIo3lDafesjcqg2iJmf4CDjmu3xA==
@@ -44,12 +44,12 @@
     graphql-request "^5.0.0"
     mocha "^10.0.0"
 
-"@dappio-wonderland/utils@^0.1.0-test.3":
-  version "0.1.0-test.3"
-  resolved "https://registry.yarnpkg.com/@dappio-wonderland/utils/-/utils-0.1.0-test.3.tgz#5bc129e38b6c8c85f5cb4fab070753a2aec719e6"
-  integrity sha512-Mf0hKoaFyn/nIJbvOBcc+irKSuyMa9nzt8p+TQOxEdkGlrrtRw2Dd4LoFZZD60gNrEgfRQu3r8xLP5/9Hgd6Hw==
+"@dappio-wonderland/utils@^0.1.0-test.4":
+  version "0.1.0-test.4"
+  resolved "https://registry.yarnpkg.com/@dappio-wonderland/utils/-/utils-0.1.0-test.4.tgz#59dfda5216b82d801d4e8b618ca4660c4744047b"
+  integrity sha512-dtxxYRxDla+jyO1J1CX7JoHeCPX2Jq5TyrWhwc6tTTp2EbWq8cKmc9aC+RyRZw9JzNt4PPosTu+kGJg/ClMB3g==
   dependencies:
-    "@dappio-wonderland/navigator" "^0.2.20"
+    "@dappio-wonderland/navigator" "^0.2.26"
     "@solana/spl-token" "^0.3.6"
     "@solana/web3.js" "^1.66.2"
 

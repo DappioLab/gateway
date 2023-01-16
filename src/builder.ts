@@ -14,7 +14,7 @@ import {
   katana,
   friktion,
 } from "@dappio-wonderland/navigator";
-import { compressTransactions, compressV0Transactions } from "@dappio-wonderland/utils";
+import { compress, compressV0 } from "@dappio-wonderland/utils";
 import {
   ActionType,
   AddLiquidityParams,
@@ -1713,10 +1713,10 @@ export class GatewayBuilder {
   }
 
   transactions(): anchor.web3.Transaction[] {
-    return compressTransactions(this._transactions, this._provider.wallet.publicKey);
+    return compress(this._transactions, this._provider.wallet.publicKey);
   }
   async v0Transactions(addressLookupTable: anchor.web3.PublicKey[] = []): Promise<anchor.web3.VersionedTransaction[]> {
-    return compressV0Transactions(this._transactions, this._provider.wallet.publicKey, this._provider.connection, [
+    return compressV0(this._transactions, this._provider.wallet.publicKey, this._provider.connection, [
       ...ADDRESS_LOOKUP_TABLES,
       ...addressLookupTable,
     ]);
