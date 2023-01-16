@@ -14,6 +14,7 @@ import {
   nftFinance,
   katana,
   friktion,
+  marinade,
 } from "@dappio-wonderland/navigator";
 import {
   ActionType,
@@ -63,6 +64,7 @@ import { ProtocolFrancium } from "./protocols/francium";
 import { ProtocolKatana } from "./protocols/katana";
 import { ProtocolTulip } from "./protocols/tulip";
 import { ProtocolFriktion } from "./protocols/friktion";
+import { ProtocolMarinade } from "./protocols/marinade";
 
 export class GatewayBuilder {
   public params: GatewayParams;
@@ -1041,6 +1043,16 @@ export class GatewayBuilder {
         );
 
         break;
+      case SupportedProtocols.Marinade:
+        this._metadata.vault = await marinade.infos.getVault(this._provider.connection, depositParams.vaultId);
+        protocol = new ProtocolMarinade(
+          this._provider.connection,
+          this._program,
+          await this.getGatewayStateKey(),
+          this.params
+        );
+
+        break;
       default:
         throw new Error("Unsupported Protocol");
     }
@@ -1136,6 +1148,17 @@ export class GatewayBuilder {
         );
 
         break;
+      case SupportedProtocols.Marinade:
+        this._metadata.vault = await marinade.infos.getVault(this._provider.connection, withdrawParams.vaultId);
+
+        protocol = new ProtocolMarinade(
+          this._provider.connection,
+          this._program,
+          await this.getGatewayStateKey(),
+          this.params
+        );
+
+        break;
 
       default:
         throw new Error("Unsupported Protocol");
@@ -1190,6 +1213,16 @@ export class GatewayBuilder {
         );
 
         break;
+      case SupportedProtocols.Marinade:
+        this._metadata.vault = await marinade.infos.getVault(this._provider.connection, withdrawParams.vaultId);
+        protocol = new ProtocolMarinade(
+          this._provider.connection,
+          this._program,
+          await this.getGatewayStateKey(),
+          this.params
+        );
+
+        break;
       default:
         throw new Error("Unsupported Protocol");
     }
@@ -1236,6 +1269,16 @@ export class GatewayBuilder {
       case SupportedProtocols.Katana:
         this._metadata.vault = await katana.infos.getVault(this._provider.connection, withdrawParams.vaultId);
         protocol = new ProtocolKatana(
+          this._provider.connection,
+          this._program,
+          await this.getGatewayStateKey(),
+          this.params
+        );
+
+        break;
+      case SupportedProtocols.Marinade:
+        this._metadata.vault = await marinade.infos.getVault(this._provider.connection, withdrawParams.vaultId);
+        protocol = new ProtocolMarinade(
           this._provider.connection,
           this._program,
           await this.getGatewayStateKey(),
@@ -1342,6 +1385,16 @@ export class GatewayBuilder {
       case SupportedProtocols.Katana:
         this._metadata.vault = await katana.infos.getVault(this._provider.connection, withdrawParams.vaultId);
         protocol = new ProtocolKatana(
+          this._provider.connection,
+          this._program,
+          await this.getGatewayStateKey(),
+          this.params
+        );
+
+        break;
+      case SupportedProtocols.Marinade:
+        this._metadata.vault = await marinade.infos.getVault(this._provider.connection, withdrawParams.vaultId);
+        protocol = new ProtocolMarinade(
           this._provider.connection,
           this._program,
           await this.getGatewayStateKey(),

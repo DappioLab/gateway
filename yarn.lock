@@ -21,6 +21,11 @@
     tiny-invariant "^1.1.0"
     toformat "^2.0.0"
 
+"@dappio-wonderland/adapter-idls@^0.2.1-test.4":
+  version "0.2.1-test.4"
+  resolved "https://registry.yarnpkg.com/@dappio-wonderland/adapter-idls/-/adapter-idls-0.2.1-test.4.tgz#3e40f0357cf74b3536729ca5e1fe160133d8793d"
+  integrity sha512-AjXXLwj7xf1RSNQ9FrT4QLnK3UFsQsq+Dk4gGY41dp1mXpEIumngtT4T71gKZnDBYA8RT953R/Wi2Ws5LIYhPg==
+
 "@dappio-wonderland/gateway-idls@^0.2.8":
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/@dappio-wonderland/gateway-idls/-/gateway-idls-0.2.8.tgz#65af88946a483f1fd4b68fd9d7028387c6b2cad6"
@@ -43,6 +48,33 @@
     graphql "^16.6.0"
     graphql-request "^5.0.0"
     mocha "^10.0.0"
+
+"@dappio-wonderland/navigator@^0.2.26-test.3":
+  version "0.2.26-test.3"
+  resolved "https://registry.yarnpkg.com/@dappio-wonderland/navigator/-/navigator-0.2.26-test.3.tgz#fb834820e158ced476dce93f4e2cb007825ea8c3"
+  integrity sha512-Erafs88J+IEuP3exELLvfJCDSQyR0TyQRopKrrYh3WhoCK8qrvl6qUjlvkLVeS1n04IlWFFka+rVH+FZtO0W3g==
+  dependencies:
+    "@project-serum/borsh" "^0.2.2"
+    "@project-serum/serum" "^0.13.61"
+    "@solana/spl-token-v2" "npm:@solana/spl-token@0.2.0"
+    "@solana/web3.js" "^1.63.0"
+    "@switchboard-xyz/sbv2-lite" "^0.1.5"
+    "@switchboard-xyz/switchboard-api" "^0.2.191"
+    "@types/bn.js" "^5.1.0"
+    axios "^0.27.2"
+    buffer-layout "^1.2.2"
+    graphql "^16.6.0"
+    graphql-request "^5.0.0"
+    mocha "^10.0.0"
+
+"@dappio-wonderland/utils@^0.1.0-test.4":
+  version "0.1.0-test.4"
+  resolved "https://registry.yarnpkg.com/@dappio-wonderland/utils/-/utils-0.1.0-test.4.tgz#59dfda5216b82d801d4e8b618ca4660c4744047b"
+  integrity sha512-dtxxYRxDla+jyO1J1CX7JoHeCPX2Jq5TyrWhwc6tTTp2EbWq8cKmc9aC+RyRZw9JzNt4PPosTu+kGJg/ClMB3g==
+  dependencies:
+    "@dappio-wonderland/navigator" "^0.2.26"
+    "@solana/spl-token" "^0.3.6"
+    "@solana/web3.js" "^1.66.2"
 
 "@graphql-typed-document-node/core@^3.1.1":
   version "3.1.1"
@@ -445,7 +477,7 @@
     "@solana/web3.js" "^1.32.0"
     start-server-and-test "^1.14.0"
 
-"@solana/spl-token@0.1.8", "@solana/spl-token@^0.1.6", "@solana/spl-token@^0.1.8", "@solana/spl-token@~0.1.8":
+"@solana/spl-token@0.1.8", "@solana/spl-token@^0.1.6", "@solana/spl-token@^0.1.8", "@solana/spl-token@^0.3.6", "@solana/spl-token@~0.1.8":
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/@solana/spl-token/-/spl-token-0.1.8.tgz#f06e746341ef8d04165e21fc7f555492a2a0faa6"
   integrity sha512-LZmYCKcPQDtJgecvWOgT/cnoIQPWjdH+QVyzPcFvyDUiT0DiRjZaam4aqNUyvchLFhzgunv3d9xOoyE34ofdoQ==
@@ -457,7 +489,7 @@
     buffer-layout "^1.2.0"
     dotenv "10.0.0"
 
-"@solana/web3.js@1.31.0", "@solana/web3.js@^1.17.0", "@solana/web3.js@^1.21.0", "@solana/web3.js@^1.32.0", "@solana/web3.js@^1.36.0", "@solana/web3.js@^1.63.0":
+"@solana/web3.js@1.31.0", "@solana/web3.js@^1.17.0", "@solana/web3.js@^1.21.0", "@solana/web3.js@^1.32.0", "@solana/web3.js@^1.36.0", "@solana/web3.js@^1.63.0", "@solana/web3.js@^1.66.2":
   version "1.70.0"
   resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.70.0.tgz#14ad207f431861397db85921aad8df4e8374e7c8"
   integrity sha512-HwdI9LaHaszfpzgxJI44iP68mJWUeqK1TeSheKQsGkH5zlVyGWGmim50MyDWu2vXiuL8Akf2xEMSrDYyLordgg==

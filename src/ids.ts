@@ -29,3 +29,5 @@ export const KATANA_ADAPTER_PROGRAM_ID = new PublicKey("ADPTwDKJTizC3V8gZXDxt5uL
 export const FRANCIUM_ADAPTER_PROGRAM_ID = new PublicKey("ADPTax5HwQ2ZWVLmceCek8UrqMhwCy5q3SHwi8W71Kv2");
 
 export const FRIKTION_ADAPTER_PROGRAM_ID = new PublicKey("ADPTzbsaBdXA3FqXoPHjaTjPfh9kadxxFKxonZihP1Ji");
+
+export const MARINADE_ADAPTER_PROGRAM_ID = new PublicKey("3fUTvDPGzfRHpRkbZdTGzHzZHzBm1Km5cyAssfKZwTh3");

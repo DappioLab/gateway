@@ -219,6 +219,7 @@ export enum SupportedProtocols {
   Francium = 9,
   Friktion = 10,
   Katana = 11,
+  Marinade = 12,
 }
 
 export interface RouteInfoExtend extends RouteInfo {
@@ -358,6 +359,8 @@ export interface WithdrawParams {
   vaultId: anchor.web3.PublicKey;
   withdrawAmount: number;
   version?: number;
+  withdrawer?: anchor.web3.PublicKey;
+  userKey?: anchor.web3.PublicKey;
 }
 
 export interface LockNFTParams {

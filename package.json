@@ -8,8 +8,10 @@
     "dist"
   ],
   "dependencies": {
+    "@dappio-wonderland/adapter-idls": "^0.2.1-test.4",
     "@dappio-wonderland/gateway-idls": "^0.2.8",
-    "@dappio-wonderland/navigator": "^0.2.26",
+    "@dappio-wonderland/navigator": "^0.2.26-test.3",
+    "@dappio-wonderland/utils": "^0.1.0-test.4",
     "@jup-ag/core": "1.0.0-beta.26",
     "@project-serum/anchor": "^0.24.2",
     "@project-serum/borsh": "^0.2.5",
@@ -46,6 +48,7 @@
     "testAdapterNftFinance": "ANCHOR_WALLET=~/.config/solana/gateway.json ts-mocha -p ./tsconfig.json -t 1000000 tests/testAdapterNftFinance.ts",
     "testAdapterFrancium": "ANCHOR_WALLET=~/.config/solana/gateway.json ts-mocha -p ./tsconfig.json -t 1000000 tests/testAdapterFrancium.ts",
     "testAdapterKatana": "ANCHOR_WALLET=~/.config/solana/gateway.json ts-mocha -p ./tsconfig.json -t 1000000 tests/testAdapterKatana.ts",
+    "testAdapterMarinade": "ANCHOR_WALLET=~/.config/solana/G9.json ts-mocha -p ./tsconfig.json -t 1000000 tests/testAdapterMarinade.ts",
     "testAdapterFriktion": "ANCHOR_WALLET=~/.config/solana/gateway.json ts-mocha -p ./tsconfig.json -t 1000000 tests/testAdapterFriktion.ts"
   }
 }
