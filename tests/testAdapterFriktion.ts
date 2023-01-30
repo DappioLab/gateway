@@ -4,12 +4,18 @@ import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { getAccount } from "@solana/spl-token-v2";
 import { GatewayBuilder, SupportedProtocols, DepositParams, WithdrawParams } from "../src";
 import { friktion, utils } from "@dappio-wonderland/navigator";
+import { signAndSend } from "@dappio-wonderland/utils";
 
 describe("Gateway", () => {
-  const connection = new Connection("https://rpc-mainnet-fork.epochs.studio", {
+  // const connection = new Connection("https://rpc-mainnet-fork.epochs.studio", {
+  //   commitment: "confirmed",
+  //   confirmTransactionInitialTimeout: 180 * 1000,
+  //   wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
+  // });
+  const connection = new Connection("https://cache-rpc.dappio.xyz/", {
+    wsEndpoint: "wss://api.mainnet-beta.solana.com",
     commitment: "confirmed",
-    confirmTransactionInitialTimeout: 180 * 1000,
-    wsEndpoint: "wss://rpc-mainnet-fork.epochs.studio/ws",
+    confirmTransactionInitialTimeout: 1000000,
   });
   const options = anchor.AnchorProvider.defaultOptions();
   const wallet = NodeWallet.local();
@@ -33,16 +39,17 @@ describe("Gateway", () => {
     await gateway.finalize();
 
     const txs = gateway.transactions();
-
+    const v0Txs = await gateway.v0Transactions();
     console.log("======");
     console.log("Txs are sent...");
-    for (let tx of txs) {
+    for (let tx of v0Txs) {
       // const sig = await provider.sendAndConfirm(tx, [], {
       //   skipPreflight: false,
       //   commitment: "confirmed",
       // } as unknown as anchor.web3.ConfirmOptions);
-      const sig2 = await utils.signAndSendAll(tx as anchor.web3.Transaction, connection, [wallet.payer], false);
-      console.log(sig2, "\n");
+      const sig3 = await signAndSend(tx, connection, [wallet.payer], true);
+      //const sig2 = await utils.signAndSendAll(tx as anchor.web3.Transaction, connection, [wallet.payer], false);
+      console.log(sig3, "\n");
     }
     console.log("Txs are executed");
     console.log("======");

@@ -11,5 +11,5 @@
     "rootDir": "./src",
     "outDir": "./dist"
   },
-  "exclude": ["migrations", "programs", "tests", "node_modules"]
+  "exclude": ["migrations", "programs", "tests", "node_modules", "dist"]
 }
