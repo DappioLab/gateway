@@ -31,6 +31,7 @@ import {
   IProtocolNFTFarm,
   IProtocolNFTPool,
   IProtocolPool,
+  IProtocolSwap,
   IProtocolVault,
   LockNFTParams,
   PoolDirection,
@@ -106,6 +107,9 @@ export class GatewayBuilder {
       poolDirection: PoolDirection.Obverse,
       swapMinOutAmount: new anchor.BN(0),
       farmType: [],
+      swapIndex: 0,
+      swapAmountConfig: [] as Uint8Array[],
+      swapRouteConfig: [] as Uint8Array[],
     };
 
     this._metadata = {
@@ -128,18 +132,29 @@ export class GatewayBuilder {
   // IProtocolSwap
   async swap(swapParams: SwapParams): Promise<GatewayBuilder> {
     // NOTE: No need to push protocol / action to queue since Jupiter apapter is not implemented yet
+    this.params.actionQueue.push(ActionType.Swap);
+    this.params.protocolQueue.push(swapParams.protocol);
+    this.params.versionQueue.push(1);
     this._metadata.fromTokenMint = swapParams.fromTokenMint;
     this._metadata.toTokenMint = swapParams.toTokenMint;
 
     this._adjustParams();
 
+    let protocol: IProtocolSwap;
+
     // TODO: Move the logic into protocols
     switch (swapParams.protocol) {
       case SupportedProtocols.Jupiter:
-        const protocol = new ProtocolJupiter(this._provider.connection, {
-          ...swapParams,
-          userKey: this._provider.wallet.publicKey,
-        });
+        protocol = new ProtocolJupiter(
+          this._provider.connection,
+          this._program,
+          await this.getGatewayStateKey(),
+          this.params,
+          {
+            ...swapParams,
+            userKey: this._provider.wallet.publicKey,
+          }
+        );
 
         // Jupiter only
         await protocol.build();
@@ -148,13 +163,20 @@ export class GatewayBuilder {
         this._metadata.routes = Boolean(this._metadata.routes)
           ? [...this._metadata.routes, await protocol.getRoute()]
           : [await protocol.getRoute()];
-
-        this._transactions = [...this._transactions, ...(await protocol.swap())];
-
+        this._metadata.addressLookupTables = protocol.getAddressLookupTables().map((a) => a.key);
         break;
       default:
         throw new Error("Unsupported Protocol");
     }
+
+    const { txs, input } = await protocol.swap();
+
+    // Push input payload
+    (this.params.payloadQueue as Uint8Array[]).push(input);
+    // TODO: Extract the logic of index dispatch to a config file
+    this.params.inputIndexQueue.push(0);
+
+    this._transactions = [...this._transactions, ...txs];
 
     return this;
   }
@@ -1666,20 +1688,20 @@ export class GatewayBuilder {
     }
 
     // ZapIn only: Update poolTokenAInAmount if swapOutAmount has value
-    if (this.params?.swapMinOutAmount?.toNumber() > 0) {
-      const indexAddLiquidity = this.params.actionQueue.indexOf(ActionType.AddLiquidity);
-      // Note: ZapIn only
-      if (indexAddLiquidity > 0) {
-        switch (this.params.poolDirection) {
-          case PoolDirection.Obverse:
-            this.params.payloadQueue[indexAddLiquidity] = new anchor.BN(this.params.swapMinOutAmount.toNumber());
-            break;
-          case PoolDirection.Reverse:
-            this.params.payloadQueue[indexAddLiquidity] = new anchor.BN(this.params.swapMinOutAmount.toNumber());
-            break;
-        }
-      }
-    }
+    // if (this.params?.swapMinOutAmount?.toNumber() > 0) {
+    //   const indexAddLiquidity = this.params.actionQueue.indexOf(ActionType.AddLiquidity);
+    //   // Note: ZapIn only
+    //   if (indexAddLiquidity > 0) {
+    //     switch (this.params.poolDirection) {
+    //       case PoolDirection.Obverse:
+    //         this.params.payloadQueue[indexAddLiquidity] = new anchor.BN(this.params.swapMinOutAmount.toNumber());
+    //         break;
+    //       case PoolDirection.Reverse:
+    //         this.params.payloadQueue[indexAddLiquidity] = new anchor.BN(this.params.swapMinOutAmount.toNumber());
+    //         break;
+    //     }
+    //   }
+    // }
   }
 
   async finalize(): Promise<GatewayBuilder> {
@@ -1718,6 +1740,7 @@ export class GatewayBuilder {
   async v0Transactions(addressLookupTable: anchor.web3.PublicKey[] = []): Promise<anchor.web3.VersionedTransaction[]> {
     return compressV0(this._transactions, this._provider.wallet.publicKey, this._provider.connection, [
       ...ADDRESS_LOOKUP_TABLES,
+      ...this._metadata.addressLookupTables,
       ...addressLookupTable,
     ]);
   }

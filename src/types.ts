@@ -13,8 +13,12 @@ import { RouteInfo, TransactionFeeInfo } from "@jup-ag/core";
 export const PAYLOAD_SIZE = 32;
 
 export interface IProtocolSwap {
-  swap: () => void;
-  getSwapMinOutAmount: () => void;
+  swap: () => Promise<{ txs: anchor.web3.Transaction[]; input: Buffer }>;
+  getSwapMinOutAmount: () => number;
+
+  build?: () => void;
+  getRoute?: () => any;
+  getAddressLookupTables?: () => anchor.web3.AddressLookupTableAccount[];
 }
 
 export interface IProtocolPool {
@@ -240,6 +244,7 @@ export interface GatewayMetadata {
   toTokenMint?: anchor.web3.PublicKey;
   addLiquidityTokenMint?: anchor.web3.PublicKey;
   removeLiquiditySingleToTokenMint?: anchor.web3.PublicKey;
+  addressLookupTables?: anchor.web3.PublicKey[];
 }
 
 export interface SwapParams {
@@ -467,6 +472,32 @@ export type GatewayParams = TypeDef<
           name: "farmType";
           type: {
             array: ["u64", 2];
+          };
+        },
+        {
+          name: "swapIndex";
+          type: "u8";
+        },
+        {
+          name: "swapAmountConfig";
+          type: {
+            array: [
+              {
+                array: ["u8", 18];
+              },
+              4
+            ];
+          };
+        },
+        {
+          name: "swapRouteConfig";
+          type: {
+            array: [
+              {
+                array: ["u8", 30];
+              },
+              4
+            ];
           };
         }
       ];
