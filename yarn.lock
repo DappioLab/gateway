@@ -94,14 +94,6 @@
     graphql-request "^5.0.0"
     mocha "^10.0.0"
 
-"@dradex/idl@npm:@jup-ag/dradex-idl@0.2.1", "@jup-ag/dradex-idl@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@jup-ag/dradex-idl/-/dradex-idl-0.2.1.tgz#36cf9a75ca9712c0a588b6c0050744eab3a46c49"
-  integrity sha512-CZ5GZTLExy1+fw/tFOo6C4AbU0o/PcqJxxQpDp5UkSJ0SXbz7ZGMz9DfKu+htJuAwxwGgS/rbQfeBoU9fhDXuQ==
-  dependencies:
-    "@solana/buffer-layout" "4.0.0"
-    bn.js "5.2.1"
-
 "@dappio-wonderland/utils@^0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@dappio-wonderland/utils/-/utils-0.2.0.tgz#becec69b1d90efd35565d20dd5bd275fafe29ec9"
@@ -111,6 +103,14 @@
     "@solana/spl-token" "^0.3.6"
     "@solana/web3.js" "^1.66.2"
     "@types/lodash" "^4.14.191"
+
+"@dradex/idl@npm:@jup-ag/dradex-idl@0.2.1", "@jup-ag/dradex-idl@0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@jup-ag/dradex-idl/-/dradex-idl-0.2.1.tgz#36cf9a75ca9712c0a588b6c0050744eab3a46c49"
+  integrity sha512-CZ5GZTLExy1+fw/tFOo6C4AbU0o/PcqJxxQpDp5UkSJ0SXbz7ZGMz9DfKu+htJuAwxwGgS/rbQfeBoU9fhDXuQ==
+  dependencies:
+    "@solana/buffer-layout" "4.0.0"
+    bn.js "5.2.1"
 
 "@graphql-typed-document-node/core@^3.1.1":
   version "3.1.1"
@@ -806,7 +806,7 @@
     bigint-buffer "^1.1.5"
     bignumber.js "^9.0.1"
 
-"@solana/buffer-layout@4.0.0", "@solana/buffer-layout@^4.0.0":
+"@solana/buffer-layout@4.0.0":
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@solana/buffer-layout/-/buffer-layout-4.0.0.tgz#75b1b11adc487234821c81dfae3119b73a5fd734"
   integrity sha512-lR0EMP2HC3+Mxwd4YcnZb0smnaDw7Bl2IQWZiTevRH5ZZBZn6VRWn3/92E3qdU4SSImJkA6IDHawOHAnx/qUvQ==
@@ -851,7 +851,7 @@
     "@solana/web3.js" "^1.32.0"
     start-server-and-test "^1.14.0"
 
-"@solana/spl-token@0.1.8", "@solana/spl-token@^0.1.6", "@solana/spl-token@^0.1.8", "@solana/spl-token@^0.3.6", "@solana/spl-token@~0.1.8":
+"@solana/spl-token@0.1.8", "@solana/spl-token@^0.1.6", "@solana/spl-token@^0.1.8", "@solana/spl-token@^0.2.0", "@solana/spl-token@^0.3.4", "@solana/spl-token@^0.3.6":
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/@solana/spl-token/-/spl-token-0.1.8.tgz#f06e746341ef8d04165e21fc7f555492a2a0faa6"
   integrity sha512-LZmYCKcPQDtJgecvWOgT/cnoIQPWjdH+QVyzPcFvyDUiT0DiRjZaam4aqNUyvchLFhzgunv3d9xOoyE34ofdoQ==
