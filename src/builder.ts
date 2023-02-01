@@ -163,6 +163,7 @@ export class GatewayBuilder {
         this._metadata.routes = Boolean(this._metadata.routes)
           ? [...this._metadata.routes, await protocol.getRoute()]
           : [await protocol.getRoute()];
+        this._metadata.addressLookupTables = protocol.getAddressLookupTables().map((a) => a.key);
         break;
       default:
         throw new Error("Unsupported Protocol");
@@ -1739,6 +1740,7 @@ export class GatewayBuilder {
   async v0Transactions(addressLookupTable: anchor.web3.PublicKey[] = []): Promise<anchor.web3.VersionedTransaction[]> {
     return compressV0(this._transactions, this._provider.wallet.publicKey, this._provider.connection, [
       ...ADDRESS_LOOKUP_TABLES,
+      ...this._metadata.addressLookupTables,
       ...addressLookupTable,
     ]);
   }

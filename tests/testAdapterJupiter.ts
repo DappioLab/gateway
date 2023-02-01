@@ -36,22 +36,26 @@ describe("Gateway", () => {
 
   anchor.setProvider(provider);
 
-  const zapInAmount = 10000;
+  const zapInAmount = 1000000;
 
   it("Swap in Jupiter", async () => {
     const swapParams1: SwapParams = {
       protocol: SupportedProtocols.Jupiter,
       fromTokenMint: new PublicKey(
-        // "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
         // "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" // RAY
-        "So11111111111111111111111111111111111111112" // WSOL
+        // "So11111111111111111111111111111111111111112" // WSOL
         // "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" // SRM
+        // "7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj" // stSOL
+        // "2QHx6MmrsAXSKLynJ55GofBbveYaDPLvn6qgdefey5za" // GMT
+        // "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE" // Orca
       ),
       toTokenMint: new PublicKey(
         // "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" // RAY
-        "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" // USDT
+        // "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" // USDT
         // "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // USDC
         // "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" // SRM
+        "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE" // Orca
         // "So11111111111111111111111111111111111111112" // WSOL
         // "GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz" // GENE
         // "66edZnAPEJSxnAK4SckuupssXpbu5doV57FUcghaqPsY" // PRGC
@@ -97,32 +101,23 @@ describe("Gateway", () => {
     // console.log(`swapInAmount: ${gateway.params.swapInAmount}`);
     // console.log(`swapMinOutAmount: ${gateway.params.swapMinOutAmount}`);
 
-    const txs = gateway.transactions();
+    const txs = await gateway.v0Transactions();
     console.log(txs);
 
     console.log("======");
     console.log("Txs are sent...");
     const recentBlockhash = await connection.getLatestBlockhash();
     for (let tx of txs) {
-      if ((tx as anchor.web3.Transaction).instructions) {
-        const sig = await provider.sendAndConfirm(tx as anchor.web3.Transaction, [], {
-          skipPreflight: true,
-          commitment: "confirmed",
-        } as unknown as anchor.web3.ConfirmOptions);
-        console.log(sig);
-      } else {
-        const txV2 = tx as anchor.web3.VersionedTransaction;
-        txV2.message.recentBlockhash = recentBlockhash.blockhash;
-        console.log(txV2.serialize().length);
-        txV2.sign([wallet.payer]);
-        let versionMessage = txV2.serialize();
-        //const result = sendAndConfirmTransaction(connection, tx, wallet);
-        const sig = await connection.sendRawTransaction(versionMessage, {
-          skipPreflight: true,
-          commitment: "confirmed",
-        } as unknown as anchor.web3.ConfirmOptions);
-        console.log(sig);
-      }
+      tx.message.recentBlockhash = recentBlockhash.blockhash;
+      console.log(tx.serialize().length);
+      tx.sign([wallet.payer]);
+      let versionMessage = tx.serialize();
+      //const result = sendAndConfirmTransaction(connection, tx, wallet);
+      const sig = await connection.sendRawTransaction(versionMessage, {
+        skipPreflight: true,
+        commitment: "confirmed",
+      } as unknown as anchor.web3.ConfirmOptions);
+      console.log(sig);
     }
     console.log("Txs are executed");
     console.log("======");
